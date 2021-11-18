@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
+import importlib
+import os
 import glob
+
 import helper
-from os import path
-from const import Extension
+import const
 
 
 class CfgExporter(object):
@@ -12,16 +13,16 @@ class CfgExporter(object):
         pass
 
     def __do_load_files(self, source, recursive):
-        if path.isdir(source):
-            for macro in Extension.__members__.values():
-                for file in glob.glob(path.join(source, "**/*" + macro.value[0]), recursive=recursive):
-                    cls = macro.value[1]
-                    self.cfg_dict[path.abspath(file)] = type(cls.__name__, (cls,), dict())(self, file)
-        elif path.isfile(source):
-            for macro in Extension.__members__.values():
-                if source.endswith(macro.value[0]):
-                    cls = macro.value[1]
-                    self.cfg_dict[path.abspath(source)] = type(cls.__name__, (cls,), dict())(self, source)
+        for macro in const.Extension.__members__.values():
+            mod = importlib.import_module(macro.value.__module__)
+            for ext in getattr(mod, "extension")():
+                if os.path.isdir(source):
+                    for file in glob.glob(os.path.join(source, "**/*" + ext), recursive=recursive):
+                        cls = macro.value
+                        self.cfg_dict[os.path.abspath(file)] = type(cls.__name__, (cls,), dict())(self, file)
+                elif os.path.isfile(source) and source.endswith(ext):
+                    cls = macro.value
+                    self.cfg_dict[os.path.abspath(source)] = type(cls.__name__, (cls,), dict())(self, source)
 
     def load_files(self):
         self.__do_load_files(helper.args.source, helper.args.recursive)
@@ -39,8 +40,8 @@ class CfgExporter(object):
             table_obj.export()
 
     def get_table_obj(self, table_name):
-        full_filename = path.abspath(table_name)
-        if path.exists(full_filename):
+        full_filename = os.path.abspath(table_name)
+        if os.path.exists(full_filename):
             if full_filename in self.cfg_dict:
                 table_obj = self.cfg_dict[full_filename]
                 if not table_obj.is_load:

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import const
+import util
 from rule import RuleException
-from util import trim
 
 
 class Column(object):
@@ -32,13 +32,13 @@ class Column(object):
             err = "column:%(column)s field name is undefined" % {"column": self.__column_num + 1}
             raise ColumnException(err)
 
-        field_name = trim(field_name)
+        field_name = util.trim(field_name)
 
         if field_name == "":
             err = "column:%(column)s field name is undefined" % {"column": self.__column_num + 1}
             raise ColumnException(err)
 
-        self.__field_name = trim(field_name)
+        self.__field_name = util.trim(field_name)
 
     @property
     def data_type(self):
@@ -50,7 +50,7 @@ class Column(object):
             err = "column:%(column)s data type is undefined" % {"column": self.__column_num + 1}
             raise ColumnException(err)
 
-        data_type = trim(data_type)
+        data_type = util.trim(data_type)
 
         if data_type == "":
             err = "column:%(column)s data type is undefined" % {"column": self.__column_num + 1}
@@ -74,7 +74,7 @@ class Column(object):
         if rule is None or rule == "":
             return
 
-        rule = trim(rule)
+        rule = util.trim(rule)
 
         if rule != "":
             for rule_str in rule.split(const.RuleSplitType.split.value):
@@ -100,7 +100,7 @@ class Column(object):
     def description(self, desc):
         if desc is None:
             return
-        self.__description = trim(desc)
+        self.__description = util.trim(desc)
 
     @property
     def data_list(self):

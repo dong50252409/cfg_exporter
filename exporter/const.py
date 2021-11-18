@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import enum
-import csv_exporter
-import xlsx_exporter
-import rule
+
+from csv_exporter import CSVTable
+from xlsx_exporter import XLSXTable
+from rule import KeyRule, MacroRule, RefRule, LenRule, RangeRule, SourceRule, UniqueRule, \
+    NotEmptyRule
 
 # 支持的导出文件类型
 ExportTypes = enum.Enum("ExportTypes", ("erl", "lua", "proto"))
 
 # 支持导入的配置表类型
-Extension = enum.Enum("Extension", {"csv": (".csv", csv_exporter.CSVTable), "xlsx": (".xlsx", xlsx_exporter.XLSXTable)})
+Extension = enum.Enum("Extension", {"csv": CSVTable, "xlsx": XLSXTable})
 
 # 多条件切分符号
 RuleSplitType = enum.Enum("RuleSplitType", {
@@ -19,9 +21,9 @@ RuleSplitType = enum.Enum("RuleSplitType", {
 
 # 支持的检查规则定义 (规则类型，规则类名)
 RuleTypes = enum.Enum("RuleTypes", {
-    "key": rule.KeyRule, "macro": rule.MacroRule, "ref": rule.RefRule,
-    "len": rule.LenRule, "range": rule.RangeRule, "source": rule.SourceRule,
-    "unique": rule.UniqueRule, "not_empty": rule.NotEmptyRule
+    "key": KeyRule, "macro": MacroRule, "ref": RefRule,
+    "len": LenRule, "range": RangeRule, "source": SourceRule,
+    "unique": UniqueRule, "not_empty": NotEmptyRule
 })
 
 # 支持的数据类型定义

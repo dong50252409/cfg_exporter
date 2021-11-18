@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from table import Table
 import openpyxl
 import helper
+from table import Table
 
 
 class XLSXTable(Table):
@@ -14,3 +14,7 @@ class XLSXTable(Table):
         sheet = book[book.sheetnames[helper.args.default_sheet - 1]]
         rows = list(sheet.iter_rows(values_only=True))
         super()._load_column(rows)
+
+
+def extension():
+    return ".xlsx",

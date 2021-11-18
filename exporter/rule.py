@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
-from collections import Counter
-
 import const
+from collections import Counter
 
 
 class BaseRule(object):

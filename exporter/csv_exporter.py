@@ -13,3 +13,7 @@ class CSVTable(Table):
         with open(self.full_filename, "r", encoding=helper.args.csv_encoding) as f:
             rows = list(csv.reader(f))
         super()._load_column(rows)
+
+
+def extension():
+    return ".csv",

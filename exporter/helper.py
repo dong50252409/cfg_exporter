@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
-import argparse
+import importlib
 import os
+import textwrap
+
 import const
+from argparse import RawTextHelpFormatter, ArgumentTypeError, ArgumentParser
 
 
 def valid_source(source):
@@ -9,7 +12,7 @@ def valid_source(source):
         return source
     else:
         err = "the source path does not exists %(source)s" % {"source": source}
-        raise argparse.ArgumentTypeError(err)
+        raise ArgumentTypeError(err)
 
 
 def valid_export(export):
@@ -17,7 +20,7 @@ def valid_export(export):
         return const.ExportTypes[export]
     else:
         err = "the export file type does not exits %(export)s" % {"export": export}
-        raise argparse.ArgumentTypeError(err)
+        raise ArgumentTypeError(err)
 
 
 def valid_table(row_num):
@@ -27,7 +30,7 @@ def valid_table(row_num):
         return row_num
     except (ValueError, AssertionError):
         err = "%(row_num)s is not a valid line number" % {"row_num": row_num}
-        raise argparse.ArgumentTypeError(err)
+        raise ArgumentTypeError(err)
 
 
 def valid_default_sheet(sheet):
@@ -37,23 +40,25 @@ def valid_default_sheet(sheet):
         return sheet
     except (ValueError, AssertionError):
         err = "%(sheet)s is not a valid worksheet" % {"sheet": sheet}
-        raise argparse.ArgumentTypeError(err)
+        raise ArgumentTypeError(err)
 
 
-parser = argparse.ArgumentParser(description="Configuration table export toolset")
+parser = ArgumentParser(description="Configuration table export toolset", formatter_class=RawTextHelpFormatter)
 
 base_group = parser.add_argument_group(title="base options")
 
-base_group.add_argument("-s", "--source", type=valid_source, required=True,
-                        help="specify the configuration table import source path")
+base_group.add_argument("-s", type=valid_source, required=True, metavar="SOURCE",
+                        help="specify the configuration table import source path\nfile types:%(supported)s" %
+                             {"supported": [
+                                 ",".join(getattr(importlib.import_module(macro.value.__module__), "extension")())
+                                 for macro in const.Extension.__members__.values()]})
 
-base_group.add_argument("-r", "--recursive", default=False, action="store_true",
-                        help="search the source path recursively")
+base_group.add_argument("-r", default=False, action="store_true", help="search the source path recursively")
 
-base_group.add_argument("-t", "--target", type=str, required=True,
+base_group.add_argument("-t", type=str, required=True, metavar="TARGET",
                         help="specify the configuration table export target path")
 
-base_group.add_argument("-e", "--export", type=valid_export, required=True,
+base_group.add_argument("-e", type=valid_export, required=True,
                         metavar="[%(choices)s]" % {"choices": ",".join(const.ExportTypes.__members__.keys())},
                         help="specify export file type")
 

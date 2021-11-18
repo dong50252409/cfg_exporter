@@ -2,7 +2,6 @@
 
 import os
 import helper
-
 from column import Column, ColumnException
 
 
