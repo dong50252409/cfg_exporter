@@ -22,19 +22,29 @@ class Column(object):
         return self.__column_num
 
     @property
+    def real_column_num(self):
+        return self.__column_num + 1
+
+    @property
     def field_name(self):
         return self.__field_name
 
     @field_name.setter
     def field_name(self, field_name):
         if field_name is None:
-            err = "column:%(column)s field name is undefined" % {"column": self.__column_num + 1}
+            err = "%(row_num)s:%(column_num)s field name is undefined" % {
+                "row_num": self.table_obj.real_field_name_row_num,
+                "column_num": self.real_column_num
+            }
             raise ColumnException(err)
 
         field_name = util.trim(field_name)
 
         if field_name == "":
-            err = "column:%(column)s field name is undefined" % {"column": self.__column_num + 1}
+            err = "%(row_num)s:%(column_num)s field name is undefined" % {
+                "row_num": self.table_obj.real_field_name_row_num,
+                "column_num": self.real_column_num
+            }
             raise ColumnException(err)
 
         self.__field_name = util.trim(field_name)
@@ -46,21 +56,30 @@ class Column(object):
     @data_type.setter
     def data_type(self, data_type):
         if data_type is None:
-            err = "column:%(column)s data type is undefined" % {"column": self.__column_num + 1}
+            err = "%(row_num)s:%(column_num)s data type is undefined" % {
+                "row_num": self.table_obj.real_data_type_row_num,
+                "column_num": self.real_column_num
+            }
             raise ColumnException(err)
 
         data_type = util.trim(data_type)
 
         if data_type == "":
-            err = "column:%(column)s data type is undefined" % {"column": self.__column_num + 1}
+            err = "%(row_num)s:%(column_num)s data type is undefined" % {
+                "row_num": self.table_obj.real_data_type_row_num,
+                "column_num": self.real_column_num
+            }
             raise ColumnException(err)
 
         if data_type not in DataType.__members__:
-            error = "column:%(column)s data type %(data_type)s is unsupported " \
-                    "supported data types [%(support_data_type)s]" % \
-                    {"column": self.__column_num + 1, "data_type": data_type,
-                     "support_data_type": ",".join(DataType.__members__.keys())}
-            raise ColumnException(error)
+            err = "%(row_num)s:%(column_num)s data type `%(data_type)s` is unsupported\n" \
+                  "supported data types [%(support_data_type)s]" % {
+                      "row_num": self.table_obj.real_data_type_row_num,
+                      "column_num": self.real_column_num,
+                      "data_type": data_type,
+                      "support_data_type": ",".join(DataType.__members__.keys())
+                  }
+            raise ColumnException(err)
 
         self.__data_type = DataType[data_type].value
 
@@ -70,7 +89,7 @@ class Column(object):
 
     @rules.setter
     def rules(self, rule):
-        if rule is None or rule == "":
+        if rule is None:
             return
 
         rule = util.trim(rule)
@@ -86,9 +105,16 @@ class Column(object):
                     rule_obj.value = tag_and_clause[-1]
                     self.__rules.append(rule_obj)
                 except (AssertionError, ValueError, KeyError):
-                    error = "column:%(column_num)s incorrect rule %(rule)s" % \
-                            {"column_num": self.column_num + 1, "rule": rule_str}
-                    raise ColumnException(error)
+                    err = "%(data_type_row_num)s:%(column_num)s data_type:`%(data_type)s` is not match " \
+                          "or %(rule_row_num)s:%(column_num)s rule:`%(rule)s` formal error" % {
+                              "data_type_row_num": self.table_obj.real_data_type_row_num,
+                              "rule_row_num": self.table_obj.real_rule_row_num,
+                              "column_num": self.real_column_num,
+                              "rule": rule_str,
+                              "data_type": self.__data_type.__name__
+                          }
+                    raise RuleException(err)
+
             self.__rules = tuple(self.__rules)
 
     @property
@@ -114,9 +140,11 @@ class Column(object):
                         data = eval(row[self.__column_num])
                         assert isinstance(data, self.__data_type)
                     except (SyntaxError, NameError, AssertionError):
-                        error = "column:%(column_num)s row:%(row_num)s incorrect data %(data)s" % \
-                                {"column_num": self.column_num + 1, "row_num": row_num, "data": row[self.__column_num]}
-                        raise ColumnException(error)
+                        err = "%(row_num)s:%(column_num)s incorrect data" % {
+                            "row_num": self.table_obj.real_body_row_num + row_num,
+                            "column_num": self.real_column_num
+                        }
+                        raise ColumnException(err)
                 else:
                     data = self.__data_type(row[self.__column_num])
                 self.__data_list.append(data)
@@ -126,11 +154,7 @@ class Column(object):
 
     def verify(self):
         for rule in self.__rules:
-            try:
-                rule.verify()
-            except RuleException as e:
-                error = "column:%(column_num)s %(err)s" % {"column_num": self.column_num + 1, "err": e.err}
-                raise ColumnException(error)
+            rule.verify()
 
 
 class ColumnException(Exception):

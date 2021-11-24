@@ -1,6 +1,8 @@
 import os
 import glob
 
+from cfg_exporter.const import ExtensionType
+
 
 class Container(object):
     def __init__(self, source, recursive, target, export_type, **kwargs):
@@ -32,7 +34,6 @@ class Container(object):
         return None
 
     def import_table(self):
-        from cfg_exporter.helper import ExtensionType
         for macro in ExtensionType.__members__.values():
             if os.path.isdir(self.__source):
                 source = os.path.join(self.__source, "**/*.%(ext)s" % {"ext": macro.name})

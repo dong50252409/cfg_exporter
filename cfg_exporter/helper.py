@@ -1,20 +1,7 @@
 import os
-
-from enum import Enum
 from argparse import RawTextHelpFormatter, ArgumentTypeError, ArgumentParser
-from cfg_exporter.tables.csv_table import CSVTable
-from cfg_exporter.tables.xlsx_table import XLSXTable
 
-###############################
-# 支持的导出文件类型
-###############################
-ExportType = Enum("ExportType", ("erl", "lua", "proto"))
-
-###############################
-# 支持导入的配置表类型
-###############################
-
-ExtensionType = Enum("Extension", {"csv": CSVTable, "xlsx": XLSXTable})
+from cfg_exporter.const import ExportType, ExtensionType
 
 
 def valid_source(source):

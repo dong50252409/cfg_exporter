@@ -1,5 +1,6 @@
 import os
 from cfg_exporter.tables.base.column import Column, ColumnException
+from cfg_exporter.tables.base.rule import RuleException
 
 
 class Table(object):
@@ -35,8 +36,8 @@ class Table(object):
                 self.__columns[col_num] = column
                 self.__columns_by_field[field_name] = column
             self.__is_load = True
-        except ColumnException as e:
-            err = "table:%(table_name)s %(error)s" % {"table_name": self.table_name, "error": e.err}
+        except (ColumnException, RuleException) as e:
+            err = "table:`%(table_name)s` %(error)s" % {"table_name": self.table_name, "error": e.err}
             raise TableException(err)
 
     def get_table_obj(self, full_filename):
@@ -75,6 +76,26 @@ class Table(object):
         return self.__desc_row
 
     @property
+    def real_field_name_row_num(self):
+        return self.__field_row + 1
+
+    @property
+    def real_data_type_row_num(self):
+        return self.__type_row + 1
+
+    @property
+    def real_body_row_num(self):
+        return self.__body_row + 1
+
+    @property
+    def real_rule_row_num(self):
+        return self.__rule_row + 1
+
+    @property
+    def real_description_row_num(self):
+        return self.__desc_row + 1
+
+    @property
     def columns(self):
         return self.__columns
 
@@ -91,10 +112,14 @@ class Table(object):
         return self.__is_load
 
     def verify(self):
-        for column in self.__columns.values():
-            column.verify()
-        for global_rule in self.__global_rules.values():
-            global_rule.verify(self)
+        try:
+            for column in self.__columns.values():
+                column.verify()
+            for global_rule in self.__global_rules.values():
+                global_rule.verify(self)
+        except (ColumnException, RuleException) as e:
+            err = "table:`%(table_name)s` %(error)s" % {"table_name": self.table_name, "error": e.err}
+            raise TableException(err)
 
     def export(self):
         pass
