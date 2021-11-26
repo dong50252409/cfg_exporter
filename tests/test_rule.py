@@ -38,7 +38,7 @@ def content_2():
     types = ["int"]
     rules = ["key:1"]
     body = [
-        [100], [200], [300], [400], [500], [600]
+        ["100"], ["200"], ["300"], ["400"], ["500"], ["600"]
     ]
     return [fields, types, rules] + body
 
@@ -198,4 +198,26 @@ def test_not_empty_rule():
     heads = [["test_not_empty"], ["int"], ["not_empty"]]
     body = [["1"], ["2"], [""]]
     exception_verity(heads + body)
+    pass
+
+
+def test_struct_rule():
+    kwargs = table_args()
+    with pytest.raises(Exception) as err:
+        obj1 = Container("", False, "", "", **kwargs)
+        heads1 = [["test_struct"], ["iter"], ["struct:[(ref:test_ref_rule_2.id|unique,range:50-500)]"]]
+        body1 = [
+            ["[(1,50),(2,50),(3,50)]"],
+            ["[(4,50),(5,50),(6,50)]"],
+        ]
+        obj1.set_data_rows(heads1 + body1)
+        obj1.create_table_obj(MemoryTable, "test_ref_rule_1")
+
+        heads2 = [["id"], ["int"], ["unique"]]
+        body2 = [["1"], ["2"], ["3"], ["4"], ["5"]]
+        obj1.set_data_rows(heads2 + body2)
+        obj1.create_table_obj(MemoryTable, "test_ref_rule_2")
+        obj1.verify_table()
+    assert err.type is TableException
+    print(err.value)
     pass
