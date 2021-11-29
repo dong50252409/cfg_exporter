@@ -18,18 +18,48 @@ def table_args():
 
 
 def content_1():
-    fields = ["id1", "id2", "macro_name", "macro_desc", "test_ref", "test_len", "test_range", "test_source",
-              "test_unique", "test_not_empty"]
-    types = ["int", "int", "str", "str", "int", "str", "int", "str", "int", "int"]
-    rules = ["key:1|macro:value", "key:2", "macro:name", "macro:desc",
-             "ref:%(table_name)s.id" % {"table_name": content_2.__name__},
-             "len:10", "range:0-500", "source:.", "unique", "not_empty"]
+    fields = [
+        "id1", "id2",
+        "macro_name", "macro_desc",
+        "test_ref", "test_len",
+        "test_range", "test_source",
+        "test_unique", "test_not_empty",
+        "test_struct1", "test_struct2"
+    ]
+
+    types = [
+        "int", "int",
+        "str", "str",
+        "int", "str",
+        "int", "str",
+        "int", "int",
+        "iter", "iter"
+    ]
+
+    rules = [
+        "key:1|macro:value", "key:2",
+        "macro:name", "macro:desc",
+        "ref:%(table_name)s.id" % {"table_name": content_2.__name__}, "len:10",
+        "range:0-500", "source:.",
+        "unique", "not_empty",
+        "not_empty|struct:[range:50-500]",
+        "struct:[(ref:%(table_name)s.id|unique,range:50-500)]" % {"table_name": content_2.__name__}
+    ]
     body = [
-        [1, 9, "key_1", "desc_1", 100, "abc", 0, "test_rule.py", 1, 1],
-        [2, 8, "key_2", "desc_2", 200, "abcd", 500, "__init__.py", 2, 2],
-        [3, 7, "key_3", "desc_3", 300, "abcde", 255, ".pytest_cache/README.md", 3, 3],
-        [4, 6, "key_4", "desc_4", 400, "abcdef", 123, ".pytest_cache/v/cache/stepwise", 4, 4],
-        [5, 5, "", "", "", "", "", "", "", 6], ]
+        [1, 9, "key_1", "desc_1", 100, "abc", 0, "test_rule.py", 1, 1,
+         "[50,60,70,80,90,100]", "[(100,50),(200,50),(300,50)]"],
+
+        [2, 8, "key_2", "desc_2", 200, "abcd", 500, "__init__.py", 2, 2,
+         "[100,110,120,130,140,150]", "[(400,50),(500,50),(600,50)]"],
+
+        [3, 7, "key_3", "desc_3", 300, "abcde", 255, ".pytest_cache/README.md", 3, 3,
+         "[50,60,70,80,90,100]", "[(100,50),(200,50)]"],
+
+        [4, 6, "key_4", "desc_4", 400, "abcdef", 123, ".pytest_cache/v/cache/stepwise", 4, 4,
+         "[100,110,120,130,140,150]", "[(300,50)]"],
+
+        [5, 5, "", "", "", "", "", "", "", 6, "[]", ""]
+    ]
     return [fields, types, rules] + body
 
 
@@ -162,7 +192,7 @@ def test_len_rule():
 
 
 def test_range_rule():
-    heads = [["test_range"], ["int"], ["range:10,50"]]
+    heads = [["test_range"], ["str"], ["range:10,50"]]
     body = [["10"]]
     exception_verity(heads + body)
 
@@ -202,6 +232,13 @@ def test_not_empty_rule():
 
 
 def test_struct_rule():
+    heads = [["test_struct"], ["iter"], ["struct:[range:50-500]"]]
+    body = [
+        ["[50,60,70,80,90,100]"],
+        ["[200,300,400,500,600]"],
+    ]
+    exception_verity(heads + body)
+
     kwargs = table_args()
     with pytest.raises(Exception) as err:
         obj1 = Container("", False, "", "", **kwargs)

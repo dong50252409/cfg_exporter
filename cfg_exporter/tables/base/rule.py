@@ -120,9 +120,17 @@ class LenRule(BaseRule):
 
     def verify(self, data_list):
         for row_nun, data in enumerate(data_list):
-            if data is not None and len(data) > self._value:
-                err = "data:`%(data)s` exceeds the length limit" % {"data": data}
-                self._raise_body_error(row_nun, err)
+            try:
+                if data is not None and len(data) > self._value:
+                    err = "data:`%(data)s` exceeds the length limit" % {"data": data}
+                    self._raise_body_error(row_nun, err)
+            except TypeError:
+                err = "data_type:`%(data_type)s` is not match\n" \
+                      "supported data types [%(support_data_type)s]" % {
+                          "data_type": type(data).__name__,
+                          "support_data_type": ",".join([DataType.str.name, DataType.iter.name])
+                      }
+                self._raise_rule_error(err)
 
 
 class RangeRule(BaseRule):
@@ -137,9 +145,17 @@ class RangeRule(BaseRule):
 
     def verify(self, data_list):
         for row_nun, data in enumerate(data_list):
-            if data is not None and not (self._value[0] <= data <= self._value[1]):
-                err = "data:`%(data)s` is out of range" % {"data": data}
-                self._raise_body_error(row_nun, err)
+            try:
+                if data is not None and not (self._value[0] <= data <= self._value[1]):
+                    err = "data:`%(data)s` is out of range" % {"data": data}
+                    self._raise_body_error(row_nun, err)
+            except TypeError:
+                err = "data_type:`%(data_type)s` is not match\n" \
+                      "supported data types [%(support_data_type)s]" % {
+                          "data_type": type(data).__name__,
+                          "support_data_type": ",".join([DataType.str.name, DataType.iter.name])
+                      }
+                self._raise_rule_error(err)
 
 
 class SourceRule(BaseRule):
@@ -186,15 +202,16 @@ class StructRule(BaseRule):
         self._value = rules
 
     def verify(self, data_list):
-        self.__verify(data_list, self._value)
+        for rows in data_list:
+            if rows is not None:
+                self.__verify(rows, self._value)
 
     def __verify(self, data_list, rules):
         for index, rule_group in enumerate(rules):
             if isinstance(rule_group, list):
-                for rows in data_list:
-                    self.__verify(rows, rule_group)
+                self.__verify(data_list, rule_group)
             elif isinstance(rule_group, tuple):
-                child_data_list = iter([data[index] for data in data_list])
+                child_data_list = iter([d[index] for d in data_list]) if len(rules) > 1 else iter(data_list)
                 for rule in rule_group:
                     if isinstance(rule, BaseRule):
                         rule.verify(copy(child_data_list))
@@ -291,14 +308,11 @@ def parse_rules(column_obj, rule_str):
             rule_obj = create_rule_obj(column_obj, each_rule)
             rules.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            err = "%(data_type_row_num)s:%(column_num)s data_type:`%(data_type)s` is not match " \
-                  "or %(rule_row_num)s:%(column_num)s rule:`%(rule)s` formal error" % {
-                      "data_type_row_num": column_obj.table_obj.real_data_type_row_num,
-                      "rule_row_num": column_obj.table_obj.real_rule_row_num,
-                      "column_num": column_obj.real_column_num,
-                      "rule": each_rule,
-                      "data_type": column_obj.data_type.name
-                  }
+            err = "%(row_num)s:%(column_num)s rule:`%(rule)s` formal error" % {
+                "row_num": column_obj.table_obj.real_rule_row_num,
+                "column_num": column_obj.real_column_num,
+                "rule": each_rule,
+            }
             raise RuleException(err)
     return rules
 

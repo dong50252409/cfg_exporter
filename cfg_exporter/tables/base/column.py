@@ -94,18 +94,18 @@ class Column(object):
     def data_list(self, rows):
         for row_num, row in enumerate(rows):
             if row[self.__column_num]:
-                if self.__data_type.value is Iterable:
-                    try:
+                try:
+                    if self.__data_type.value is Iterable:
                         data = eval(row[self.__column_num])
                         assert isinstance(data, self.__data_type.value)
-                    except (SyntaxError, NameError, AssertionError):
-                        err = "%(row_num)s:%(column_num)s incorrect data" % {
-                            "row_num": self.table_obj.real_body_row_num + row_num,
-                            "column_num": self.real_column_num
-                        }
-                        raise ColumnException(err)
-                else:
-                    data = self.__data_type.value(row[self.__column_num])
+                    else:
+                        data = self.__data_type.value(row[self.__column_num])
+                except (SyntaxError, NameError, AssertionError, ValueError):
+                    err = "%(row_num)s:%(column_num)s incorrect data or data type" % {
+                        "row_num": self.table_obj.real_body_row_num + row_num,
+                        "column_num": self.real_column_num
+                    }
+                    raise ColumnException(err)
                 self.__data_list.append(data)
             else:
                 self.__data_list.append(None)
