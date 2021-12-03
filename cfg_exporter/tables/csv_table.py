@@ -7,7 +7,7 @@ class CSVTable(Table):
         super().__init__(container, file, **kwargs)
         self.__encoding = kwargs["csv_encoding"]
 
-    def load_column(self):
+    def load_table(self):
         with open(self.full_filename, "r", encoding=self.__encoding) as f:
             rows = list(csv.reader(f))
-        super()._load_column(rows)
+        super()._load_table(rows)

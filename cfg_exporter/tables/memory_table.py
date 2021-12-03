@@ -6,5 +6,5 @@ class MemoryTable(Table):
         super().__init__(container, file, **kwargs)
         self.__data_rows = kwargs["data_rows"]
 
-    def load_column(self):
-        super()._load_column(self.__data_rows)
+    def load_table(self):
+        super()._load_table(self.__data_rows)

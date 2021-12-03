@@ -45,11 +45,11 @@ class Container(object):
     def verify_table(self):
         for _, table_obj, in self.__cfg_dict.items():
             if not table_obj.is_load:
-                table_obj.load_column()
+                table_obj.load_table()
             table_obj.verify()
 
     def export_table(self):
         for source, table_obj, in self.__cfg_dict.items():
             if not table_obj.is_load:
-                table_obj.load_column()
+                table_obj.load_table()
             table_obj.export()

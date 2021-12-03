@@ -5,14 +5,19 @@ from cfg_exporter.const import DataType
 
 
 class BaseRule(object):
-    def __init__(self, column_obj, rule_str):
-        self._column_obj = column_obj
+    def __init__(self, table_obj, column_num, rule_str):
+        self._table_obj = table_obj
+        self._column_num = column_num
         self._rule_str = rule_str
         self._value = None
 
     @property
-    def column_obj(self):
-        return self._column_obj
+    def table_obj(self):
+        return self.table_obj
+
+    @property
+    def column_num(self):
+        return self._column_num
 
     @property
     def value(self):
@@ -26,18 +31,13 @@ class BaseRule(object):
         pass
 
     def _raise_rule_error(self, error):
-        err = "%(row_num)s:%(column_num)s rule:`%(rule)s` %(error)s" % {
-            "row_num": self._column_obj.table_obj.real_rule_row_num,
-            "column_num": self._column_obj.real_column_num,
-            "rule": self._rule_str,
-            "error": error
-        }
-        raise RuleException(err)
+        err = "rule:`%(rule)s` %(error)s" % {"rule": self._rule_str, "error": error}
+        raise err
 
     def _raise_body_error(self, row_num, error):
         err = "%(row_num)s:%(column_num)s rule:`%(rule)s` %(error)s" % {
-            "row_num": self._column_obj.table_obj.real_body_row_num + row_num,
-            "column_num": self._column_obj.real_column_num,
+            "row_num": self._table_obj.real_body_row_num + row_num,
+            "column_num": self._column_num + 1,
             "rule": self._rule_str,
             "error": error
         }
@@ -46,23 +46,23 @@ class BaseRule(object):
 
 class KeyRule(BaseRule):
 
-    def __init__(self, column_obj, rule_str):
-        super().__init__(column_obj, rule_str)
+    def __init__(self, table_obj, column_num, rule_str):
+        super().__init__(table_obj, column_num, rule_str)
 
     @BaseRule.value.setter
     def value(self, clause):
         key_num = int(clause)
-        global_key_rule = self._column_obj.table_obj.global_rules.get(self.__class__.__name__, GlobalKeyRule())
+        global_key_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalKeyRule())
 
         if key_num in global_key_rule.values:
             err = "already defined at %(def_row_num)s:%(def_column_num)s" % {
-                "def_row_num": self._column_obj.table_obj.real_rule_row_num,
+                "def_row_num": self._table_obj.real_rule_row_num,
                 "def_column_num": global_key_rule.values[key_num] + 1
             }
             self._raise_rule_error(err)
 
-        global_key_rule.values[key_num] = self._column_obj.column_num
-        self._column_obj.table_obj.global_rules[self.__class__.__name__] = global_key_rule
+        global_key_rule.values[key_num] = self._column_num
+        self._table_obj.global_rules[self.__class__.__name__] = global_key_rule
         self._value = key_num
 
 
@@ -73,17 +73,17 @@ class MacroRule(BaseRule):
         if clause not in MacroType.__members__:
             self._raise_rule_error("is not exist")
 
-        global_macro_rule = self._column_obj.table_obj.global_rules.get(self.__class__.__name__, GlobalMacroRule())
+        global_macro_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalMacroRule())
 
         if MacroType[clause] in global_macro_rule.values:
             err = "already defined at %(def_row_num)s:%(def_column_num)s" % {
-                "def_row_num": self._column_obj.table_obj.real_rule_row_num,
+                "def_row_num": self._table_obj.real_rule_row_num,
                 "def_column_num": global_macro_rule.values[MacroType[clause]] + 1
             }
             self._raise_rule_error(err)
 
-        global_macro_rule.values[MacroType[clause]] = self._column_obj.column_num
-        self._column_obj.table_obj.global_rules[self.__class__.__name__] = global_macro_rule
+        global_macro_rule.values[MacroType[clause]] = self._column_num
+        self._table_obj.global_rules[self.__class__.__name__] = global_macro_rule
         self._value = MacroType[clause]
 
 
@@ -95,7 +95,7 @@ class RefRule(BaseRule):
         self._value = (table_name, table_field)
 
     def verify(self, data_list):
-        ref_table_obj = self._column_obj.table_obj.get_table_obj(self._value[0])
+        ref_table_obj = self._table_obj.get_table_obj(self._value[0])
         if ref_table_obj:
             ref_column_obj = ref_table_obj.columns_by_field.get(self._value[1], None)
             if ref_column_obj:
@@ -180,8 +180,8 @@ class UniqueRule(BaseRule):
             if data in d:
                 err = "data:`%(data)s` is not unique already defined at %(row_num)s:%(column_num)s" % {
                     "data": data,
-                    "row_num": self._column_obj.table_obj.real_body_row_num + d[data],
-                    "column_num": self._column_obj.real_column_num
+                    "row_num": self._table_obj.real_body_row_num + d[data],
+                    "column_num": self._column_num + 1
                 }
                 self._raise_body_error(row_nun, err)
             d[data] = row_nun
@@ -198,7 +198,7 @@ class StructRule(BaseRule):
 
     @BaseRule.value.setter
     def value(self, clause):
-        rules, _ = parse_struct_clause(self._column_obj, clause)
+        rules, _ = parse_struct_clause(self._table_obj, self._column_num, clause)
         self._value = rules
 
     def verify(self, data_list):
@@ -261,7 +261,7 @@ class GlobalMacroRule(GlobalRule):
 
         column_num = self._values[MacroType.name]
         column_obj = table_obj.columns[column_num]
-        if column_obj.data_type is not DataType.str:
+        if column_obj.convert_data_type is not DataType.str:
             err = "%(row_num)s:%(column_num)s rule:`macro:name` data type is not `str`" % {
                 "row_num": table_obj.real_rule_row_num,
                 "column_num": column_num + 1
@@ -291,30 +291,26 @@ class RuleException(Exception):
         return self.err
 
 
-def create_rule_obj(column_obj, rule_str):
+def create_rule_obj(table_obj, column_num, rule_str):
     # 规则条件有两种类型 tag、tag:clause
     tag_and_clause = rule_str.split(":", 1)
     assert len(tag_and_clause) <= 2
     cls = RuleType[tag_and_clause[0]].value
-    rule_obj = type(cls.__name__, (cls,), dict())(column_obj, rule_str)
+    rule_obj = type(cls.__name__, (cls,), dict())(table_obj, column_num, rule_str)
     rule_obj.value = tag_and_clause[-1]
     return rule_obj
 
 
-def parse_rules(column_obj, rule_str):
-    rules = []
-    for each_rule in iter_rule(rule_str):
+def parse_rules(table_obj, column_num, rules):
+    rule_list = []
+    for each_rule in iter_rule(rules):
         try:
-            rule_obj = create_rule_obj(column_obj, each_rule)
-            rules.append(rule_obj)
+            rule_obj = create_rule_obj(table_obj, column_num, each_rule)
+            rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            err = "%(row_num)s:%(column_num)s rule:`%(rule)s` formal error" % {
-                "row_num": column_obj.table_obj.real_rule_row_num,
-                "column_num": column_obj.real_column_num,
-                "rule": each_rule,
-            }
-            raise RuleException(err)
-    return rules
+            err = "rule:`%(rule)s` formal error" % {"rule": each_rule}
+            raise err
+    return rule_list
 
 
 def iter_rule(rules):
@@ -354,13 +350,13 @@ def find_other_last_position(clause):
     return index
 
 
-def parse_struct_clause(column_obj, clause, index=0, rules=None):
+def parse_struct_clause(table_obj, column_num, clause, index=0, rules=None):
     clause_len = len(clause)
     while index < clause_len:
         c = clause[index]
         if c == "[" or c == "(":
             index += 1
-            child_rules, last_index = parse_struct_clause(column_obj, clause, index, [])
+            child_rules, last_index = parse_struct_clause(table_obj, column_num, clause, index, [])
             if rules is None:
                 rules = child_rules
             else:
@@ -372,22 +368,22 @@ def parse_struct_clause(column_obj, clause, index=0, rules=None):
         elif c == ",":
             index += 1
         else:
-            child_rules, last_index = parse_struct_clause_1(column_obj, clause[index:])
+            child_rules, last_index = parse_struct_clause_1(table_obj, column_num, clause[index:])
             rules.append(child_rules)
             index += last_index
     return rules, index
 
 
-def parse_struct_clause_1(column_obj, clause):
+def parse_struct_clause_1(table_obj, column_num, clause):
     rules, start_index, last_index, clause_str = [], 0, 0, len(clause)
     while last_index < clause_str:
         c = clause[last_index]
         if c == "|":
-            rule_obj = create_rule_obj(column_obj, clause[start_index:last_index])
+            rule_obj = create_rule_obj(table_obj, column_num, clause[start_index:last_index])
             rules.append(rule_obj)
             start_index = last_index + 1
         elif c == "," or c == "]" or c == ")":
-            rule_obj = create_rule_obj(column_obj, clause[start_index:last_index])
+            rule_obj = create_rule_obj(table_obj, column_num, clause[start_index:last_index])
             rules.append(rule_obj)
             return tuple(rules), last_index
         last_index += 1

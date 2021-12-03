@@ -7,8 +7,8 @@ class XLSXTable(Table):
         super().__init__(container, file, **kwargs)
         self.__default_sheet = kwargs["default_sheet"]
 
-    def load_column(self):
+    def load_table(self):
         book = openpyxl.load_workbook(self.full_filename, read_only=True, data_only=True)
         sheet = book[book.sheetnames[self.__default_sheet - 1]]
         rows = list(sheet.iter_rows(values_only=True))
-        super()._load_column(rows)
+        super()._load_table(rows)
