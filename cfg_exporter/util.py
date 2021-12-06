@@ -7,3 +7,8 @@ def trim(s):
     if s is None:
         return ""
     return re.sub(re_compile, "", s).lower()
+
+
+__all__ = (
+    "trim"
+)

@@ -29,7 +29,7 @@ class Container(object):
         if table_name in self.__cfg_dict:
             table_obj = self.__cfg_dict[table_name]
             if not table_obj.is_load:
-                table_obj.load_column()
+                table_obj.load_table()
             return table_obj
         return None
 

@@ -1,12 +1,9 @@
 import os
-from typing import Iterable
-
 import cfg_exporter.util as util
+from typing import Iterable
 from itertools import zip_longest
-
 from cfg_exporter.const import DataType
-from cfg_exporter.tables.base.column import Column, ColumnException
-from cfg_exporter.tables.base.rule import RuleException, parse_rules
+from cfg_exporter.tables.base.rule import parse_rules, RuleException
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
@@ -53,12 +50,13 @@ class Table(object):
                     for col_num, rows in enumerate(data_list):
                         data = convert_data(self.column_data_type(index), rows[index])
                         self.__table[DATA_INDEX][col_num].append(data)
-                except (TypeError,) as e:
+                except (RuleException, DataException) as e:
                     err = "%(row_num)s:%(column_num)s %(err)s" % {
                         "row_num": self.__type_row + 1, "column_num": index + 1,
                         "err": e.err
                     }
                     raise TableException(err)
+        self.__is_load = True
 
     def get_table_obj(self, full_filename):
         return self.__container_obj.get_table_obj(full_filename)
@@ -127,7 +125,16 @@ class Table(object):
     def column_description(self, column_num):
         return self.__table[DESC_INDEX][column_num]
 
-    def column_data_list(self, column_num):
+    def column_data_iter(self, column_num):
+        for row in self.__table[DATA_INDEX]:
+            yield row[column_num]
+
+    def column_data_iter_by_field(self, field_name):
+        if field_name in self.__table[FIELD_NAME_INDEX]:
+            column_num = self.__table[FIELD_NAME_INDEX].index(field_name)
+            return self.__column_data_iter_by_field(column_num)
+
+    def __column_data_iter_by_field(self, column_num):
         for row in self.__table[DATA_INDEX]:
             yield row[column_num]
 
@@ -143,10 +150,10 @@ class Table(object):
         try:
             for col_num, rules in enumerate(self.__table[RULE_INDEX]):
                 for rule in rules:
-                    rule.verify(self.column_data_list(col_num))
+                    rule.verify(self.column_data_iter(col_num))
             for global_rule in self.__global_rules.values():
                 global_rule.verify(self)
-        except (ColumnException, RuleException) as e:
+        except RuleException as e:
             err = "table:`%(table_name)s` %(error)s" % {"table_name": self.table_name, "error": e.err}
             raise TableException(err)
 
@@ -204,4 +211,13 @@ def convert_data(data_type, row):
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError):
-        raise "incorrect data or data type"
+        raise DataException("incorrect data or data type")
+
+
+class DataException(Exception):
+    def __init__(self, err):
+        super().__init__(self)
+        self.err = err
+
+    def __str__(self):
+        return self.err

@@ -1,6 +1,6 @@
 import os
-from copy import copy
 from enum import Enum
+from typing import Sized
 from cfg_exporter.const import DataType
 
 
@@ -27,12 +27,12 @@ class BaseRule(object):
     def value(self, clause):
         self._value = clause
 
-    def verify(self, _data_list):
+    def verify(self, _column_data_iter):
         pass
 
     def _raise_rule_error(self, error):
         err = "rule:`%(rule)s` %(error)s" % {"rule": self._rule_str, "error": error}
-        raise err
+        raise RuleException(err)
 
     def _raise_body_error(self, row_num, error):
         err = "%(row_num)s:%(column_num)s rule:`%(rule)s` %(error)s" % {
@@ -94,22 +94,25 @@ class RefRule(BaseRule):
         table_name, table_field = clause.split(".")
         self._value = (table_name, table_field)
 
-    def verify(self, data_list):
+    def verify(self, column_data_iter):
         ref_table_obj = self._table_obj.get_table_obj(self._value[0])
-        if ref_table_obj:
-            ref_column_obj = ref_table_obj.columns_by_field.get(self._value[1], None)
-            if ref_column_obj:
-                data_set = set(ref_column_obj.data_list)
-                for row_nun, data in enumerate(data_list):
-                    if data is not None and data not in data_set:
-                        err = "data:`%(data)s` reference is not exist" % {"data": data}
-                        self._raise_body_error(row_nun, err)
-            else:
-                err = "field:`%(field)s` is not exist" % {"field": self._value[1]}
-                self._raise_rule_error(err)
-        else:
+        if ref_table_obj is None:
             err = "table:`%(table)s` is not exist" % {"table": self._value[0]}
             self._raise_rule_error(err)
+
+        ref_column_data_iter = ref_table_obj.column_data_iter_by_field(self._value[1])
+        if ref_column_data_iter is None:
+            err = "field:`%(field)s` is not exist" % {"field": self._value[1]}
+            self._raise_rule_error(err)
+
+        data_set = set(ref_column_data_iter)
+        for row_nun, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if data not in data_set:
+                err = "data:`%(data)s` reference is not exist" % {"data": data}
+                self._raise_body_error(row_nun, err)
 
 
 class LenRule(BaseRule):
@@ -118,19 +121,18 @@ class LenRule(BaseRule):
     def value(self, clause):
         self._value = int(clause)
 
-    def verify(self, data_list):
-        for row_nun, data in enumerate(data_list):
-            try:
-                if data is not None and len(data) > self._value:
-                    err = "data:`%(data)s` exceeds the length limit" % {"data": data}
-                    self._raise_body_error(row_nun, err)
-            except TypeError:
-                err = "data_type:`%(data_type)s` is not match\n" \
-                      "supported data types [%(support_data_type)s]" % {
-                          "data_type": type(data).__name__,
-                          "support_data_type": ",".join([DataType.str.name, DataType.iter.name])
-                      }
+    def verify(self, column_data_iter):
+        for row_nun, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if not isinstance(data, Sized):
+                err = "data:`%(data)s` the data type is not `Sized`" % {"data": data}
                 self._raise_rule_error(err)
+
+            if len(data) > self._value:
+                err = "data:`%(data)s` exceeds the length limit" % {"data": data}
+                self._raise_body_error(row_nun, err)
 
 
 class RangeRule(BaseRule):
@@ -143,19 +145,20 @@ class RangeRule(BaseRule):
         assert min_num <= max_num
         self._value = (min_num, max_num)
 
-    def verify(self, data_list):
-        for row_nun, data in enumerate(data_list):
-            try:
-                if data is not None and not (self._value[0] <= data <= self._value[1]):
+    def verify(self, column_data_iter):
+        for row_nun, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if type(data) in (int, float):
+                if not (self._value[0] <= data <= self._value[1]):
                     err = "data:`%(data)s` is out of range" % {"data": data}
                     self._raise_body_error(row_nun, err)
-            except TypeError:
-                err = "data_type:`%(data_type)s` is not match\n" \
-                      "supported data types [%(support_data_type)s]" % {
-                          "data_type": type(data).__name__,
-                          "support_data_type": ",".join([DataType.str.name, DataType.iter.name])
-                      }
-                self._raise_rule_error(err)
+
+            elif isinstance(data, Sized):
+                if not (self._value[0] <= len(data) <= self._value[1]):
+                    err = "data:`%(data)s` is out of range" % {"data": data}
+                    self._raise_body_error(row_nun, err)
 
 
 class SourceRule(BaseRule):
@@ -164,19 +167,23 @@ class SourceRule(BaseRule):
     def value(self, clause):
         self._value = clause
 
-    def verify(self, data_list):
-        for row_nun, data in enumerate(data_list):
-            if data is not None and not os.path.exists(os.path.join(self._value, data)):
+    def verify(self, column_data_iter):
+        for row_nun, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if not os.path.exists(os.path.join(self._value, data)):
                 err = "data:`%(data)s` path not found" % {"data": data}
                 self._raise_body_error(row_nun, err)
 
 
 class UniqueRule(BaseRule):
-    def verify(self, data_list):
+    def verify(self, column_data_iter):
         d = {}
-        for row_nun, data in enumerate(data_list):
+        for row_nun, data in enumerate(column_data_iter):
             if data is None:
                 continue
+
             if data in d:
                 err = "data:`%(data)s` is not unique already defined at %(row_num)s:%(column_num)s" % {
                     "data": data,
@@ -188,8 +195,8 @@ class UniqueRule(BaseRule):
 
 
 class NotEmptyRule(BaseRule):
-    def verify(self, data_list):
-        for row_nun, data in enumerate(data_list):
+    def verify(self, column_data_iter):
+        for row_nun, data in enumerate(column_data_iter):
             if data is None:
                 self._raise_body_error(row_nun, "data is empty")
 
@@ -201,20 +208,28 @@ class StructRule(BaseRule):
         rules, _ = parse_struct_clause(self._table_obj, self._column_num, clause)
         self._value = rules
 
-    def verify(self, data_list):
-        for rows in data_list:
-            if rows is not None:
-                self.__verify(rows, self._value)
+    def verify(self, column_data_iter):
+        for data in column_data_iter:
+            if data is not None:
+                self.__verify(data, self._value)
 
-    def __verify(self, data_list, rules):
+    def __verify(self, cell_data, rules):
         for index, rule_group in enumerate(rules):
             if isinstance(rule_group, list):
-                self.__verify(data_list, rule_group)
+                self.__verify(cell_data, rule_group)
             elif isinstance(rule_group, tuple):
-                child_data_list = iter([d[index] for d in data_list]) if len(rules) > 1 else iter(data_list)
                 for rule in rule_group:
                     if isinstance(rule, BaseRule):
-                        rule.verify(copy(child_data_list))
+                        if len(rules) > 1:
+                            child_column_data_iter = self.__child_column_data_iter(cell_data, index)
+                        else:
+                            child_column_data_iter = cell_data
+                        rule.verify(child_column_data_iter)
+
+    @staticmethod
+    def __child_column_data_iter(cell_data, index):
+        for data in cell_data:
+            yield data[index]
 
 
 class GlobalRule(object):
@@ -232,9 +247,9 @@ class GlobalRule(object):
 class GlobalKeyRule(GlobalRule):
     def verify(self, table_obj):
         column_num_list = sorted(self._values.values())
-        data_lists = [table_obj.columns[col_num].data_list for col_num in column_num_list]
+        column_data_iter_list = [table_obj.column_data_iter(col_num) for col_num in column_num_list]
         key_set = set()
-        for row_nun, data in enumerate(zip(*data_lists)):
+        for row_nun, data in enumerate(zip(*column_data_iter_list)):
             for col_num, d in enumerate(data):
                 if d is None:
                     err = "%(row_num)s:%(column_num)s primary key is empty" % {
@@ -242,6 +257,7 @@ class GlobalKeyRule(GlobalRule):
                         "column_num": column_num_list[col_num] + 1
                     }
                     raise RuleException(err)
+
             if data in key_set:
                 err = "%(row_num)s:%(column_num)s primary key repeat" % {
                     "row_num": table_obj.real_body_row_num + row_nun,
@@ -260,8 +276,8 @@ class GlobalMacroRule(GlobalRule):
             raise RuleException("rule:`macro:value` is not exist")
 
         column_num = self._values[MacroType.name]
-        column_obj = table_obj.columns[column_num]
-        if column_obj.convert_data_type is not DataType.str:
+        data_type = table_obj.column_data_type(column_num)
+        if data_type is not DataType.str:
             err = "%(row_num)s:%(column_num)s rule:`macro:name` data type is not `str`" % {
                 "row_num": table_obj.real_rule_row_num,
                 "column_num": column_num + 1
@@ -269,9 +285,11 @@ class GlobalMacroRule(GlobalRule):
             raise RuleException(err)
 
         macro_name_set = set()
-        for row_nun, data in enumerate(column_obj.data_list):
+        column_data_iter = table_obj.column_data_iter(column_num)
+        for row_nun, data in enumerate(column_data_iter):
             if data is None:
                 continue
+
             if data in macro_name_set:
                 err = "%(row_num)s:%(column_num)s macro name repeat" % {
                     "row_num": table_obj.real_body_row_num + row_nun,
@@ -309,7 +327,7 @@ def parse_rules(table_obj, column_num, rules):
             rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
             err = "rule:`%(rule)s` formal error" % {"rule": each_rule}
-            raise err
+            raise RuleException(err)
     return rule_list
 
 
@@ -390,6 +408,11 @@ def parse_struct_clause_1(table_obj, column_num, clause):
 
 
 ###############################
+# 宏定义标记类型定义
+###############################
+MacroType = Enum("MacroType", ("name", "value", "desc"))
+
+###############################
 # 规则标记类型定义
 ###############################
 RuleType = Enum("RuleType", {
@@ -397,8 +420,3 @@ RuleType = Enum("RuleType", {
     "len": LenRule, "range": RangeRule, "source": SourceRule,
     "unique": UniqueRule, "not_empty": NotEmptyRule, "struct": StructRule
 })
-
-###############################
-# 宏定义标记类型定义
-###############################
-MacroType = Enum("MacroType", ("name", "value", "desc"))
