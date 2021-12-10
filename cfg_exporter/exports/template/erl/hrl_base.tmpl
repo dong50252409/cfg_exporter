@@ -5,7 +5,7 @@
 -ifndef(@{prefix.upper()}@{table_obj.table_name.upper()}_HRL).
 -define(@{prefix.upper()}@{table_obj.table_name.upper()}_HRL, true).
 -record(@{prefix}@{table_obj.table_name}, {
-    @{",\n    ".join(table_obj.field_names)}
+    @{',\n    '.join(table_obj.field_names)}
 }).
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
 -define(@{macro_name.upper()}, @{format_value(macro_value)}).@{macro_desc and '    %s %s' % ('%', macro_desc) or ''}

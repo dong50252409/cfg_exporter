@@ -7,23 +7,23 @@
 -include("@{prefix}@{table_obj.table_name}.hrl").
 
 @for row in table_obj.data_iter:
-get(@{", ".join([str(row[col_num]) for col_num in table_obj.key_columns])}) ->
+get(@{', '.join([str(row[col_num]) for col_num in table_obj.key_columns])}) ->
     #@{prefix}@{table_obj.table_name}{
-        @{",\n        ".join(["%s = %s" % (field_name, format_value(data))  for field_name, data in zip(table_obj.field_names, row)])}
+        @{',\n        '.join(['%s = %s' % (field_name, format_value(data))  for field_name, data in zip(table_obj.field_names, row)])}
     };
 @end
-get(@{", ".join(['_' for _ in table_obj.key_columns])}) ->
+get(@{', '.join(['_' for _ in table_obj.key_columns])}) ->
     undefined.
 
 @if len(table_obj.key_columns) > 1:
 list() ->
     [
-        @{",\n        ".join([format_value(tuple(keys)) for keys in table_obj.key_data_iter])}
+        @{',\n        '.join([format_value(tuple(keys)) for keys in table_obj.key_data_iter])}
     ].
 @else:
 list() ->
     [
-        @{",\n        ".join([format_value(keys[0]) for keys in table_obj.key_data_iter])}
+        @{',\n        '.join([format_value(keys[0]) for keys in table_obj.key_data_iter])}
     ].
 @end
 

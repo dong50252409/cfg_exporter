@@ -2,6 +2,11 @@ from enum import Enum
 from typing import Iterable
 
 ###############################
+# 模板扩展名
+###############################
+TEMPLATE_EXTENSION = 'tmpl'
+
+###############################
 # 支持的数据类型定义
 ###############################
 DataType = Enum("DataType", {"int": int, "float": float, "str": str, "iter": Iterable})

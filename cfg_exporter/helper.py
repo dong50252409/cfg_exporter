@@ -1,7 +1,7 @@
 import os
 from argparse import RawTextHelpFormatter, ArgumentTypeError, ArgumentParser
 
-from cfg_exporter.const import ExportType, ExtensionType
+from cfg_exporter.const import ExportType, ExtensionType, TEMPLATE_EXTENSION
 
 
 def valid_source(source):
@@ -66,6 +66,18 @@ base_group.add_argument('-t', '--export_type',
                         type=valid_export,
                         metavar=f'[{",".join(ExportType.__members__.keys())}]',
                         help='specify the configuration table export type.')
+
+base_group.add_argument('--template_path',
+                        help='specify the extension template path.\n'
+                             f'the template name consists of the table name, export type, '
+                             f'and {TEMPLATE_EXTENSION} extension\n'
+                             'e.g:\n'
+                             f'`item.erl.{TEMPLATE_EXTENSION}` `item.lua.{TEMPLATE_EXTENSION}` ...\n'
+                             'loads the template based on the specified export type\n'
+                             'e.g\n'
+                             f'`--export_type erl` templates ending with `.erl.{TEMPLATE_EXTENSION}` '
+                             f'and `.hrl.{TEMPLATE_EXTENSION}` will be loaded\n'
+                             f'`--export_type lua` templates ending with `.lua.{TEMPLATE_EXTENSION}` will be loaded')
 
 table_group = parser.add_argument_group(title='table options:')
 

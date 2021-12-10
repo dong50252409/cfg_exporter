@@ -205,12 +205,6 @@ class Table(object):
         except RuleException as e:
             raise TableException(f'table:`{self.table_name}` {e.err}')
 
-    def export(self):
-        cls = self.args.export_type.value
-        export_obj = type(cls.__name__, (cls,), dict())(self, self.args)
-        export_obj.export()
-        pass
-
 
 class TableException(Exception):
     def __init__(self, err):
