@@ -1,44 +1,60 @@
+import itertools
 import os
-import cfg_exporter.util as util
+from abc import abstractmethod
 from typing import Iterable
-from itertools import zip_longest
+
+import cfg_exporter.util as util
+import cfg_exporter.tables.base.rule as rule
 from cfg_exporter.const import DataType
-from cfg_exporter.tables.base.rule import parse_rules, RuleException
+from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, MacroType
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
 
 class Table(object):
-    def __init__(self, container_obj, filename, **kwargs):
+    def __init__(self, container_obj, filename, args):
         self.__container_obj = container_obj
         self.__full_filename = os.path.abspath(filename)
-        self.__field_row = kwargs["field_row"] - 1
-        self.__type_row = kwargs["type_row"] - 1
-        self.__rule_row = None
-        if "rule_row" in kwargs:
-            self.__rule_row = kwargs["rule_row"] - 1
-        self.__desc_row = None
-        if "desc_row" in kwargs:
-            self.__desc_row = kwargs["desc_row"] - 1
-        self.__body_row = kwargs["body_row"] - 1
+        self.args = args
+        self.__parse_args()
+        self.__table = [[], [], [], [], []]
+        self.__key_columns = []
         self.__global_rules = {}
-        self.__table = [
-            [],  # field_list
-            [],  # data_type_list
-            [],  # rule_list
-            [],  # desc_list
-            []  # data_list
-        ]
         self.__is_load = False
+
+    def __parse_args(self):
+        self.__field_row = self.args.field_row - 1
+        self.__type_row = self.args.type_row - 1
+        self.__rule_row = self.args.rule_row - 1 if 'rule_row' in self.args else None
+        self.__desc_row = self.args.desc_row - 1 if 'desc_row' in self.args else None
+        self.__data_row = self.args.data_row - 1
+        try:
+            assert self.__data_row == max(
+                self.__data_row,
+                self.__field_row,
+                self.__type_row,
+                self.__rule_row if self.__rule_row else 0,
+                self.__desc_row if self.__desc_row else 0
+            )
+        except AssertionError:
+            raise TableException('the data row line is not at the bottom')
+
+    @abstractmethod
+    def load_table(self):
+        ...
 
     def _load_table(self, rows):
         field_list = rows[self.__field_row]
         data_type_list = rows[self.__type_row]
         rule_list = rows[self.__rule_row] if self.__rule_row is not None else []
         desc_list = rows[self.__desc_row] if self.__desc_row is not None else []
-        data_list = rows[self.__body_row:]
-        self.__table[4].extend([[] for _ in range(len(data_list))])
-        zip_iter = zip_longest(field_list, data_type_list, rule_list, desc_list)
+        data_list = rows[self.__data_row:]
+
+        self.__row_count = len(data_list)
+        self.__column_count = len(self.__table[FIELD_NAME_INDEX])
+        self.__table[DATA_INDEX].extend([[] for _ in range(self.__row_count)])
+
+        zip_iter = itertools.zip_longest(field_list, data_type_list, rule_list, desc_list)
         for index, (field_name, data_type, rules, desc) in enumerate(zip_iter):
             field_name = util.trim(field_name)
             if field_name:
@@ -48,14 +64,14 @@ class Table(object):
                     self.__table[RULE_INDEX].append(convert_rules(self, index, rules))
                     self.__table[DESC_INDEX].append(convert_desc(desc))
                     for col_num, rows in enumerate(data_list):
-                        data = convert_data(self.column_data_type(index), rows[index])
+                        data = convert_data(self.data_type_by_column_num(index), rows[index])
                         self.__table[DATA_INDEX][col_num].append(data)
                 except (RuleException, DataException) as e:
-                    err = "%(row_num)s:%(column_num)s %(err)s" % {
-                        "row_num": self.__type_row + 1, "column_num": index + 1,
-                        "err": e.err
-                    }
-                    raise TableException(err)
+                    raise TableException(f'{self.__type_row + 1}:{index + 1} {e.err}')
+
+        if KeyRule.__name__ in self.__global_rules:
+            self.__key_columns = [col_num for _, col_num in
+                                  sorted(self.__global_rules[KeyRule.__name__].values.items())]
         self.__is_load = True
 
     def get_table_obj(self, full_filename):
@@ -75,72 +91,105 @@ class Table(object):
 
     @property
     def field_name_row_num(self):
-        return self.__field_row
-
-    @property
-    def data_type_row_num(self):
-        return self.__type_row
-
-    @property
-    def body_row_num(self):
-        return self.__body_row
-
-    @property
-    def rule_row_num(self):
-        return self.__rule_row
-
-    @property
-    def description_row_num(self):
-        return self.__desc_row
-
-    @property
-    def real_field_name_row_num(self):
         return self.__field_row + 1
 
     @property
-    def real_data_type_row_num(self):
+    def data_type_row_num(self):
         return self.__type_row + 1
 
     @property
-    def real_body_row_num(self):
-        return self.__body_row + 1
+    def data_row_num(self):
+        return self.__data_row + 1
 
     @property
-    def real_rule_row_num(self):
+    def rule_row_num(self):
         return self.__rule_row + 1
 
     @property
-    def real_description_row_num(self):
+    def description_row_num(self):
         return self.__desc_row + 1
 
-    def column_field_name(self, column_num):
-        return self.__table[FIELD_NAME_INDEX][column_num]
+    @property
+    def row_count(self):
+        return self.__row_count
 
-    def column_data_type(self, column_num):
-        return self.__table[DATA_TYPE_INDEX][column_num]
+    @property
+    def column_count(self):
+        return self.__column_count
 
-    def column_rules(self, column_num):
-        return self.__table[RULE_INDEX][column_num]
+    @property
+    def field_names(self):
+        return self.__table[FIELD_NAME_INDEX]
 
-    def column_description(self, column_num):
-        return self.__table[DESC_INDEX][column_num]
+    def field_name_by_column_num(self, column_num):
+        return self.field_names[column_num]
 
-    def column_data_iter(self, column_num):
-        for row in self.__table[DATA_INDEX]:
-            yield row[column_num]
+    @property
+    def data_types(self):
+        return self.__table[DATA_TYPE_INDEX]
 
-    def column_data_iter_by_field(self, field_name):
-        if field_name in self.__table[FIELD_NAME_INDEX]:
-            column_num = self.__table[FIELD_NAME_INDEX].index(field_name)
-            return self.__column_data_iter_by_field(column_num)
+    def data_type_by_column_num(self, column_num):
+        return self.data_types[column_num]
 
-    def __column_data_iter_by_field(self, column_num):
-        for row in self.__table[DATA_INDEX]:
-            yield row[column_num]
+    @property
+    def rules(self):
+        return self.__table[RULE_INDEX]
+
+    def rule_by_column_num(self, column_num):
+        return self.rules[column_num]
 
     @property
     def global_rules(self):
         return self.__global_rules
+
+    @property
+    def descriptions(self):
+        return self.__table[DESC_INDEX]
+
+    def description_by_column_num(self, column_num):
+        return self.descriptions[column_num]
+
+    @property
+    def data_iter(self):
+        for row in self.__table[DATA_INDEX]:
+            yield row
+
+    def data_iter_by_column_num(self, column_num):
+        for row in self.data_iter:
+            yield row[column_num]
+
+    def data_iter_by_field_name(self, field_name):
+        if field_name in self.field_names:
+            column_num = self.field_names.index(field_name)
+            return self.__data_iter_by_field_name(column_num)
+
+    def __data_iter_by_field_name(self, column_num):
+        for row in self.data_iter:
+            yield row[column_num]
+
+    @property
+    def key_columns(self):
+        return self.__key_columns
+
+    @property
+    def key_data_iter(self):
+        for row in self.data_iter:
+            yield [row[col_num] for col_num in self.key_columns]
+
+    @property
+    def macro_data_iter(self):
+        if MacroRule.__name__ in self.global_rules:
+            macro_dict = self.global_rules[MacroRule.__name__].values
+            if MacroType.name in macro_dict and MacroType.desc in macro_dict:
+                for row in self.data_iter:
+                    macro_name = row[macro_dict[MacroType.name]]
+                    if macro_name is not None:
+                        yield macro_name, row[macro_dict[MacroType.value]], row[macro_dict[MacroType.desc]]
+            elif MacroType.name in macro_dict:
+                for row in self.data_iter:
+                    macro_name = row[macro_dict[MacroType.name]]
+                    if macro_name is not None:
+                        yield macro_name, row[macro_dict[MacroType.value]], None
 
     @property
     def is_load(self):
@@ -148,19 +197,18 @@ class Table(object):
 
     def verify(self):
         try:
-            for col_num, rules in enumerate(self.__table[RULE_INDEX]):
-                for rule in rules:
-                    rule.verify(self.column_data_iter(col_num))
-            for global_rule in self.__global_rules.values():
-                global_rule.verify(self)
+            for col_num, rules in enumerate(self.rules):
+                for rule_obj in rules:
+                    rule_obj.verify(self.data_iter_by_column_num(col_num))
+            for global_rule_obj in self.global_rules.values():
+                global_rule_obj.verify(self)
         except RuleException as e:
-            err = "table:`%(table_name)s` %(error)s" % {"table_name": self.table_name, "error": e.err}
-            raise TableException(err)
+            raise TableException(f'table:`{self.table_name}` {e.err}')
 
     def export(self):
-        from cfg_exporter.tables.exporter.erl_export import ErlExport
-        obj = ErlExport()
-        obj.export(self)
+        cls = self.args.export_type.value
+        export_obj = type(cls.__name__, (cls,), dict())(self, self.args)
+        export_obj.export()
         pass
 
 
@@ -175,23 +223,20 @@ class TableException(Exception):
 
 def convert_data_type(data_type):
     data_type = util.trim(data_type)
-    if data_type == "":
-        raise "data type is undefined"
+    if data_type == '':
+        raise DataException('the data type is undefined')
 
     if data_type not in DataType.__members__:
-        raise "data type `%(data_type)s` is unsupported\n" \
-              "supported data types [%(support_data_type)s]" % {
-                  "data_type": data_type,
-                  "support_data_type": ",".join(DataType.__members__.keys())
-              }
+        raise DataException(
+            f'data type `{data_type}` is unsupported\nsupported data types [{", ".join(DataType.__members__.keys())}]')
 
     return DataType[data_type]
 
 
 def convert_rules(table_obj, column_num, rules):
     rules = util.trim(rules)
-    if rules != "":
-        return tuple(parse_rules(table_obj, column_num, rules))
+    if rules != '':
+        return tuple(rule.parse_rules(table_obj, column_num, rules))
     return []
 
 
@@ -211,7 +256,7 @@ def convert_data(data_type, row):
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError):
-        raise DataException("incorrect data or data type")
+        raise DataException('incorrect data or data type')
 
 
 class DataException(Exception):

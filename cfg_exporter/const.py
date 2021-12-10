@@ -9,7 +9,9 @@ DataType = Enum("DataType", {"int": int, "float": float, "str": str, "iter": Ite
 ###############################
 # 支持的导出文件类型
 ###############################
-ExportType = Enum("ExportType", ("erl", "lua", "proto"))
+from cfg_exporter.exports import erl_export
+
+ExportType = Enum("ExportType", {"erl": erl_export.ErlExport, "lua": None, "proto": None})
 
 ###############################
 # 支持导入的配置表类型

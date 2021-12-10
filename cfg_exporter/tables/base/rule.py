@@ -1,6 +1,7 @@
 import os
 from enum import Enum
 from typing import Sized
+
 from cfg_exporter.const import DataType
 
 
@@ -31,15 +32,14 @@ class BaseRule(object):
         pass
 
     def _raise_rule_error(self, error):
-        err = "rule:`%(rule)s` %(error)s" % {"rule": self._rule_str, "error": error}
-        raise RuleException(err)
+        raise RuleException(f'rule:`{self._rule_str}` {error}')
 
     def _raise_body_error(self, row_num, error):
-        err = "%(row_num)s:%(column_num)s rule:`%(rule)s` %(error)s" % {
-            "row_num": self._table_obj.real_body_row_num + row_num,
-            "column_num": self._column_num + 1,
-            "rule": self._rule_str,
-            "error": error
+        err = '%(row_num)s:%(column_num)s rule:`%(rule)s` %(error)s' % {
+            'row_num': self._table_obj.data_row_num + row_num,
+            'column_num': self._column_num + 1,
+            'rule': self._rule_str,
+            'error': error
         }
         raise RuleException(err)
 
@@ -55,10 +55,7 @@ class KeyRule(BaseRule):
         global_key_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalKeyRule())
 
         if key_num in global_key_rule.values:
-            err = "already defined at %(def_row_num)s:%(def_column_num)s" % {
-                "def_row_num": self._table_obj.real_rule_row_num,
-                "def_column_num": global_key_rule.values[key_num] + 1
-            }
+            err = f'already defined at {self._table_obj.rule_row_num}:{global_key_rule.values[key_num] + 1}'
             self._raise_rule_error(err)
 
         global_key_rule.values[key_num] = self._column_num
@@ -71,15 +68,12 @@ class MacroRule(BaseRule):
     @BaseRule.value.setter
     def value(self, clause):
         if clause not in MacroType.__members__:
-            self._raise_rule_error("is not exist")
+            self._raise_rule_error('does not exist')
 
         global_macro_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalMacroRule())
 
         if MacroType[clause] in global_macro_rule.values:
-            err = "already defined at %(def_row_num)s:%(def_column_num)s" % {
-                "def_row_num": self._table_obj.real_rule_row_num,
-                "def_column_num": global_macro_rule.values[MacroType[clause]] + 1
-            }
+            err = f'already defined at {self._table_obj.rule_row_num}:{global_macro_rule.values[MacroType[clause]] + 1}'
             self._raise_rule_error(err)
 
         global_macro_rule.values[MacroType[clause]] = self._column_num
@@ -91,19 +85,17 @@ class RefRule(BaseRule):
 
     @BaseRule.value.setter
     def value(self, clause):
-        table_name, table_field = clause.split(".")
+        table_name, table_field = clause.split('.')
         self._value = (table_name, table_field)
 
     def verify(self, column_data_iter):
         ref_table_obj = self._table_obj.get_table_obj(self._value[0])
         if ref_table_obj is None:
-            err = "table:`%(table)s` is not exist" % {"table": self._value[0]}
-            self._raise_rule_error(err)
+            self._raise_rule_error(f'table:`{self._value[0]}` does not exist')
 
-        ref_column_data_iter = ref_table_obj.column_data_iter_by_field(self._value[1])
+        ref_column_data_iter = ref_table_obj.data_iter_by_field_name(self._value[1])
         if ref_column_data_iter is None:
-            err = "field:`%(field)s` is not exist" % {"field": self._value[1]}
-            self._raise_rule_error(err)
+            self._raise_rule_error(f'field:`{self._value[1]}` does not exist')
 
         data_set = set(ref_column_data_iter)
         for row_nun, data in enumerate(column_data_iter):
@@ -111,8 +103,7 @@ class RefRule(BaseRule):
                 continue
 
             if data not in data_set:
-                err = "data:`%(data)s` reference is not exist" % {"data": data}
-                self._raise_body_error(row_nun, err)
+                self._raise_body_error(row_nun, f'data:`{data}` reference does not exist')
 
 
 class LenRule(BaseRule):
@@ -127,19 +118,17 @@ class LenRule(BaseRule):
                 continue
 
             if not isinstance(data, Sized):
-                err = "data:`%(data)s` the data type is not `Sized`" % {"data": data}
-                self._raise_rule_error(err)
+                self._raise_rule_error(f'data:`{data}` the data type does not `Sized`')
 
             if len(data) > self._value:
-                err = "data:`%(data)s` exceeds the length limit" % {"data": data}
-                self._raise_body_error(row_nun, err)
+                self._raise_body_error(row_nun, f'data:`{data}` exceeds the length limit')
 
 
 class RangeRule(BaseRule):
 
     @BaseRule.value.setter
     def value(self, clause):
-        min_num, max_num = clause.split("-")
+        min_num, max_num = clause.split('-')
         min_num = int(min_num)
         max_num = int(max_num)
         assert min_num <= max_num
@@ -152,13 +141,11 @@ class RangeRule(BaseRule):
 
             if type(data) in (int, float):
                 if not (self._value[0] <= data <= self._value[1]):
-                    err = "data:`%(data)s` is out of range" % {"data": data}
-                    self._raise_body_error(row_nun, err)
+                    self._raise_body_error(row_nun, f'data:`{data}` is out of range')
 
             elif isinstance(data, Sized):
                 if not (self._value[0] <= len(data) <= self._value[1]):
-                    err = "data:`%(data)s` is out of range" % {"data": data}
-                    self._raise_body_error(row_nun, err)
+                    self._raise_body_error(row_nun, f'data:`{data}` is out of range')
 
 
 class SourceRule(BaseRule):
@@ -173,8 +160,7 @@ class SourceRule(BaseRule):
                 continue
 
             if not os.path.exists(os.path.join(self._value, data)):
-                err = "data:`%(data)s` path not found" % {"data": data}
-                self._raise_body_error(row_nun, err)
+                self._raise_body_error(row_nun, f'data:`{data}` path not found')
 
 
 class UniqueRule(BaseRule):
@@ -185,11 +171,8 @@ class UniqueRule(BaseRule):
                 continue
 
             if data in d:
-                err = "data:`%(data)s` is not unique already defined at %(row_num)s:%(column_num)s" % {
-                    "data": data,
-                    "row_num": self._table_obj.real_body_row_num + d[data],
-                    "column_num": self._column_num + 1
-                }
+                err = f'data:`{data}` is not unique already defined at ' \
+                      f'{self._table_obj.data_row_num + d[data]}:{self._column_num + 1}'
                 self._raise_body_error(row_nun, err)
             d[data] = row_nun
 
@@ -198,7 +181,7 @@ class NotEmptyRule(BaseRule):
     def verify(self, column_data_iter):
         for row_nun, data in enumerate(column_data_iter):
             if data is None:
-                self._raise_body_error(row_nun, "data is empty")
+                self._raise_body_error(row_nun, 'the data is empty')
 
 
 class StructRule(BaseRule):
@@ -247,21 +230,18 @@ class GlobalRule(object):
 class GlobalKeyRule(GlobalRule):
     def verify(self, table_obj):
         column_num_list = sorted(self._values.values())
-        column_data_iter_list = [table_obj.column_data_iter(col_num) for col_num in column_num_list]
+        column_data_iter_list = [table_obj.data_iter_by_column_num(col_num) for col_num in column_num_list]
         key_set = set()
         for row_nun, data in enumerate(zip(*column_data_iter_list)):
             for col_num, d in enumerate(data):
                 if d is None:
-                    err = "%(row_num)s:%(column_num)s primary key is empty" % {
-                        "row_num": table_obj.real_body_row_num + row_nun,
-                        "column_num": column_num_list[col_num] + 1
-                    }
+                    err = f'{table_obj.data_row_num + row_nun}:{column_num_list[col_num] + 1} primary key is empty'
                     raise RuleException(err)
 
             if data in key_set:
-                err = "%(row_num)s:%(column_num)s primary key repeat" % {
-                    "row_num": table_obj.real_body_row_num + row_nun,
-                    "column_num": ",".join([str(col_num + 1) for col_num in column_num_list])
+                err = '%(row_num)s:%(column_num)s primary key repeat' % {
+                    'row_num': table_obj.data_row_num + row_nun,
+                    'column_num': ','.join([str(col_num + 1) for col_num in column_num_list])
                 }
                 raise RuleException(err)
             key_set.add(data)
@@ -270,32 +250,24 @@ class GlobalKeyRule(GlobalRule):
 class GlobalMacroRule(GlobalRule):
     def verify(self, table_obj):
         if MacroType.name not in self._values:
-            raise RuleException("rule:`macro:name` is not exist")
+            raise RuleException('rule:`macro:name` does not exist')
 
         if MacroType.value not in self._values:
-            raise RuleException("rule:`macro:value` is not exist")
+            raise RuleException('rule:`macro:value` does not exist')
 
         column_num = self._values[MacroType.name]
-        data_type = table_obj.column_data_type(column_num)
+        data_type = table_obj.data_type_by_column_num(column_num)
         if data_type is not DataType.str:
-            err = "%(row_num)s:%(column_num)s rule:`macro:name` data type is not `str`" % {
-                "row_num": table_obj.real_rule_row_num,
-                "column_num": column_num + 1
-            }
-            raise RuleException(err)
+            raise RuleException(f'{table_obj.rule_row_num}:{column_num + 1} rule:`macro:name` data type is not `str`')
 
         macro_name_set = set()
-        column_data_iter = table_obj.column_data_iter(column_num)
+        column_data_iter = table_obj.data_iter_by_column_num(column_num)
         for row_nun, data in enumerate(column_data_iter):
             if data is None:
                 continue
 
             if data in macro_name_set:
-                err = "%(row_num)s:%(column_num)s macro name repeat" % {
-                    "row_num": table_obj.real_body_row_num + row_nun,
-                    "column_num": column_num + 1
-                }
-                raise RuleException(err)
+                raise RuleException(f'{table_obj.data_row_num + row_nun}:{column_num + 1} macro name repeat')
             macro_name_set.add(data)
 
 
@@ -311,7 +283,7 @@ class RuleException(Exception):
 
 def create_rule_obj(table_obj, column_num, rule_str):
     # 规则条件有两种类型 tag、tag:clause
-    tag_and_clause = rule_str.split(":", 1)
+    tag_and_clause = rule_str.split(':', 1)
     assert len(tag_and_clause) <= 2
     cls = RuleType[tag_and_clause[0]].value
     rule_obj = type(cls.__name__, (cls,), dict())(table_obj, column_num, rule_str)
@@ -326,8 +298,7 @@ def parse_rules(table_obj, column_num, rules):
             rule_obj = create_rule_obj(table_obj, column_num, each_rule)
             rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            err = "rule:`%(rule)s` formal error" % {"rule": each_rule}
-            raise RuleException(err)
+            raise RuleException(f'rule:`{each_rule}` formal error')
     return rule_list
 
 
@@ -349,11 +320,11 @@ def iter_rule(rules):
 def find_struct_last_position(clause):
     symbol_count = 0
     for index, c in enumerate(clause, start=1):
-        if c == "[" or c == "(":
+        if c == '[' or c == '(':
             symbol_count += 1
             continue
 
-        if c == "]" or c == ")":
+        if c == ']' or c == ')':
             symbol_count -= 1
             if symbol_count == 0:
                 return index
@@ -362,7 +333,7 @@ def find_struct_last_position(clause):
 def find_other_last_position(clause):
     index, clause_len = 0, len(clause)
     while index < clause_len:
-        if clause[index] == "|":
+        if clause[index] == '|':
             return index
         index += 1
     return index
@@ -372,7 +343,7 @@ def parse_struct_clause(table_obj, column_num, clause, index=0, rules=None):
     clause_len = len(clause)
     while index < clause_len:
         c = clause[index]
-        if c == "[" or c == "(":
+        if c == '[' or c == '(':
             index += 1
             child_rules, last_index = parse_struct_clause(table_obj, column_num, clause, index, [])
             if rules is None:
@@ -380,10 +351,10 @@ def parse_struct_clause(table_obj, column_num, clause, index=0, rules=None):
             else:
                 rules.append(child_rules)
             index = last_index
-        elif c == "]" or c == ")":
+        elif c == ']' or c == ')':
             index += 1
             break
-        elif c == ",":
+        elif c == ',':
             index += 1
         else:
             child_rules, last_index = parse_struct_clause_1(table_obj, column_num, clause[index:])
@@ -396,11 +367,11 @@ def parse_struct_clause_1(table_obj, column_num, clause):
     rules, start_index, last_index, clause_str = [], 0, 0, len(clause)
     while last_index < clause_str:
         c = clause[last_index]
-        if c == "|":
+        if c == '|':
             rule_obj = create_rule_obj(table_obj, column_num, clause[start_index:last_index])
             rules.append(rule_obj)
             start_index = last_index + 1
-        elif c == "," or c == "]" or c == ")":
+        elif c == ',' or c == ']' or c == ')':
             rule_obj = create_rule_obj(table_obj, column_num, clause[start_index:last_index])
             rules.append(rule_obj)
             return tuple(rules), last_index
@@ -410,13 +381,13 @@ def parse_struct_clause_1(table_obj, column_num, clause):
 ###############################
 # 宏定义标记类型定义
 ###############################
-MacroType = Enum("MacroType", ("name", "value", "desc"))
+MacroType = Enum('MacroType', ('name', 'value', 'desc'))
 
 ###############################
 # 规则标记类型定义
 ###############################
-RuleType = Enum("RuleType", {
-    "key": KeyRule, "macro": MacroRule, "ref": RefRule,
-    "len": LenRule, "range": RangeRule, "source": SourceRule,
-    "unique": UniqueRule, "not_empty": NotEmptyRule, "struct": StructRule
+RuleType = Enum('RuleType', {
+    'key': KeyRule, 'macro': MacroRule, 'ref': RefRule,
+    'len': LenRule, 'range': RangeRule, 'source': SourceRule,
+    'unique': UniqueRule, 'not_empty': NotEmptyRule, 'struct': StructRule
 })

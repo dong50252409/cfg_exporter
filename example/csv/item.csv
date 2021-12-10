@@ -1,4 +1,4 @@
-﻿id,name,auto_macro_key,icon,display_effect,description,item_type,item_sub_type,price,quality_type,effect,param,max_cnt,level,quick_use,auto_use,jump,access_source
+id,name,auto_macro_key,icon,display_effect,description,item_type,item_sub_type,price,quality_type,effect,param,max_cnt,level,quick_use,auto_use,jump,access_source
 int,str,str,str,int,str,int,int,iter,int,int,str,int,int,int,int,int,str
 道具id,道具名称,宏定义,图标资源,道具图标特效id,道具描述,道具类型,"道具子类型
 需要使用子类型的的时候就填，

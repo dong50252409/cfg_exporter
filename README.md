@@ -62,7 +62,7 @@
   | `source:path`               | 检查引用资源是否存在                                          | `str`    | 要检查资源目录的路径<br/>绝对路径`source:D:/project/source/ui`<br/>相对路径 `source:source/ui`   |
   | `unique`                    | 检查当前列值是否全列唯一                                       |          | `unique`                                                                                  |
   | `not_empty`                 | 检查当前列是否无空值                                          |          | `not_empty`                                                                               |
-  | `struct:rules`              | 对结构中的各项值进行规则检查，仅支持指定普通规则                    | `iter`   | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/><br/>`struct:[(ref:item.id | unique, range:0-10000,_)]`<br/>对 `1、2`进行`ref`、`unique`规则检查<br/>对`100、200`进行`range`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[len:10]`<br/>对`"abc"、[1,2,3]、(4,5,6)` 进行`len`规则检查 |
+  | `struct:rules`              | 对结构中的各项值进行规则检查，仅支持指定普通规则                    | `iter`   | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/><br/>`struct:[(ref:item.id｜unique, range:0-10000, _)]`<br/>对 `1、2`进行`ref`、`unique`规则检查<br/>对`100、200`进行`range`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[len:10]`<br/>对`"abc"、[1,2,3]、(4,5,6)` 进行`len`规则检查 |
 
 - 支持右键菜单导出（windows）
 
