@@ -7,7 +7,8 @@
 
 打印帮助
 ------
-    python main.py -h
+    python -m cfg_exporter -h
+
 特性
 ----
 * 支持规则检查
