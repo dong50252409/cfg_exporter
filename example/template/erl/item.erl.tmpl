@@ -1,0 +1,8 @@
+@include(r"..\..\..\cfg_exporter\exports\template\erl\erl_base.tmpl")
+@require(table_obj, prefix)
+@for data in table_obj.data_iter_by_field_name('item_type'):
+get_by_type() ->
+    @data!s;
+@end
+get_by_type() ->
+    undefined.
