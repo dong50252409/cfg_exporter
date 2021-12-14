@@ -72,7 +72,8 @@ base_group.add_argument('--template_path',
                              f'the template name consists of the table name, export type, '
                              f'and {TEMPLATE_EXTENSION} extension\n'
                              'e.g:\n'
-                             f'`item.erl.{TEMPLATE_EXTENSION}` `item.lua.{TEMPLATE_EXTENSION}` ...\n'
+                             f'`item.erl.{TEMPLATE_EXTENSION}` `item.hrl.{TEMPLATE_EXTENSION}` '
+                             f'`item.lua.{TEMPLATE_EXTENSION}` ...\n'
                              'loads the template based on the specified export type\n'
                              'e.g\n'
                              f'`--export_type erl` templates ending with `.erl.{TEMPLATE_EXTENSION}` '
@@ -137,4 +138,4 @@ erl_group.add_argument('--hrl_dir',
 
 args = parser.parse_args()
 
-__all__ = args
+__all__ = args,

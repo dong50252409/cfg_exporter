@@ -55,24 +55,31 @@ class Table(object):
         self.__table[DATA_INDEX].extend([[] for _ in range(self.__row_count)])
 
         zip_iter = itertools.zip_longest(field_list, data_type_list, rule_list, desc_list)
-        for index, (field_name, data_type, rules, desc) in enumerate(zip_iter):
-            field_name = util.trim(field_name)
-            if field_name:
-                try:
+        for col_num, (field_name, data_type, rules, desc) in enumerate(zip_iter):
+            try:
+                field_name = convert_field_name(field_name)
+                if field_name:
                     self.__table[FIELD_NAME_INDEX].append(field_name)
                     self.__table[DATA_TYPE_INDEX].append(convert_data_type(data_type))
-                    self.__table[RULE_INDEX].append(convert_rules(self, index, rules))
+                    self.__table[RULE_INDEX].append(convert_rules(self, col_num, rules))
                     self.__table[DESC_INDEX].append(convert_desc(desc))
-                    for col_num, rows in enumerate(data_list):
-                        data = convert_data(self.data_type_by_column_num(index), rows[index])
-                        self.__table[DATA_INDEX][col_num].append(data)
-                except (RuleException, DataException) as e:
-                    raise TableException(f'{self.__type_row + 1}:{index + 1} {e.err}')
+                    for row_num, rows in enumerate(data_list):
+                        data = convert_data(self.data_type_by_column_num(col_num), rows[col_num])
+                        self.__table[DATA_INDEX][row_num].append(data)
+            except RuleException as e:
+                err = f'r{self.rule_row_num}:c{col_num + 1} table:`{self.filename}` rule:`{e.rule_str}` {e.err}'
+                raise TableException(err)
+            except DataException as e:
+                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` {e.err}'
+                raise TableException(err)
 
         if KeyRule.__name__ in self.__global_rules:
-            self.__key_columns = [col_num for _, col_num in
-                                  sorted(self.__global_rules[KeyRule.__name__].values.items())]
+            self.__key_columns = [col_num for col_num in sorted(self.__global_rules[KeyRule.__name__].values.values())]
+
         self.__is_load = True
+
+    def has_table_and_field(self, table_name, field_name):
+        return self.__container_obj.has_table_and_field(table_name, field_name)
 
     def get_table_obj(self, full_filename):
         return self.__container_obj.get_table_obj(full_filename)
@@ -161,11 +168,8 @@ class Table(object):
     def data_iter_by_field_name(self, field_name):
         if field_name in self.field_names:
             column_num = self.field_names.index(field_name)
-            return self.__data_iter_by_field_name(column_num)
-
-    def __data_iter_by_field_name(self, column_num):
-        for row in self.data_iter:
-            yield row[column_num]
+            for row in self.data_iter:
+                yield row[column_num]
 
     @property
     def key_columns(self):
@@ -196,14 +200,29 @@ class Table(object):
         return self.__is_load
 
     def verify(self):
-        try:
-            for col_num, rules in enumerate(self.rules):
+        for col_num, rules in enumerate(self.rules):
+            try:
                 for rule_obj in rules:
                     rule_obj.verify(self.data_iter_by_column_num(col_num))
-            for global_rule_obj in self.global_rules.values():
+            except RuleException as e:
+                err = f'r{self.data_row_num + e.row_num}:c{col_num + 1} ' \
+                      f'table:`{self.filename}` rule:`{e.rule_str}` {e.err}'
+                raise TableException(err)
+
+        for global_rule_obj in self.global_rules.values():
+            try:
                 global_rule_obj.verify(self)
-        except RuleException as e:
-            raise TableException(f'table:`{self.table_name}` {e.err}')
+            except RuleException as e:
+                if e.row_num is None and e.col_num is None:
+                    err = f'table:`{self.filename}'
+                else:
+                    err = f'r{self.data_row_num + e.row_num}:c{e.col_num} table:`{self.filename}'
+
+                if e.rule_str:
+                    err = f'{err} rule:`{e.rule_str}`'
+
+                err = f'{err} {e.err}'
+                raise TableException(err)
 
 
 class TableException(Exception):
@@ -213,6 +232,14 @@ class TableException(Exception):
 
     def __str__(self):
         return self.err
+
+
+def convert_field_name(field_name):
+    field_name = util.trim(field_name)
+    if field_name:
+        if not util.check_named(field_name):
+            raise DataException("invalid field name")
+        return field_name
 
 
 def convert_data_type(data_type):

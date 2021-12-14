@@ -22,6 +22,12 @@ class Container(object):
                   f'the `{old_table_obj.filename}` table will be replaced')
         self.__cfg_dict[table_obj.table_name] = table_obj
 
+    def has_table_and_field(self, table_name, field_name):
+        if table_name in self.__cfg_dict:
+            table_obj = self.__cfg_dict[table_name]
+            return True, field_name in table_obj.field_names
+        return False, False
+
     def get_table_obj(self, table_name):
         if table_name in self.__cfg_dict:
             table_obj = self.__cfg_dict[table_name]

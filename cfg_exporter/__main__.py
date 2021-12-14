@@ -4,12 +4,17 @@
 
 import cfg_exporter.helper as helper
 from cfg_exporter.container import Container
+from cfg_exporter.tables.base.table import TableException
 
 if __name__ == '__main__':
     # multiprocessing.Pool(multiprocessing.cpu_count() - 1)
-    obj = Container(helper.args)
-    obj.import_table()
-    obj.verify_table()
-    if not helper.args.verification and helper.args.export_type is not None:
-        obj.export_table()
+    try:
+        obj = Container(helper.args)
+        obj.import_table()
+        obj.verify_table()
+        if not helper.args.verification and helper.args.export_type is not None:
+            obj.export_table()
+    except TableException as e:
+        print(e.err)
+
     pass
