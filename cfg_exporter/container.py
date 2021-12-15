@@ -25,6 +25,8 @@ class Container(object):
     def has_table_and_field(self, table_name, field_name):
         if table_name in self.__cfg_dict:
             table_obj = self.__cfg_dict[table_name]
+            if not table_obj.is_load:
+                table_obj.load_table()
             return True, field_name in table_obj.field_names
         return False, False
 

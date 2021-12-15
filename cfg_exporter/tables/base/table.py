@@ -44,7 +44,33 @@ class Table(object):
         ...
 
     def _load_table(self, rows):
+        loadable_column_list = self.__load_field_name(rows)
+
+        self.__load_other(rows, loadable_column_list)
+
+        if KeyRule.__name__ in self.__global_rules:
+            self.__key_columns = [col_num for col_num in sorted(self.__global_rules[KeyRule.__name__].values.values())]
+
+        self.__is_load = True
+
+    def __load_field_name(self, rows):
+        column_list = []
         field_list = rows[self.__field_row]
+        for col_num, field_name in enumerate(field_list):
+            try:
+                field_name = convert_field_name(field_name)
+                if field_name:
+                    self.__table[FIELD_NAME_INDEX].append(field_name)
+                    column_list.append(True)
+                else:
+                    column_list.append(False)
+
+            except DataException as e:
+                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` {e.err}'
+                raise TableException(err)
+        return column_list
+
+    def __load_other(self, rows, loadable_column_list):
         data_type_list = rows[self.__type_row]
         rule_list = rows[self.__rule_row] if self.__rule_row is not None else []
         desc_list = rows[self.__desc_row] if self.__desc_row is not None else []
@@ -54,31 +80,28 @@ class Table(object):
         self.__column_count = len(self.__table[FIELD_NAME_INDEX])
         self.__table[DATA_INDEX].extend([[] for _ in range(self.__row_count)])
 
-        zip_iter = itertools.zip_longest(field_list, data_type_list, rule_list, desc_list)
-        for col_num, (field_name, data_type, rules, desc) in enumerate(zip_iter):
+        zip_iter = itertools.zip_longest(loadable_column_list, data_type_list, rule_list, desc_list)
+        for col_num, (loadable_column, data_type, rules, desc) in enumerate(zip_iter):
             try:
-                field_name = convert_field_name(field_name)
-                if field_name:
-                    self.__table[FIELD_NAME_INDEX].append(field_name)
+                if loadable_column:
                     self.__table[DATA_TYPE_INDEX].append(convert_data_type(data_type))
                     self.__table[RULE_INDEX].append(convert_rules(self, col_num, rules))
                     self.__table[DESC_INDEX].append(convert_desc(desc))
                     for row_num, rows in enumerate(data_list):
                         data = convert_data(self.data_type_by_column_num(col_num), rows[col_num])
                         self.__table[DATA_INDEX][row_num].append(data)
+
             except RuleException as e:
                 err = f'r{self.rule_row_num}:c{col_num + 1} table:`{self.filename}` rule:`{e.rule_str}` {e.err}'
                 raise TableException(err)
+
             except DataException as e:
                 err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` {e.err}'
                 raise TableException(err)
 
-        if KeyRule.__name__ in self.__global_rules:
-            self.__key_columns = [col_num for col_num in sorted(self.__global_rules[KeyRule.__name__].values.values())]
-
-        self.__is_load = True
-
     def has_table_and_field(self, table_name, field_name):
+        if table_name == self.table_name:
+            return True, field_name in self.field_names
         return self.__container_obj.has_table_and_field(table_name, field_name)
 
     def get_table_obj(self, full_filename):
@@ -237,7 +260,7 @@ class TableException(Exception):
 def convert_field_name(field_name):
     field_name = util.trim(field_name)
     if field_name:
-        if not util.check_named(field_name):
+        if not util.check_naming(field_name):
             raise DataException("invalid field name")
         return field_name
 

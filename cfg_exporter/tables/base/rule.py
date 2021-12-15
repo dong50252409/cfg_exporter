@@ -263,7 +263,7 @@ class GlobalMacroRule(GlobalRule):
             if data is None:
                 continue
 
-            if not util.check_named(data):
+            if not util.check_naming(data):
                 raise RuleException('invalid macro name', row_num=row_num, col_num=column_num + 1)
 
             if data in d:
