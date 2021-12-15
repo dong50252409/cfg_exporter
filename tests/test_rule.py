@@ -75,11 +75,11 @@ def content_1():
     rules = [
         'key:1|macro:value', 'key:2',
         'macro:name', 'macro:desc',
-        'ref:%(table_name)s.id' % {'table_name': content_2.__name__}, 'len:10',
+        f'ref:{content_2.__name__}.id', 'len:10',
         'range:0-500', 'source:.',
         'unique', 'not_empty',
         'not_empty|struct:[range:50-500]',
-        'struct:[(ref:%(table_name)s.id|unique,range:50-500)]' % {'table_name': content_2.__name__}
+        f'struct:[(ref:{content_2.__name__}.id|unique,range:50-500)]'
     ]
     body = [
         [1, 9, 'key_1', 'desc_1', 100, 'abc', 0, 'test_rule.py', 1, 1,
@@ -198,6 +198,17 @@ def test_ref_rule():
 
     print('part 3')
     with pytest.raises(Exception) as err:
+        heads1 = [['id', 'value'], ['int', 'int'], ['key:1', 'ref:test_ref_rule_1.id']]
+        body1 = [['1', '3'], ['2', '2'], ['3', '1'], ['4', '5']]
+        obj1 = Container(get_args())
+        obj1.set_data_rows(heads1 + body1)
+        obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
+        obj1.verify_table()
+    assert err.type is TableException
+    print(err.value)
+
+    print('part 4')
+    with pytest.raises(Exception) as err:
         heads1 = [['id'], ['int'], ['ref:test_ref_rule_2.id']]
         body1 = [['1'], ['2'], ['3']]
 
@@ -213,7 +224,7 @@ def test_ref_rule():
     assert err.type is TableException
     print(err.value)
 
-    print('part 4')
+    print('part 5')
     with pytest.raises(Exception) as err:
         heads1 = [['id'], ['int'], ['ref:test_ref_rule_2.id1']]
         body1 = [['1'], ['2'], ['3']]
