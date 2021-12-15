@@ -50,7 +50,7 @@ def search_extend_template(source, ext):
     return glob.glob(source)
 
 
-__all__ = Export,
+__all__ = 'Export',
 
 if __name__ == '__main__':
     from wheezy.template import DictLoader
