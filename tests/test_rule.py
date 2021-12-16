@@ -57,44 +57,92 @@ def content_1():
     fields = [
         'id1', 'id2',
         'macro_name', 'macro_desc',
-        'test_ref', 'test_len',
-        'test_range', 'test_source',
         'test_unique', 'test_not_empty',
+        'test_min1', 'test_min2',
+        'test_max1', 'test_max2',
+        'test_source', 'test_ref',
         'test_struct1', 'test_struct2'
     ]
 
     types = [
         'int', 'int',
         'str', 'str',
-        'int', 'str',
-        'int', 'str',
         'int', 'int',
+        'int', 'iter',
+        'int', 'iter',
+        'str', 'int',
         'iter', 'iter'
     ]
 
     rules = [
         'key:1|macro:value', 'key:2',
         'macro:name', 'macro:desc',
-        f'ref:{content_2.__name__}.id', 'len:10',
-        'range:0-500', 'source:.',
         'unique', 'not_empty',
-        'not_empty|struct:[range:50-500]',
-        f'struct:[(ref:{content_2.__name__}.id|unique,range:50-500)]'
+        'mix:0', 'mix:0',
+        'max:99', 'max:10',
+        'source:.', f'ref:{content_2.__name__}.id',
+        'not_empty|struct:[min:50|max:500]', f'struct:[(ref:{content_2.__name__}.id|unique,min:50|max:500)]'
     ]
     body = [
-        [1, 9, 'key_1', 'desc_1', 100, 'abc', 0, 'test_rule.py', 1, 1,
-         '[50,60,70,80,90,100]', '[(100,50),(200,50),(300,50)]'],
+        [
+            '1', '9',
+            'key_1', 'desc_1',
+            '1', '1',
+            '0', '[]',
+            '99', '[0,1,2,3,4,5,6,7,8,9]',
+            'test_rule.py', '100',
+            '[50,60,70,80,90,100]', '[(100,50),(200,50),(300,50)]'
+        ],
 
-        [2, 8, 'key_2', 'desc_2', 200, 'abcd', 500, '__init__.py', 2, 2,
-         '[100,110,120,130,140,150]', '[(400,50),(500,50),(600,50)]'],
+        [
+            '2', '8',
+            'key_2', 'desc_2',
+            '2', '2',
+            '99', '[0,1,2,3,4,5,6,7,8,9]',
+            '0', '[]',
+            '__init__.py', '200',
+            '[100,110,120,130,140,150]', '[(400,50),(500,50),(600,50)]'
+        ],
 
-        [3, 7, 'key_3', 'desc_3', 300, 'abcde', 255, '.pytest_cache/README.md', 3, 3,
-         '[50,60,70,80,90,100]', '[(100,50),(200,50)]'],
+        [
+            '3', '7',
+            'key_3', 'desc_3',
+            '3', '3',
+            '50', '[0,1,2,3,4]',
+            '50', '[0,1,2,3,4]',
+            '.pytest_cache/README.md', '300',
+            '[50,60,70,80,90,100]', '[(100,50),(200,50)]'
+        ],
 
-        [4, 6, 'key_4', 'desc_4', 400, 'abcdef', 123, '.pytest_cache/v/cache/stepwise', 4, 4,
-         '[100,110,120,130,140,150]', '[(300,50)]'],
-        [5, 5, 'key_5', '', '', '', '', '', '', 6, '[]', ''],
-        [6, 4, '', '', '', '', '', '', '', 7, '[]', '']
+        [
+            '4', '6',
+            'key_4', 'desc_4',
+            '4', '4',
+            '0', '(0,1,2,3,4,5)',
+            '0', '(0,1,2,3,4,5,6,7,8,9)',
+            '.pytest_cache/v/cache/stepwise', '400',
+            '[100,110,120,130,140,150]', '[(300,50)]'
+        ],
+
+        [
+            '5', '5',
+            'key_5', '',
+            '', '5',
+            '', '',
+            '', '',
+            '', '',
+            '[]', ''
+        ],
+
+        [
+            '6', '4',
+            '', '',
+            '', '7',
+            '', '',
+            '', '',
+            '', '',
+            '[]', ''
+        ]
     ]
     return [fields, types, rules] + body
 
@@ -187,6 +235,79 @@ def test_macro_rule():
     pass
 
 
+def test_unique_rule():
+    heads = [['test_unique'], ['int'], ['unique']]
+    body = [['1'], ['2'], ['1']]
+    exception_verity(heads + body)
+    pass
+
+
+def test_not_empty_rule():
+    heads = [['test_not_empty'], ['int'], ['not_empty']]
+    body = [['1'], ['2'], ['']]
+    exception_verity(heads + body)
+    pass
+
+
+def test_min():
+    print('part 1')
+    heads = [['test_min'], ['str'], ['min:a']]
+    body = [['asd']]
+    exception_verity(heads + body)
+
+    print('part 2')
+    heads = [['test_min'], ['int'], ['min:10']]
+    body = [['10'], ['9']]
+    exception_verity(heads + body)
+
+    print('part 3')
+    heads = [['test_min'], ['str'], ['min:5']]
+    body = [['asd'], ['123456']]
+    exception_verity(heads + body)
+
+    print('part 4')
+    heads = [['test_min'], ['iter'], ['min:5']]
+    body = [['[(1,1),(1,1),(1,1),(1,1),(1,1),(1,1)]'], ['(1,2,3,4,5,6)'], ['[]']]
+    exception_verity(heads + body)
+    pass
+
+
+def test_max():
+    print('part 1')
+    heads = [['test_max'], ['str'], ['max:a']]
+    body = [['a']]
+    exception_verity(heads + body)
+
+    print('part 2')
+    heads = [['test_max'], ['int'], ['max:10']]
+    body = [['1'], ['11']]
+    exception_verity(heads + body)
+
+    print('part 3')
+    heads = [['test_max'], ['str'], ['max:10']]
+    body = [['123456789'], ['abcdefghijk']]
+    exception_verity(heads + body)
+
+    print('part 4')
+    heads = [['test_max'], ['iter'], ['max:10']]
+    body = [['[(1,1),(1,1),(1,1),(1,1),(1,1),(1,1)]'], ['(1,2,3,4,5,6)'], ['[0,1,2,3,4,5,6,7,8,9,10]']]
+    exception_verity(heads + body)
+    pass
+
+
+def test_source_rule():
+    print('part 1')
+    heads = [['test_source'], ['int'], ['source:.']]
+    body = [['test_rule.py']]
+    exception_verity(heads + body)
+
+    print('part 2')
+    heads = [['test_source'], ['str'], ['source:.']]
+    body = [['b.py']]
+    exception_verity(heads + body)
+    pass
+
+
 def test_ref_rule():
     print('part 1')
     heads = [['id'], ['int'], ['ref:table-field']]
@@ -240,69 +361,6 @@ def test_ref_rule():
         obj1.verify_table()
     assert err.type is TableException
     print(err.value)
-    pass
-
-
-def test_len_rule():
-    print('part 1')
-    heads = [['test_len'], ['int'], ['len:10']]
-    body = [['1']]
-    exception_verity(heads + body)
-
-    print('part 2')
-    heads = [['test_len'], ['str'], ['len:a']]
-    body = [['asd']]
-    exception_verity(heads + body)
-
-    print('part 3')
-    heads = [['test_len'], ['str'], ['len:5']]
-    body = [['asd'], ['12345'], ['123456']]
-    exception_verity(heads + body)
-    pass
-
-
-def test_range_rule():
-    print('part 1')
-    heads = [['test_range'], ['str'], ['range:10,50']]
-    body = [['10']]
-    exception_verity(heads + body)
-
-    print('part 2')
-    heads = [['test_range'], ['str'], ['range:a-b']]
-    body = [['a']]
-    exception_verity(heads + body)
-
-    print('part 3')
-    heads = [['test_range'], ['int'], ['range:10-50']]
-    body = [['1']]
-    exception_verity(heads + body)
-    pass
-
-
-def test_source_rule():
-    print('part 1')
-    heads = [['test_source'], ['int'], ['source:.']]
-    body = [['test_rule.py']]
-    exception_verity(heads + body)
-
-    print('part 2')
-    heads = [['test_source'], ['str'], ['source:.']]
-    body = [['b.py']]
-    exception_verity(heads + body)
-    pass
-
-
-def test_unique_rule():
-    heads = [['test_unique'], ['int'], ['unique']]
-    body = [['1'], ['2'], ['1']]
-    exception_verity(heads + body)
-    pass
-
-
-def test_not_empty_rule():
-    heads = [['test_not_empty'], ['int'], ['not_empty']]
-    body = [['1'], ['2'], ['']]
-    exception_verity(heads + body)
     pass
 
 

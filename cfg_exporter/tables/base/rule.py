@@ -39,10 +39,6 @@ class BaseRule(object):
         raise RuleException(err, self._rule_str, row_num)
 
 
-class IgnoreRule(BaseRule):
-    pass
-
-
 class KeyRule(BaseRule):
 
     @BaseRule.value.setter
@@ -77,6 +73,92 @@ class MacroRule(BaseRule):
         self._value = MacroType[clause]
 
 
+class UniqueRule(BaseRule):
+    def verify(self, column_data_iter):
+        d = {}
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if data in d:
+                err = f'data:`{data}` is not unique already defined at ' \
+                      f'r{self._table_obj.data_row_num + d[data]}:c{self._column_num + 1}'
+                self._raise_verify_error(err, row_num)
+            d[data] = row_num
+
+
+class NotEmptyRule(BaseRule):
+    def verify(self, column_data_iter):
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                self._raise_verify_error('the data is empty', row_num)
+
+
+class MinRule(BaseRule):
+
+    @BaseRule.value.setter
+    def value(self, clause):
+        self._value = int(clause)
+
+    def verify(self, column_data_iter):
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if isinstance(data, int):
+                if data < self._value:
+                    self._raise_verify_error(f'data:`{data}` the minimum limit was not reached', row_num)
+
+            elif isinstance(data, float):
+                if data < self._value:
+                    self._raise_verify_error(f'data:`{data}` the minimum limit was not reached', row_num)
+
+            elif isinstance(data, Sized):
+                if len(data) < self._value:
+                    self._raise_verify_error(f'data:`{data}` length:`{len(data)}` the minimum limit was not reached',
+                                             row_num)
+
+
+class MaxRule(BaseRule):
+
+    @BaseRule.value.setter
+    def value(self, clause):
+        self._value = int(clause)
+
+    def verify(self, column_data_iter):
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if isinstance(data, int):
+                if data > self._value:
+                    self._raise_verify_error(f'data:`{data}` the maximum limit was exceeded', row_num)
+
+            elif isinstance(data, float):
+                if data > self._value:
+                    self._raise_verify_error(f'data:`{data}` the maximum limit was exceeded', row_num)
+
+            elif isinstance(data, Sized):
+                if len(data) > self._value:
+                    self._raise_verify_error(f'data:`{data}` length:`{len(data)}` the maximum limit was exceeded',
+                                             row_num)
+
+
+class SourceRule(BaseRule):
+
+    @BaseRule.value.setter
+    def value(self, clause):
+        self._value = clause
+
+    def verify(self, column_data_iter):
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if not os.path.exists(os.path.join(self._value, data)):
+                self._raise_verify_error(f'data:`{data}` path not found', row_num)
+
+
 class RefRule(BaseRule):
 
     @BaseRule.value.setter
@@ -102,84 +184,6 @@ class RefRule(BaseRule):
 
             if data not in data_set:
                 self._raise_verify_error(f'data:`{data}` reference does not exist', row_num)
-
-
-class LenRule(BaseRule):
-
-    @BaseRule.value.setter
-    def value(self, clause):
-        self._value = int(clause)
-
-    def verify(self, column_data_iter):
-        for row_num, data in enumerate(column_data_iter):
-            if data is None:
-                continue
-
-            if not isinstance(data, Sized):
-                self._raise_verify_error(f'data:`{data}` the data type does not `Sized`', row_num)
-
-            if len(data) > self._value:
-                self._raise_verify_error(f'data:`{data}` exceeds the length limit', row_num)
-
-
-class RangeRule(BaseRule):
-
-    @BaseRule.value.setter
-    def value(self, clause):
-        min_num, max_num = clause.split('-')
-        min_num = int(min_num)
-        max_num = int(max_num)
-        assert min_num <= max_num
-        self._value = (min_num, max_num)
-
-    def verify(self, column_data_iter):
-        for row_num, data in enumerate(column_data_iter):
-            if data is None:
-                continue
-
-            if type(data) in (int, float):
-                if not (self._value[0] <= data <= self._value[1]):
-                    self._raise_verify_error(f'data:`{data}` is out of range', row_num)
-
-            elif isinstance(data, Sized):
-                if not (self._value[0] <= len(data) <= self._value[1]):
-                    self._raise_verify_error(f'data:`{data}` is out of range', row_num)
-
-
-class SourceRule(BaseRule):
-
-    @BaseRule.value.setter
-    def value(self, clause):
-        self._value = clause
-
-    def verify(self, column_data_iter):
-        for row_num, data in enumerate(column_data_iter):
-            if data is None:
-                continue
-
-            if not os.path.exists(os.path.join(self._value, data)):
-                self._raise_verify_error(f'data:`{data}` path not found', row_num)
-
-
-class UniqueRule(BaseRule):
-    def verify(self, column_data_iter):
-        d = {}
-        for row_num, data in enumerate(column_data_iter):
-            if data is None:
-                continue
-
-            if data in d:
-                err = f'data:`{data}` is not unique already defined at ' \
-                      f'r{self._table_obj.data_row_num + d[data]}:c{self._column_num + 1}'
-                self._raise_verify_error(err, row_num)
-            d[data] = row_num
-
-
-class NotEmptyRule(BaseRule):
-    def verify(self, column_data_iter):
-        for row_num, data in enumerate(column_data_iter):
-            if data is None:
-                self._raise_verify_error('the data is empty', row_num)
 
 
 class StructRule(BaseRule):
@@ -214,6 +218,10 @@ class StructRule(BaseRule):
     def __child_column_data_iter(cell_data, index):
         for data in cell_data:
             yield data[index]
+
+
+class IgnoreRule(BaseRule):
+    pass
 
 
 class GlobalRule(object):
@@ -311,7 +319,7 @@ def parse_rules(table_obj, column_num, rules):
             rule_obj = create_rule_obj(table_obj, column_num, each_rule)
             rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            raise RuleException('formal error', each_rule)
+            raise RuleException('invalid rule', each_rule)
     return rule_list
 
 
@@ -400,8 +408,9 @@ MacroType = Enum('MacroType', ('name', 'value', 'desc'))
 # 规则标记类型定义
 ###############################
 RuleType = Enum('RuleType', {
-    '_': IgnoreRule,
-    'key': KeyRule, 'macro': MacroRule, 'ref': RefRule,
-    'len': LenRule, 'range': RangeRule, 'source': SourceRule,
-    'unique': UniqueRule, 'not_empty': NotEmptyRule, 'struct': StructRule
+    'key': KeyRule, 'macro': MacroRule,
+    'unique': UniqueRule, 'not_empty': NotEmptyRule,
+    'min': MinRule, 'max': MaxRule,
+    'source': SourceRule, 'ref': RefRule,
+    'struct': StructRule, '_': IgnoreRule
 })

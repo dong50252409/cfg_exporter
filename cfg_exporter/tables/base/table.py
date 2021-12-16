@@ -66,7 +66,7 @@ class Table(object):
                     column_list.append(False)
 
             except DataException as e:
-                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` {e.err}'
+                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` field:`{field_name}` {e.err}'
                 raise TableException(err)
         return column_list
 
@@ -92,11 +92,16 @@ class Table(object):
                         self.__table[DATA_INDEX][row_num].append(data)
 
             except RuleException as e:
-                err = f'r{self.rule_row_num}:c{col_num + 1} table:`{self.filename}` rule:`{e.rule_str}` {e.err}'
+                err = f'r{self.rule_row_num}:c{col_num + 1} table:`{self.filename}` ' \
+                      f'field:`{self.field_name_by_column_num(col_num)}` ' \
+                      f'type:`{self.data_type_by_column_num(col_num).name}` ' \
+                      f'rule:`{e.rule_str}` {e.err}'
                 raise TableException(err)
 
             except DataException as e:
-                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` {e.err}'
+                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` ' \
+                      f'field:`{self.field_name_by_column_num(col_num)}` ' \
+                      f'type:`{self.data_type_by_column_num(col_num).name}` {e.err}'
                 raise TableException(err)
 
     def has_table_and_field(self, table_name, field_name):
@@ -233,7 +238,7 @@ class Table(object):
             key_func = multi_key_func(self.key_columns)
         else:
             key_func = sgl_key_func(self.key_columns[0])
-            
+
         d = {}
         for row in self.data_iter:
             field_data = field_func(row)
@@ -250,18 +255,20 @@ class Table(object):
                 for rule_obj in rules:
                     rule_obj.verify(self.data_iter_by_column_num(col_num))
             except RuleException as e:
-                err = f'r{self.data_row_num + e.row_num}:c{col_num + 1} ' \
-                      f'table:`{self.filename}` rule:`{e.rule_str}` {e.err}'
+                err = f'r{self.data_row_num + e.row_num}:c{col_num + 1} table:`{self.filename}` ' \
+                      f'field:`{self.field_name_by_column_num(col_num)}` ' \
+                      f'type:`{self.data_type_by_column_num(col_num).name}`{e.err} ' \
+                      f'rule:`{e.rule_str}` {e.err}'
                 raise TableException(err)
 
         for global_rule_obj in self.global_rules.values():
             try:
                 global_rule_obj.verify(self)
             except RuleException as e:
-                if e.row_num is None and e.col_num is None:
-                    err = f'table:`{self.filename}'
-                else:
+                if e.row_num is not None and e.col_num is not None:
                     err = f'r{self.data_row_num + e.row_num}:c{e.col_num} table:`{self.filename}'
+                else:
+                    err = f' table:`{self.filename}'
 
                 if e.rule_str:
                     err = f'{err} rule:`{e.rule_str}`'
@@ -347,7 +354,7 @@ def convert_data(data_type, row):
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError):
-        raise DataException('incorrect data or data type')
+        raise DataException('invalid data or data type')
 
 
 __all__ = 'Table', 'TableException'
