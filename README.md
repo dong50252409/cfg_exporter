@@ -20,6 +20,8 @@
 * 可支持多种数据结构导入
     * `csv`
     * `excel`
+    * `memory`
+    * 扩展：继承`Table`类，实现`load_table`方法，参考`csv_table.py` `memory_table.py` `xlsx_table.py`
 * 可支持多种数据结构导出
     * `protobuf` 待实现
     * `json` 待实现
@@ -52,8 +54,8 @@
         主键列、宏的取值列
         key:1 | macro:value
         
-        值引用于item.id、范围100-1000、唯一、非空
-        ref:item.id | range:100-1000 | unique | not_empty
+        唯一 非空 范围100-1000 值引用于item.id列
+        unique | not_empty | min:100 | max:1000 | ref:item.id  
 
 * 唯一规则
 
@@ -70,14 +72,11 @@
 
   | 规则名称 | 描述 | 参数类型 | 示例 | 
   | -------- | ---- | -------- | ---- |
-  | `ignore` | 占位，主要配合`struct`规则使用。 | | `ref:item.id` 当前列值引用自`item`表的`id`列数据 |
-  | `unique` | 检查当前列值是否全列唯一。 | | `unique` |
-  | `not_empty` | 检查当前列是否无空值。 | | `not_empty` |
-  | `ref:table_name.field_name` | 检查当前列的值是否在`table_name`表`field_name`列中存在。 | `str` | `ref:item.id` 当前列值引用自`item`表的`id`列数据 |
-  | `len:number` | 限定字符串、列表、元祖等可迭代结构最大长度。<br/>`支持检查`str` `iter`等类型。 | `int` | `len:100` 最大长度为`100` |
-  | `range:min-max` | 检查值的范围，包含上下边界。<br/>`支持检查`int` `float` `str` `iter`等类型。 | `int` | `range:0-100` 限定取值范围在`0-100`之间 |
-  | `source:path` | 检查引用资源是否存在。 | `str` | 要检查资源目录的路径<br/>绝对路径`source:D:/project/source/ui`<br/>相对路径 `source:source/ui` |
-  | `struct:rules` | 对结构中的各项值进行规则检查，仅支持指定普通规则。 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/><br/>`struct:[(ref:item.id｜unique, range:0-10000, _)]`<br/>对 `1、2`进行`ref`、`unique`规则检查<br/>对`100、200`进行`range`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[len:10]`<br/>对`"abc"、[1,2,3]、(4,5,6)` 进行`len`规则检查 |
-
-
-
+  | `unique` | 检查当前列的值是否全列唯一。如果指定在`struct`规则中则仅检查当前单元格的值是否全结构唯一。 | | `unique` |
+  | `not_empty` | 检查当前列的值是否无空值。 | | `not_empty` |
+  | `min:number` | 检查当前列的值是否大于等于规定值。<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `min:1` |
+  | `man:number` | 检查当前列的值是否小于等于规定值。<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `max:99` |
+  | `source:path` | 检查引用资源是否存在。 | `str` | 要检查资源目录的相对或绝对路径<br/>`source:source/ui`<br/>`source:D:/project/source/ui` |
+  | `ref:table_name.field_name` | 检查当前列的值是否在`table_name`表`field_name`列中存在。 | `str` | `ref:item.id` 当前的列值引用于`item`表的`id`列的值 |
+  | `struct:rules` | 对`iter`类型结构中的各项值进行规则检查，仅支持指定普通规则。 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/><br/>`struct:[(unique｜ref:item.id, min:0｜max:10000, _)]`<br/>对 `1` `2`进行`unique` `ref`规则检查<br/>对`100` `200`进行`min` `max`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[max:10]`<br/>对`"abc"` `[1,2,3]` `(4,5,6)` 进行长度检查 |
+  | `ignore` | 无特殊意义，仅用作占位，配合`struct`规则使用。 | | `ref:item.id` 当前列值引用自`item`表的`id`列数据 |
