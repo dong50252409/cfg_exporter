@@ -39,6 +39,10 @@ class BaseRule(object):
         raise RuleException(err, self._rule_str, row_num)
 
 
+class IgnoreRule(BaseRule):
+    pass
+
+
 class KeyRule(BaseRule):
 
     @BaseRule.value.setter
@@ -396,6 +400,7 @@ MacroType = Enum('MacroType', ('name', 'value', 'desc'))
 # 规则标记类型定义
 ###############################
 RuleType = Enum('RuleType', {
+    '_': IgnoreRule,
     'key': KeyRule, 'macro': MacroRule, 'ref': RefRule,
     'len': LenRule, 'range': RangeRule, 'source': SourceRule,
     'unique': UniqueRule, 'not_empty': NotEmptyRule, 'struct': StructRule

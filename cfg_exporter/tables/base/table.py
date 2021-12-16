@@ -140,6 +140,10 @@ class Table(object):
         return self.__desc_row + 1
 
     @property
+    def is_load(self):
+        return self.__is_load
+
+    @property
     def row_count(self):
         return self.__row_count
 
@@ -200,8 +204,9 @@ class Table(object):
 
     @property
     def key_data_iter(self):
+        func = multi_key_func(self.key_columns) if len(self.key_columns) > 1 else sgl_key_func(self.key_columns[0])
         for row in self.data_iter:
-            yield [row[col_num] for col_num in self.key_columns]
+            yield func(row)
 
     @property
     def macro_data_iter(self):
@@ -218,9 +223,26 @@ class Table(object):
                     if macro_name is not None:
                         yield macro_name, row[macro_dict[MacroType.value]], None
 
-    @property
-    def is_load(self):
-        return self.__is_load
+    def key_data_list_by_field_names(self, *field_names):
+        if len(field_names) > 1:
+            field_func = multi_field_func([self.field_names.index(field_name) for field_name in field_names])
+        else:
+            field_func = sgl_field_func(self.field_names.index(field_names[0]))
+
+        if len(self.key_columns) > 1:
+            key_func = multi_key_func(self.key_columns)
+        else:
+            key_func = sgl_key_func(self.key_columns[0])
+            
+        d = {}
+        for row in self.data_iter:
+            field_data = field_func(row)
+            key_data = key_func(row)
+            if field_data in d:
+                d[field_data].append(key_data)
+            else:
+                d[field_data] = [key_data]
+        return d.items()
 
     def verify(self):
         for col_num, rules in enumerate(self.rules):
@@ -255,6 +277,31 @@ class TableException(Exception):
 
     def __str__(self):
         return self.err
+
+
+class DataException(Exception):
+    def __init__(self, err):
+        super().__init__(self)
+        self.err = err
+
+    def __str__(self):
+        return self.err
+
+
+def multi_key_func(key_columns):
+    return lambda row: tuple([row[col_num] for col_num in key_columns])
+
+
+def sgl_key_func(col_num):
+    return lambda row: row[col_num]
+
+
+def multi_field_func(col_num_list):
+    return lambda row: tuple([row[col_num] for col_num in col_num_list])
+
+
+def sgl_field_func(col_num):
+    return lambda row: row[col_num]
 
 
 def convert_field_name(field_name):
@@ -303,10 +350,4 @@ def convert_data(data_type, row):
         raise DataException('incorrect data or data type')
 
 
-class DataException(Exception):
-    def __init__(self, err):
-        super().__init__(self)
-        self.err = err
-
-    def __str__(self):
-        return self.err
+__all__ = 'Table', 'TableException'
