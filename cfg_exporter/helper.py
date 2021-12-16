@@ -138,4 +138,4 @@ erl_group.add_argument('--hrl_dir',
 
 args = parser.parse_args()
 
-__all__ = args,
+__all__ = 'args',
