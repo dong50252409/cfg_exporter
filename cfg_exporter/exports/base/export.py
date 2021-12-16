@@ -47,7 +47,7 @@ class Export(object):
 
 def search_extend_template(source, ext):
     source = os.path.join(source, f'*.{ext}.{TEMPLATE_EXTENSION}')
-    return glob.glob(source)
+    return glob.iglob(source)
 
 
 __all__ = 'Export',

@@ -38,11 +38,14 @@ class Container(object):
             return table_obj
 
     def import_table(self):
-        source = self.args.source
         for macro in ExtensionType.__members__.values():
+            source = self.args.source
             if os.path.isdir(source):
-                source = os.path.join(source, '**', f'*.{macro.name}')
-                for file in glob.glob(source, recursive=self.args.recursive):
+                if self.args.recursive:
+                    source = os.path.join(source, '**', f'*.{macro.name}')
+                else:
+                    source = os.path.join(source, f'*.{macro.name}')
+                for file in glob.iglob(source, recursive=self.args.recursive):
                     self.create_table_obj(macro.value, file)
             elif os.path.isfile(source) and source.endswith(f'.{macro.name}'):
                 self.create_table_obj(macro.value, source)
