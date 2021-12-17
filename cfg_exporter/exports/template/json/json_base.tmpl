@@ -1,0 +1,8 @@
+@require(table_obj, prefix)
+{
+@for row in table_obj.row_iter:
+@for field_name, data in zip(table_obj.field_names, row):
+    "@field_name" : data!s
+@end
+@end
+}
