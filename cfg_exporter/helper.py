@@ -52,7 +52,7 @@ base_group.add_argument('-r', '--recursive',
                         action='store_true',
                         help='recursively search the source path.')
 
-base_group.add_argument('-v', '--verification',
+base_group.add_argument('--verification',
                         default=False,
                         action='store_true',
                         help='verify only the correctness of the configuration table.')
@@ -79,6 +79,11 @@ base_group.add_argument('--template_path',
                              f'`--export_type erl` templates ending with `.erl.{TEMPLATE_EXTENSION}` '
                              f'and `.hrl.{TEMPLATE_EXTENSION}` will be loaded\n'
                              f'`--export_type lua` templates ending with `.lua.{TEMPLATE_EXTENSION}` will be loaded')
+
+base_group.add_argument('--verbose',
+                        default=False,
+                        action='store_true',
+                        help='show the details.')
 
 table_group = parser.add_argument_group(title='table options:')
 

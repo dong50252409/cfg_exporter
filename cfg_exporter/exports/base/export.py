@@ -1,3 +1,4 @@
+import logging
 import os
 import glob
 from abc import abstractmethod
@@ -23,7 +24,9 @@ class Export(object):
                         self.extend_templates[tmpl_type].append(table_name)
                     else:
                         self.extend_templates[tmpl_type] = [table_name]
-                    template_path.append(os.path.dirname(template_file))
+                    template_path.append(os.path.abspath(os.path.dirname(template_file)))
+
+        logging.debug(f'render engine file loader {[os.path.abspath(file_path) for file_path in template_path]}.')
 
         self.engine = Engine(
             loader=FileLoader(template_path),
@@ -33,11 +36,13 @@ class Export(object):
             self.engine.global_vars.update(global_vars)
 
     def render(self, filename, template_name, ctx):
-        full_filename = os.path.join(self.output, filename)
+        logging.debug(f'render {filename} ...')
+        full_filename = os.path.abspath(os.path.join(self.output, filename))
         if not os.path.exists(self.output):
             os.makedirs(self.output)
         with open(full_filename, 'w', encoding='utf-8') as f:
             content = self.engine.get_template(template_name).render(ctx)
+            logging.debug(f'render {filename} finished!')
             f.write(content)
 
     @abstractmethod
