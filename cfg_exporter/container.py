@@ -1,5 +1,6 @@
 import os
 import glob
+import logging
 
 from cfg_exporter.const import ExtensionType
 
@@ -8,6 +9,8 @@ class Container(object):
     def __init__(self, args):
         self.__cfg_dict = {}
         self.args = args
+        log_level = logging.NOTSET if self.args.verbose else logging.WARNING
+        logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s: %(message)s')
         cls = self.args.export_type.value
         self.__export_obj = type(cls.__name__, (cls,), dict())(self.args)
 
@@ -18,8 +21,10 @@ class Container(object):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
         if table_obj.table_name in self.__cfg_dict:
             old_table_obj = self.__cfg_dict[table_obj.table_name]
-            print(f'waring the `{table_obj.filename}` table has the same name as the `{old_table_obj.filename}` table.'
-                  f'the `{old_table_obj.filename}` table will be replaced')
+            logging.warning(
+                f'waring the `{table_obj.filename}` table has the same name as the `{old_table_obj.filename}` table.'
+                f'the `{old_table_obj.filename}` table will be replaced'
+            )
         self.__cfg_dict[table_obj.table_name] = table_obj
 
     def has_table_and_field(self, table_name, field_name):

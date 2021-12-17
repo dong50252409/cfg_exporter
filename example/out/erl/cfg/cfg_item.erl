@@ -192,32 +192,32 @@ get_by_type(7) ->
 get_by_type(_) ->
     [].
 
-get_by_sub_type({1, 1}) ->
+get_by_sub_type(1, 1) ->
     [1];
-get_by_sub_type({1, 2}) ->
+get_by_sub_type(1, 2) ->
     [2];
-get_by_sub_type({2, 1}) ->
+get_by_sub_type(2, 1) ->
     [3];
-get_by_sub_type({2, 2}) ->
+get_by_sub_type(2, 2) ->
     [4];
-get_by_sub_type({2, 3}) ->
+get_by_sub_type(2, 3) ->
     [5];
-get_by_sub_type({2, 4}) ->
+get_by_sub_type(2, 4) ->
     [6];
-get_by_sub_type({8, 1}) ->
+get_by_sub_type(8, 1) ->
     [101];
-get_by_sub_type({8, 2}) ->
+get_by_sub_type(8, 2) ->
     [102];
-get_by_sub_type({7, 1}) ->
+get_by_sub_type(7, 1) ->
     [103];
-get_by_sub_type({7, 2}) ->
+get_by_sub_type(7, 2) ->
     [201];
-get_by_sub_type({7, 3}) ->
+get_by_sub_type(7, 3) ->
     [202];
-get_by_sub_type({7, 4}) ->
+get_by_sub_type(7, 4) ->
     [203];
-get_by_sub_type({7, 5}) ->
+get_by_sub_type(7, 5) ->
     [204];
-get_by_sub_type(_) ->
+get_by_sub_type(_, _) ->
     [].
 

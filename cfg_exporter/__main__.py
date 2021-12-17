@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # import multiprocessing
+import logging
 
 import cfg_exporter.helper as helper
 from cfg_exporter.container import Container
@@ -15,6 +16,5 @@ if __name__ == '__main__':
         if not helper.args.verification and helper.args.export_type is not None:
             obj.export_table()
     except TableException as e:
-        print(e.err)
-
+        logging.error(e.err)
     pass

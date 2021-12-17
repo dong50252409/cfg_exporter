@@ -1,4 +1,5 @@
 import itertools
+import logging
 import os
 from abc import abstractmethod
 from typing import Iterable
@@ -44,6 +45,7 @@ class Table(object):
         ...
 
     def _load_table(self, rows):
+        logging.debug(f'loading table {self.filename} ...')
         loadable_column_list = self.__load_field_name(rows)
 
         self.__load_other(rows, loadable_column_list)
@@ -52,6 +54,7 @@ class Table(object):
             self.__key_columns = [col_num for col_num in sorted(self.__global_rules[KeyRule.__name__].values.values())]
 
         self.__is_load = True
+        logging.debug(f'table {self.filename} loaded!')
 
     def __load_field_name(self, rows):
         column_list = []
@@ -189,18 +192,18 @@ class Table(object):
         return self.descriptions[column_num]
 
     @property
-    def data_iter(self):
+    def row_iter(self):
         for row in self.__table[DATA_INDEX]:
             yield row
 
     def data_iter_by_column_num(self, column_num):
-        for row in self.data_iter:
+        for row in self.row_iter:
             yield row[column_num]
 
     def data_iter_by_field_name(self, field_name):
         if field_name in self.field_names:
             column_num = self.field_names.index(field_name)
-            for row in self.data_iter:
+            for row in self.row_iter:
                 yield row[column_num]
 
     @property
@@ -209,8 +212,8 @@ class Table(object):
 
     @property
     def key_data_iter(self):
-        func = multi_key_func(self.key_columns) if len(self.key_columns) > 1 else sgl_key_func(self.key_columns[0])
-        for row in self.data_iter:
+        func = multi_value_func(self.key_columns) if len(self.key_columns) > 1 else sgl_value_func(self.key_columns[0])
+        for row in self.row_iter:
             yield func(row)
 
     @property
@@ -218,36 +221,39 @@ class Table(object):
         if MacroRule.__name__ in self.global_rules:
             macro_dict = self.global_rules[MacroRule.__name__].values
             if MacroType.name in macro_dict and MacroType.desc in macro_dict:
-                for row in self.data_iter:
+                for row in self.row_iter:
                     macro_name = row[macro_dict[MacroType.name]]
                     if macro_name is not None:
                         yield macro_name, row[macro_dict[MacroType.value]], row[macro_dict[MacroType.desc]]
             elif MacroType.name in macro_dict:
-                for row in self.data_iter:
+                for row in self.row_iter:
                     macro_name = row[macro_dict[MacroType.name]]
                     if macro_name is not None:
                         yield macro_name, row[macro_dict[MacroType.value]], None
 
-    def key_data_list_by_field_names(self, *field_names):
-        if len(field_names) > 1:
-            field_func = multi_field_func([self.field_names.index(field_name) for field_name in field_names])
+    def index_list(self, index_field_names, value_field_names):
+        if len(index_field_names) > 1:
+            index_func = multi_field_func([self.field_names.index(field_name) for field_name in index_field_names])
         else:
-            field_func = sgl_field_func(self.field_names.index(field_names[0]))
+            index_func = sgl_field_func(self.field_names.index(index_field_names[0]))
 
-        if len(self.key_columns) > 1:
-            key_func = multi_key_func(self.key_columns)
+        if len(value_field_names) > 1:
+            value_func = multi_value_func([self.field_names.index(field_name) for field_name in value_field_names])
         else:
-            key_func = sgl_key_func(self.key_columns[0])
+            value_func = sgl_value_func(self.field_names.index(value_field_names[0]))
 
         d = {}
-        for row in self.data_iter:
-            field_data = field_func(row)
-            key_data = key_func(row)
-            if field_data in d:
-                d[field_data].append(key_data)
+        for row in self.row_iter:
+            fields = index_func(row)
+            str_fields = str(fields)
+            values = value_func(row)
+            if str_fields in d:
+                _, values_list = d[str_fields]
+                values_list.append(values)
             else:
-                d[field_data] = [key_data]
-        return d.items()
+                d[str_fields] = (fields, [values])
+        for values in d.values():
+            yield values
 
     def verify(self):
         for col_num, rules in enumerate(self.rules):
@@ -295,11 +301,11 @@ class DataException(Exception):
         return self.err
 
 
-def multi_key_func(key_columns):
+def multi_value_func(key_columns):
     return lambda row: tuple([row[col_num] for col_num in key_columns])
 
 
-def sgl_key_func(col_num):
+def sgl_value_func(col_num):
     return lambda row: row[col_num]
 
 
@@ -308,7 +314,7 @@ def multi_field_func(col_num_list):
 
 
 def sgl_field_func(col_num):
-    return lambda row: row[col_num]
+    return lambda row: [row[col_num]]
 
 
 def convert_field_name(field_name):
