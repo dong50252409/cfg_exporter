@@ -34,14 +34,14 @@ class ErlExport(Export):
         table_name = table_obj.table_name
 
         self.output = os.path.join(self.args.output, self.args.erl_dir)
-        erl_filename = f'{self.prefix}{table_name}.{ERL_EXTENSION}'
+        erl_filename = f'{table_name}.{ERL_EXTENSION}'
         if table_name in self.extend_templates.get(ERL_EXTENSION, []):
             self.render(erl_filename, f'{table_name}.{ERL_EXTENSION}.{TEMPLATE_EXTENSION}', ctx)
         else:
             self.render(erl_filename, ERL_BASE_TEMPLATE, ctx)
 
         self.output = os.path.join(self.args.output, self.args.hrl_dir)
-        hrl_filename = f'{self.prefix}{table_name}.{HRL_EXTENSION}'
+        hrl_filename = f'{table_name}.{HRL_EXTENSION}'
         if table_name in self.extend_templates.get(HRL_EXTENSION, []):
             self.render(hrl_filename, f'{table_name}.{HRL_EXTENSION}.{TEMPLATE_EXTENSION}', ctx)
         else:

@@ -62,6 +62,10 @@ base_group.add_argument('-o', '--output',
                         default="",
                         help='specify the configuration table output path.')
 
+base_group.add_argument('--file_prefix',
+                        default='',
+                        help='specify the prefix of the output filename.')
+
 base_group.add_argument('-t', '--export_type',
                         type=valid_export,
                         metavar=f'[{",".join(ExportType.__members__.keys())}]',
@@ -131,7 +135,7 @@ erl_group = parser.add_argument_group(title='erlang options:')
 
 erl_group.add_argument('--erl_prefix',
                        default='',
-                       help='specify the prefix of filename and record name.')
+                       help='specify the prefix of the record name.')
 
 erl_group.add_argument('--erl_dir',
                        default='',

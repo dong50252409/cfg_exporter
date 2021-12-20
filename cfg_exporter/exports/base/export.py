@@ -36,6 +36,7 @@ class Export(object):
             self.engine.global_vars.update(global_vars)
 
     def render(self, filename, template_name, ctx):
+        filename = f'{self.args.file_prefix}{filename}'
         logging.debug(f'render {filename} ...')
         full_filename = os.path.abspath(os.path.join(self.output, filename))
         if not os.path.exists(self.output):
