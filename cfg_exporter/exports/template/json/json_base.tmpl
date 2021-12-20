@@ -1,8 +1,17 @@
-@require(table_obj, prefix)
-{
-@for row in table_obj.row_iter:
-@for field_name, data in zip(table_obj.field_names, row):
-    "@field_name" : data!s
+@require(table_obj)
+@def gen_body(row):
+@{',\n        '.join(['"%s" : %s' %(field_name, format_value(value)) for field_name, value in zip(table_obj.field_names, row)])}\
+@end
+[
+@for index, row in enumerate(table_obj.row_iter, start=1):
+@if index < table_obj.row_count:
+    {
+        @gen_body(row)
+    },
+@else:
+    {
+        @gen_body(row)
+    }
 @end
 @end
-}
+]

@@ -24,16 +24,16 @@
     * 扩展：继承`Table`类，实现`load_table`方法，参考`csv_table.py` `memory_table.py` `xlsx_table.py`
 * 可支持多种数据结构导出
     * `protobuf` 待实现
-    * `json` 待实现
+    * `json`
     * `erl`
     * `lua` 待实现
     * 通过模板支持自定义格式
     * ....
 
-名目规范
+命名规范
 ----
 
-* 命名规则 `^[a-zA-Z]([a-zA-Z0-9]|_)*` 包括字段名、宏名称
+* 命名规则 `^[a-zA-Z]([a-zA-Z0-9]|_)*` 包括字段名、宏名
 
 数据类型
 ----
@@ -62,21 +62,21 @@
   全表不可重复指定的规则
 
   | 规则名称 | 描述 | 参数类型 | 示例 |
-  | -------- | ---- | -------- | ---- |
-  | `key:number` | 标记当前列为主键列，有多个主键列可多次标记<br/>主键列不可为空，联合主键不可重复，编号从1开始。 | `int` | `key:1` 当前列为主键，编号为1 |
-  | `macro:type` | 标记当前列作为宏的一部分。 | `str` | `type:name` 当前列为宏名称<br/>`type:value` 当前列为宏值<br/>`type:desc` 当前列为宏描述（可选） |
+  | :----: | ---- | :----: | ---- |
+  | `key:number` | 标记当前列为主键列，有多个主键列可多次标记<br/>主键列不可为空，联合主键不可重复，编号从1开始 | `int` | `key:1` 当前列为主键，编号为1 |
+  | `macro:type` | 标记当前列作为宏的一部分 | `str` | `type:name` 当前列为宏名称<br/>`type:value` 当前列为宏值<br/>`type:desc` 当前列为宏描述（可选） |
 
 * 普通规则
 
   可重复指定的规则
 
   | 规则名称 | 描述 | 参数类型 | 示例 | 
-  | -------- | ---- | -------- | ---- |
-  | `unique` | 检查当前列的值是否全列唯一。如果指定在`struct`规则中则仅检查当前单元格的值是否全结构唯一。 | | `unique` |
-  | `not_empty` | 检查当前列的值是否无空值。 | | `not_empty` |
-  | `min:number` | 检查当前列的值是否大于等于规定值。<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `min:1` |
-  | `man:number` | 检查当前列的值是否小于等于规定值。<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `max:99` |
-  | `source:path` | 检查引用资源是否存在。 | `str` | 要检查资源目录的相对或绝对路径<br/>`source:source/ui`<br/>`source:D:/project/source/ui` |
-  | `ref:table_name.field_name` | 检查当前列的值是否在`table_name`表`field_name`列中存在。 | `str` | `ref:item.id` 当前的列值引用于`item`表的`id`列的值 |
-  | `struct:rules` | 对`iter`类型结构中的各项值进行规则检查，仅支持指定普通规则。 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/><br/>`struct:[(unique｜ref:item.id, min:0｜max:10000, _)]`<br/>对 `1` `2`进行`unique` `ref`规则检查<br/>对`100` `200`进行`min` `max`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[max:10]`<br/>对`"abc"` `[1,2,3]` `(4,5,6)` 进行长度检查 |
-  | `ignore` | 无特殊意义，仅用作占位，配合`struct`规则使用。 | | `ref:item.id` 当前列值引用自`item`表的`id`列数据 |
+  | :----: | ---- | :----: | ---- |
+  | `unique` | 检查当前列的值是否全列唯一<br/>如果指定在`struct`规则中则检查当前单元格的值是否全结构唯一 | | `unique` |
+  | `not_empty` | 检查当前列的值是否无空值 | | `not_empty` |
+  | `min:number` | 检查当前列的值是否大于等于规定值<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `min:1` |
+  | `max:number` | 检查当前列的值是否小于等于规定值<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `max:99` |
+  | `source:path` | 检查引用资源是否存在 | `str` | 要检查资源目录的相对或绝对路径<br/>`source:source/ui`<br/>`source:D:/project/source/ui` |
+  | `ref:table_name.field_name` | 检查当前列的值是否在`table_name`表`field_name`列中存在 | `str` | `ref:item.id` 当前的列值引用于`item`表的`id`列的值 |
+  | `struct:rules` | 对`iter`类型结构中的各项值进行规则检查<br/>仅支持指定普通规则 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/>`struct:[(unique｜ref:item.id,min:0｜max:10000,_)]`<br/>对 `1` `2`进行`unique` `ref`规则检查<br/>对`100` `200`进行`min` `max`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[max:10]`<br/>对`"abc"` `[1,2,3]` `(4,5,6)` 进行长度检查 |
+  | `ignore` | 无特殊意义，仅用作占位，配合`struct`规则使用 | | |
