@@ -345,7 +345,7 @@ def convert_rules(table_obj, column_num, rules):
 
 
 def convert_desc(desc):
-    return desc if util.trim(desc) else None
+    return util.trim_desc(desc)
 
 
 def convert_data(data_type, row):
