@@ -1,10 +1,10 @@
 @def key_index_func(tab_obj, func_name, index_field_names, value_field_names):
 @#ignore
 @for index_values, key_values in tab_obj.index_list(index_field_names, value_field_names):
-@{func_name}(@{', '.join([format_value(data) for data in index_values])}) ->
+@`func_name`(@`', '.join([format_value(data) for data in index_values])`) ->
     @format_value(key_values);
 @else:
-@{func_name}(@{', '.join(['_' for data in index_values])}) ->
+@`func_name`(@`', '.join(['_' for data in index_values])`) ->
     [].
 @end
 @end
@@ -12,21 +12,21 @@
 %%===================================
 %%  AUTO GENERATE BY CFG_EXPORTER
 %%===================================
--module(@{prefix}@{table_obj.table_name}).
+-module(@`prefix`@`table_obj.table_name`).
 -compile([export_all, nowarn_export_all]).
--include("@{prefix}@{table_obj.table_name}.hrl").
+-include("@`prefix`@`table_obj.table_name`.hrl").
 
 @for row in table_obj.row_iter:
-get(@{', '.join([format_value(row[col_num]) for col_num in table_obj.key_columns])}) ->
-    #@{prefix}@{table_obj.table_name}{
-        @{',\n        '.join(['%s = %s' % (field_name, format_value(data)) for field_name, data in zip(table_obj.field_names, row)])}
+get(@`', '.join([format_value(row[col_num]) for col_num in table_obj.key_columns])`) ->
+    #@`prefix`@`table_obj.table_name`{
+        @`',\n        '.join([f'{field_name} = {format_value(data)}' for field_name, data in zip(table_obj.field_names, row)])`
     };
 @end
-get(@{', '.join(['_' for _ in table_obj.key_columns])}) ->
+get(@`', '.join(['_' for _ in table_obj.key_columns])`) ->
     undefined.
 
 list() ->
     [
-        @{',\n        '.join([format_value(key_data) for key_data in table_obj.key_data_iter])}
+        @`',\n        '.join([format_value(key_data) for key_data in table_obj.key_data_iter])`
     ].
 

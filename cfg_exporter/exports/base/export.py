@@ -1,11 +1,22 @@
+import glob
 import logging
 import os
-import glob
+import re
+import typing
 from abc import abstractmethod
 
 from wheezy.template import Engine, FileLoader, CoreExtension, CodeExtension
+from wheezy.template.ext.core import rvalue_token
+from wheezy.template.typing import LexerRule
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
+
+
+class ExpressionExtension:
+    def __init__(self):
+        self.lexer_rules: typing.Dict[int, LexerRule] = {
+            201: (re.compile(r"@`(.*?)`"), rvalue_token)
+        }
 
 
 class Export(object):
@@ -30,7 +41,7 @@ class Export(object):
 
         self.engine = Engine(
             loader=FileLoader(template_path),
-            extensions=[CoreExtension(), CodeExtension()]
+            extensions=[CoreExtension(), CodeExtension(), ExpressionExtension()]
         )
         if global_vars is not None:
             self.engine.global_vars.update(global_vars)
@@ -57,18 +68,3 @@ def search_extend_template(source, ext):
 
 
 __all__ = 'Export',
-
-if __name__ == '__main__':
-    from wheezy.template import DictLoader
-
-    template = r"""
-    @require(l1,l2)
-    @return{','.join('%s=%s'% t for t in zip(l1,l2))}
-    """
-    l1 = range(5)
-    l2 = range(5)
-    engine = Engine(
-        loader=DictLoader({"template": template}),
-        extensions=[CoreExtension(), CodeExtension()]
-    )
-    print(engine.get_template("template").render({"l1": l1, "l2": l2}))

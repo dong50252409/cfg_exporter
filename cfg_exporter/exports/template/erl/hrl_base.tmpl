@@ -2,14 +2,14 @@
 %%===================================
 %%  AUTO GENERATE BY CFG_EXPORTER
 %%===================================
--ifndef(@{prefix.upper()}@{table_obj.table_name.upper()}_HRL).
--define(@{prefix.upper()}@{table_obj.table_name.upper()}_HRL, true).
--record(@{prefix}@{table_obj.table_name}, {
-    @{(',%s\n    '.join(table_obj.field_names) + '%s') % tuple(['    % ' + desc if desc else '' for desc in table_obj.descriptions])}
+-ifndef(@`prefix.upper()`@`table_obj.table_name.upper()`_HRL).
+-define(@`prefix.upper()`@`table_obj.table_name.upper()`_HRL, true).
+-record(@`prefix`@`table_obj.table_name`, {
+    @`(',{}\n    '.join(table_obj.field_names) + '{}').format(*[f'    % {desc}'  if desc else '' for desc in table_obj.descriptions])`
 }).
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
 @if macro_name is not None and macro_value is not None:
--define(@{macro_name.upper()}, @{format_value(macro_value)}).@{macro_desc and '    % ' + macro_desc or ''}
+-define(@`macro_name.upper()`, @`format_value(macro_value)`).@`macro_desc and f'    % {macro_desc}' or ''`
 @end
 @end
 -endif.
