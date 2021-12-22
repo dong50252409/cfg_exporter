@@ -8,6 +8,12 @@ class XLSXTable(Table):
 
     def load_table(self):
         book = openpyxl.load_workbook(self.full_filename, read_only=True, data_only=True)
-        sheet = book[book.sheetnames[self.args.default_sheet - 1]]
-        rows = list(sheet.iter_rows(values_only=True))
-        self._load_table(rows)
+        if self.args.multi_sheets:
+            for sheet_name in book.sheetnames:
+                sheet = book[sheet_name]
+                rows = list(sheet.iter_rows(values_only=True))
+                self._load_table(rows)
+        else:
+            sheet = book[book.sheetnames[0]]
+            rows = list(sheet.iter_rows(values_only=True))
+            self._load_table(rows)

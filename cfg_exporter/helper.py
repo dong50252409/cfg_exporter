@@ -27,15 +27,6 @@ def valid_table(row_num):
         raise ArgumentTypeError(f'{row_num} is not a valid line number')
 
 
-def valid_default_sheet(sheet):
-    try:
-        sheet = int(sheet)
-        assert sheet > 0
-        return sheet
-    except (ValueError, AssertionError):
-        raise ArgumentTypeError(f'{sheet} is not a valid worksheet')
-
-
 parser = ArgumentParser(description='Configuration table export toolset', formatter_class=RawTextHelpFormatter)
 
 base_group = parser.add_argument_group(title='base options:')
@@ -124,12 +115,12 @@ csv_group.add_argument('--csv_encoding',
 
 xlsx_group = parser.add_argument_group(title='xlsx options:')
 
-xlsx_group.add_argument('--default_sheet',
-                        type=valid_default_sheet,
-                        default=1,
-                        metavar='SHEET_NUM',
-                        help='specify the default worksheet for XLSX files.\n'
-                             'DEFAULT 1')
+xlsx_group.add_argument('--multi_sheets',
+                        default=False,
+                        action='store_true',
+                        help='an XLSX file contains multiple worksheets that must begin with an XLSX file name.\n'
+                             'e.g `item.xlsx` file contains worksheets such as `item` `item_type` `Sheet1`\n'
+                             'it will load the `item` and `item_type` worksheets')
 
 erl_group = parser.add_argument_group(title='erlang options:')
 
