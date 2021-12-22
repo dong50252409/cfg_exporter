@@ -15,6 +15,6 @@ class XLSXTable(Table):
                     rows = list(sheet.iter_rows(values_only=True))
                     self._load_table(rows)
         else:
-            sheet = book[book.sheetnames[0]]
+            sheet = book.active
             rows = list(sheet.iter_rows(values_only=True))
             self._load_table(rows)

@@ -51,7 +51,8 @@ class Container(object):
                 else:
                     source = os.path.join(source, f'*.{macro.name}')
                 for file in glob.iglob(source, recursive=self.args.recursive):
-                    self.create_table_obj(macro.value, file)
+                    if os.path.basename(file) not in self.args.exclude_files:
+                        self.create_table_obj(macro.value, file)
             elif os.path.isfile(source) and source.endswith(f'.{macro.name}'):
                 self.create_table_obj(macro.value, source)
 

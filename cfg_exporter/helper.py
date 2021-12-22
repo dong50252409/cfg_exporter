@@ -80,6 +80,12 @@ base_group.add_argument('--verbose',
                         action='store_true',
                         help='show the details.')
 
+base_group.add_argument('--exclude_files',
+                        default=[],
+                        action="extend",
+                        nargs="+",
+                        help='specify a list of file names not to load.')
+
 table_group = parser.add_argument_group(title='table options:')
 
 table_group.add_argument('--field_row',
