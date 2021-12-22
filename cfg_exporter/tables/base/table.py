@@ -26,8 +26,8 @@ class Table(object):
     def __parse_args(self):
         self.__field_row = self.args.field_row - 1
         self.__type_row = self.args.type_row - 1
-        self.__rule_row = self.args.rule_row - 1 if 'rule_row' in self.args else None
-        self.__desc_row = self.args.desc_row - 1 if 'desc_row' in self.args else None
+        self.__rule_row = self.args.rule_row - 1 if self.args.rule_row else None
+        self.__desc_row = self.args.desc_row - 1 if self.args.desc_row else None
         self.__data_row = self.args.data_row - 1
         try:
             assert self.__data_row == max(
@@ -87,12 +87,15 @@ class Table(object):
         for col_num, (loadable_column, data_type, rules, desc) in enumerate(zip_iter):
             try:
                 if loadable_column:
-                    self.__table[DATA_TYPE_INDEX].append(convert_data_type(data_type))
-                    self.__table[RULE_INDEX].append(convert_rules(self, col_num, rules))
-                    self.__table[DESC_INDEX].append(convert_desc(desc))
+                    real_data_type = convert_data_type(data_type)
+                    real_rules = convert_rules(self, col_num, rules)
+                    real_desc = convert_desc(desc)
+                    self.__table[DATA_TYPE_INDEX].append(real_data_type)
+                    self.__table[RULE_INDEX].append(real_rules)
+                    self.__table[DESC_INDEX].append(real_desc)
                     for row_num, rows in enumerate(data_list):
-                        data = convert_data(self.data_type_by_column_num(col_num), rows[col_num])
-                        self.__table[DATA_INDEX][row_num].append(data)
+                        real_data = convert_data(real_data_type, rows[col_num])
+                        self.__table[DATA_INDEX][row_num].append(real_data)
 
             except RuleException as e:
                 err = f'r{self.rule_row_num}:c{col_num + 1} table:`{self.filename}` ' \
