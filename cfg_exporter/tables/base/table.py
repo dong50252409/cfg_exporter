@@ -7,7 +7,7 @@ from typing import Iterable
 import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
 from cfg_exporter.const import DataType
-from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, MacroType
+from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
@@ -59,7 +59,7 @@ class Table(object):
     def __load_field_name(self, rows):
         column_list = []
         field_list = rows[self.__field_row]
-        for col_num, field_name in enumerate(field_list):
+        for index, field_name in enumerate(field_list):
             try:
                 field_name = convert_field_name(field_name)
                 if field_name:
@@ -69,7 +69,7 @@ class Table(object):
                     column_list.append(False)
 
             except DataException as e:
-                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` field:`{field_name}` {e.err}'
+                err = f'r{self.data_type_row_num}:c{index + 1} table:`{self.filename}` field:`{field_name}` {e.err}'
                 raise TableException(err)
         return column_list
 
@@ -83,31 +83,32 @@ class Table(object):
         self.__column_count = len(self.__table[FIELD_NAME_INDEX])
         self.__table[DATA_INDEX].extend([[] for _ in range(self.__row_count)])
 
+        col_num = 0
         zip_iter = itertools.zip_longest(loadable_column_list, data_type_list, rule_list, desc_list)
-        for col_num, (loadable_column, data_type, rules, desc) in enumerate(zip_iter):
+        for index, (loadable_column, data_type, rules, desc) in enumerate(zip_iter):
             try:
                 if loadable_column:
                     real_data_type = convert_data_type(data_type)
-                    real_rules = convert_rules(self, col_num, rules)
+                    real_rules = convert_rules(self, index, rules)
                     real_desc = convert_desc(desc)
                     self.__table[DATA_TYPE_INDEX].append(real_data_type)
                     self.__table[RULE_INDEX].append(real_rules)
                     self.__table[DESC_INDEX].append(real_desc)
                     for row_num, rows in enumerate(data_list):
-                        real_data = convert_data(real_data_type, rows[col_num])
+                        real_data = convert_data(real_data_type, rows[index])
                         self.__table[DATA_INDEX][row_num].append(real_data)
+                    col_num += 1
 
             except RuleException as e:
-                err = f'r{self.rule_row_num}:c{col_num + 1} table:`{self.filename}` ' \
+                err = f'r{self.rule_row_num}:c{index + 1} table:`{self.filename}` ' \
                       f'field:`{self.field_name_by_column_num(col_num)}` ' \
                       f'type:`{self.data_type_by_column_num(col_num).name}` ' \
                       f'rule:`{e.rule_str}` {e.err}'
                 raise TableException(err)
 
             except DataException as e:
-                err = f'r{self.data_type_row_num}:c{col_num + 1} table:`{self.filename}` ' \
-                      f'field:`{self.field_name_by_column_num(col_num)}` ' \
-                      f'type:`{self.data_type_by_column_num(col_num).name}` {e.err}'
+                err = f'r{self.data_type_row_num}:c{index + 1} table:`{self.filename}` ' \
+                      f'field:`{self.field_name_by_column_num(col_num)}` {e.err}'
                 raise TableException(err)
 
     def has_table_and_field(self, table_name, field_name):
@@ -343,8 +344,56 @@ def convert_data_type(data_type):
 def convert_rules(table_obj, column_num, rules):
     rules = util.trim(rules)
     if rules != '':
-        return tuple(rule.parse_rules(table_obj, column_num, rules))
+        return tuple(parse_rules(table_obj, column_num, rules))
     return []
+
+
+def parse_rules(table_obj, column_num, rules):
+    rule_list = []
+    for each_rule in iter_rule(rules):
+        try:
+            rule_obj = rule.create_rule_obj(table_obj, column_num, each_rule)
+            rule_list.append(rule_obj)
+        except (AssertionError, ValueError, KeyError):
+            raise DataException(f'{each_rule} is invalid rule')
+    return rule_list
+
+
+def iter_rule(rules):
+    start_index, cur_index, rules_len = 0, 1, len(rules)
+    while cur_index <= rules_len:
+        rule_str = rules[start_index:cur_index]
+        if rule_str in RuleType.__members__:
+            if rule_str == RuleType.struct.name:
+                last_pos = find_struct_last_position(rules[start_index:])
+            else:
+                last_pos = find_other_last_position(rules[start_index:])
+            last_pos = start_index + last_pos
+            yield rules[start_index:last_pos]
+            start_index, cur_index = last_pos + 1, last_pos + 1
+        cur_index += 1
+
+
+def find_struct_last_position(clause):
+    symbol_count = 0
+    for index, c in enumerate(clause, start=1):
+        if c == '[' or c == '(':
+            symbol_count += 1
+            continue
+
+        if c == ']' or c == ')':
+            symbol_count -= 1
+            if symbol_count == 0:
+                return index
+
+
+def find_other_last_position(clause):
+    index, clause_len = 0, len(clause)
+    while index < clause_len:
+        if clause[index] == '|':
+            return index
+        index += 1
+    return index
 
 
 def convert_desc(desc):
@@ -362,8 +411,8 @@ def convert_data(data_type, row):
                 return data_type.value(row)
         else:
             return None
-    except (SyntaxError, NameError, AssertionError, ValueError):
-        raise DataException('invalid data or data type')
+    except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):
+        raise DataException(f'type:{data_type.name} {row} is invalid data')
 
 
 __all__ = 'Table', 'TableException'

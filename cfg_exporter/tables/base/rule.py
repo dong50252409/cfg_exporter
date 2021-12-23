@@ -312,54 +312,6 @@ def create_rule_obj(table_obj, column_num, rule_str):
     return rule_obj
 
 
-def parse_rules(table_obj, column_num, rules):
-    rule_list = []
-    for each_rule in iter_rule(rules):
-        try:
-            rule_obj = create_rule_obj(table_obj, column_num, each_rule)
-            rule_list.append(rule_obj)
-        except (AssertionError, ValueError, KeyError):
-            raise RuleException('invalid rule', each_rule)
-    return rule_list
-
-
-def iter_rule(rules):
-    start_index, cur_index, rules_len = 0, 1, len(rules)
-    while cur_index <= rules_len:
-        rule_str = rules[start_index:cur_index]
-        if rule_str in RuleType.__members__:
-            if rule_str == RuleType.struct.name:
-                last_pos = find_struct_last_position(rules[start_index:])
-            else:
-                last_pos = find_other_last_position(rules[start_index:])
-            last_pos = start_index + last_pos
-            yield rules[start_index:last_pos]
-            start_index, cur_index = last_pos + 1, last_pos + 1
-        cur_index += 1
-
-
-def find_struct_last_position(clause):
-    symbol_count = 0
-    for index, c in enumerate(clause, start=1):
-        if c == '[' or c == '(':
-            symbol_count += 1
-            continue
-
-        if c == ']' or c == ')':
-            symbol_count -= 1
-            if symbol_count == 0:
-                return index
-
-
-def find_other_last_position(clause):
-    index, clause_len = 0, len(clause)
-    while index < clause_len:
-        if clause[index] == '|':
-            return index
-        index += 1
-    return index
-
-
 def parse_struct_clause(table_obj, column_num, clause, index=0, rules=None):
     clause_len = len(clause)
     while index < clause_len:
