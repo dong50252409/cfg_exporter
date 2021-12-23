@@ -15,28 +15,28 @@ FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
 class Table(object):
     def __init__(self, container_obj, filename, args):
-        self.__container_obj = container_obj
-        self.__full_filename = os.path.abspath(filename)
+        self._container_obj = container_obj
+        self._full_filename = os.path.abspath(filename)
         self.args = args
         self.__parse_args()
-        self.__table = [[], [], [], [], []]
-        self.__key_columns = []
-        self.__global_rules = {}
-        self.__is_load = False
+        self._table = [[], [], [], [], []]
+        self._key_columns = []
+        self._global_rules = {}
+        self._is_load = False
 
     def __parse_args(self):
-        self.__field_row = self.args.field_row - 1
-        self.__type_row = self.args.type_row - 1
-        self.__rule_row = self.args.rule_row - 1 if self.args.rule_row else None
-        self.__desc_row = self.args.desc_row - 1 if self.args.desc_row else None
-        self.__data_row = self.args.data_row - 1
+        self._field_row = self.args.field_row - 1
+        self._type_row = self.args.type_row - 1
+        self._rule_row = self.args.rule_row - 1 if self.args.rule_row else None
+        self._desc_row = self.args.desc_row - 1 if self.args.desc_row else None
+        self._data_row = self.args.data_row - 1
         try:
-            assert self.__data_row == max(
-                self.__data_row,
-                self.__field_row,
-                self.__type_row,
-                self.__rule_row if self.__rule_row else 0,
-                self.__desc_row if self.__desc_row else 0
+            assert self._data_row == max(
+                self._data_row,
+                self._field_row,
+                self._type_row,
+                self._rule_row if self._rule_row else 0,
+                self._desc_row if self._desc_row else 0
             )
         except AssertionError:
             raise TableException('the data row line is not at the bottom')
@@ -51,20 +51,20 @@ class Table(object):
 
         self.__load_other(rows, loadable_column_list)
 
-        if KeyRule.__name__ in self.__global_rules:
-            self.__key_columns = [col_num for col_num in sorted(self.__global_rules[KeyRule.__name__].values.values())]
+        if KeyRule.__name__ in self._global_rules:
+            self._key_columns = [col_num for col_num in sorted(self._global_rules[KeyRule.__name__].values.values())]
 
-        self.__is_load = True
+        self._is_load = True
         logging.debug(f'table {self.filename} loaded!')
 
     def __load_field_name(self, rows):
         column_list = []
-        field_list = rows[self.__field_row]
+        field_list = rows[self._field_row]
         for index, field_name in enumerate(field_list):
             try:
                 field_name = convert_field_name(field_name)
                 if field_name:
-                    self.__table[FIELD_NAME_INDEX].append(field_name)
+                    self._table[FIELD_NAME_INDEX].append(field_name)
                     column_list.append(True)
                 else:
                     column_list.append(False)
@@ -75,14 +75,14 @@ class Table(object):
         return column_list
 
     def __load_other(self, rows, loadable_column_list):
-        data_type_list = rows[self.__type_row]
-        rule_list = rows[self.__rule_row] if self.__rule_row is not None else []
-        desc_list = rows[self.__desc_row] if self.__desc_row is not None else []
-        data_list = rows[self.__data_row:]
+        data_type_list = rows[self._type_row]
+        rule_list = rows[self._rule_row] if self._rule_row is not None else []
+        desc_list = rows[self._desc_row] if self._desc_row is not None else []
+        data_list = rows[self._data_row:]
 
-        self.__row_count = len(data_list)
-        self.__column_count = len(self.__table[FIELD_NAME_INDEX])
-        self.__table[DATA_INDEX].extend([[] for _ in range(self.__row_count)])
+        self._row_count = len(data_list)
+        self._column_count = len(self._table[FIELD_NAME_INDEX])
+        self._table[DATA_INDEX].extend([[] for _ in range(self._row_count)])
 
         col_num = 0
         zip_iter = itertools.zip_longest(loadable_column_list, data_type_list, rule_list, desc_list)
@@ -92,12 +92,12 @@ class Table(object):
                     real_data_type = convert_data_type(data_type)
                     real_rules = [] if real_data_type is Raw else convert_rules(self, index, rules)
                     real_desc = convert_desc(desc)
-                    self.__table[DATA_TYPE_INDEX].append(real_data_type)
-                    self.__table[RULE_INDEX].append(real_rules)
-                    self.__table[DESC_INDEX].append(real_desc)
+                    self._table[DATA_TYPE_INDEX].append(real_data_type)
+                    self._table[RULE_INDEX].append(real_rules)
+                    self._table[DESC_INDEX].append(real_desc)
                     for row_num, rows in enumerate(data_list):
                         real_data = convert_data(real_data_type, rows[index])
-                        self.__table[DATA_INDEX][row_num].append(real_data)
+                        self._table[DATA_INDEX][row_num].append(real_data)
                     col_num += 1
 
             except RuleException as e:
@@ -115,90 +115,90 @@ class Table(object):
     def has_table_and_field(self, table_name, field_name):
         if table_name == self.table_name:
             return True, field_name in self.field_names
-        return self.__container_obj.has_table_and_field(table_name, field_name)
+        return self._container_obj.has_table_and_field(table_name, field_name)
 
     def get_table_obj(self, full_filename):
-        return self.__container_obj.get_table_obj(full_filename)
+        return self._container_obj.get_table_obj(full_filename)
 
     @property
     def full_filename(self):
-        return self.__full_filename
+        return self._full_filename
 
     @property
     def filename(self):
-        return os.path.basename(self.__full_filename)
+        return os.path.basename(self._full_filename)
 
     @property
     def table_name(self):
-        return os.path.splitext(os.path.basename(self.__full_filename))[0]
+        return os.path.splitext(os.path.basename(self._full_filename))[0]
 
     @property
     def field_name_row_num(self):
-        return self.__field_row + 1
+        return self._field_row + 1
 
     @property
     def data_type_row_num(self):
-        return self.__type_row + 1
+        return self._type_row + 1
 
     @property
     def data_row_num(self):
-        return self.__data_row + 1
+        return self._data_row + 1
 
     @property
     def rule_row_num(self):
-        return self.__rule_row + 1
+        return self._rule_row + 1
 
     @property
     def description_row_num(self):
-        return self.__desc_row + 1
+        return self._desc_row + 1
 
     @property
     def is_load(self):
-        return self.__is_load
+        return self._is_load
 
     @property
     def row_count(self):
-        return self.__row_count
+        return self._row_count
 
     @property
     def column_count(self):
-        return self.__column_count
+        return self._column_count
 
     @property
     def field_names(self):
-        return self.__table[FIELD_NAME_INDEX]
+        return self._table[FIELD_NAME_INDEX]
 
     def field_name_by_column_num(self, column_num):
         return self.field_names[column_num]
 
     @property
     def data_types(self):
-        return self.__table[DATA_TYPE_INDEX]
+        return self._table[DATA_TYPE_INDEX]
 
     def data_type_by_column_num(self, column_num):
         return self.data_types[column_num]
 
     @property
     def rules(self):
-        return self.__table[RULE_INDEX]
+        return self._table[RULE_INDEX]
 
     def rule_by_column_num(self, column_num):
         return self.rules[column_num]
 
     @property
     def global_rules(self):
-        return self.__global_rules
+        return self._global_rules
 
     @property
     def descriptions(self):
-        return self.__table[DESC_INDEX]
+        return self._table[DESC_INDEX]
 
     def description_by_column_num(self, column_num):
         return self.descriptions[column_num]
 
     @property
     def row_iter(self):
-        for row in self.__table[DATA_INDEX]:
+        for row in self._table[DATA_INDEX]:
             yield row
 
     def data_iter_by_column_num(self, column_num):
@@ -213,7 +213,7 @@ class Table(object):
 
     @property
     def key_columns(self):
-        return self.__key_columns
+        return self._key_columns
 
     @property
     def key_data_iter(self):
