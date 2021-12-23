@@ -119,15 +119,6 @@ csv_group.add_argument('--csv_encoding',
                        help='specify the default encoding format for CSV files.\n'
                             'DEFAULT UTF-8')
 
-xlsx_group = parser.add_argument_group(title='xlsx options:')
-
-xlsx_group.add_argument('--multi_sheets',
-                        default=False,
-                        action='store_true',
-                        help='an XLSX file contains multiple worksheets that must begin with an XLSX file name.\n'
-                             'e.g `item.xlsx` file contains worksheets such as `item` `item_type` `Sheet1`\n'
-                             'it will load the `item` and `item_type` worksheets')
-
 erl_group = parser.add_argument_group(title='erlang options:')
 
 erl_group.add_argument('--erl_dir',
