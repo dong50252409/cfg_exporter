@@ -10,156 +10,156 @@ get(1) ->
         id = 1,
         name = <<"钻石"/utf8>>,
         macro_name = <<"ITEM_DIAMOND"/utf8>>,
-        icon = <<"1.png"/utf8>>,
         description = <<"充值货币，可以通过充值、活动获得"/utf8>>,
         item_type = 1,
         item_sub_type = 1,
         price = [],
-        quality_type = 5
+        quality_type = 5,
+        args = true
     };
 get(2) ->
     #cfg_item{
         id = 2,
         name = <<"金币"/utf8>>,
         macro_name = <<"ITEM_GOLD"/utf8>>,
-        icon = <<"2.png"/utf8>>,
         description = <<"常规货币"/utf8>>,
         item_type = 1,
         item_sub_type = 2,
         price = [],
-        quality_type = 3
+        quality_type = 3,
+        args = [{a,b}]
     };
 get(3) ->
     #cfg_item{
         id = 3,
         name = <<"水晶"/utf8>>,
         macro_name = <<"RES_CRYSTAL"/utf8>>,
-        icon = <<"3.png"/utf8>>,
         description = <<"基础资源"/utf8>>,
         item_type = 2,
         item_sub_type = 1,
         price = [],
-        quality_type = 1
+        quality_type = 1,
+        args = undefined
     };
 get(4) ->
     #cfg_item{
         id = 4,
         name = <<"金属"/utf8>>,
         macro_name = <<"RES_METAL"/utf8>>,
-        icon = <<"4.png"/utf8>>,
         description = <<"基础资源"/utf8>>,
         item_type = 2,
         item_sub_type = 2,
         price = [],
-        quality_type = 1
+        quality_type = 1,
+        args = undefined
     };
 get(5) ->
     #cfg_item{
         id = 5,
         name = <<"石油"/utf8>>,
         macro_name = <<"RES_OIL"/utf8>>,
-        icon = <<"5.png"/utf8>>,
         description = <<"基础资源"/utf8>>,
         item_type = 2,
         item_sub_type = 3,
         price = [],
-        quality_type = 1
+        quality_type = 1,
+        args = undefined
     };
 get(6) ->
     #cfg_item{
         id = 6,
         name = <<"粮食"/utf8>>,
         macro_name = <<"RES_FOOD"/utf8>>,
-        icon = <<"6.png"/utf8>>,
         description = <<"基础资源"/utf8>>,
         item_type = 2,
         item_sub_type = 4,
         price = [],
-        quality_type = 1
+        quality_type = 1,
+        args = undefined
     };
 get(101) ->
     #cfg_item{
         id = 101,
         name = <<"传说召唤券"/utf8>>,
         macro_name = undefined,
-        icon = <<"7.png"/utf8>>,
         description = <<"可以在“传说英雄”卡池中免费进行一次召唤"/utf8>>,
         item_type = 8,
         item_sub_type = 1,
         price = [{1, 10}],
-        quality_type = 5
+        quality_type = 5,
+        args = undefined
     };
 get(102) ->
     #cfg_item{
         id = 102,
         name = <<"霸业召唤券"/utf8>>,
         macro_name = undefined,
-        icon = <<"8.png"/utf8>>,
         description = <<"可以在霸业卡池“征服之军”、“整装待发”、“秩序重构”、“星战将起”、“战争号角”、“星球主宰”中免费进行一次召唤"/utf8>>,
         item_type = 8,
         item_sub_type = 2,
         price = [{2, 100}],
-        quality_type = 3
+        quality_type = 3,
+        args = undefined
     };
 get(103) ->
     #cfg_item{
         id = 103,
         name = <<"传说英雄卡"/utf8>>,
         macro_name = undefined,
-        icon = <<"9.png"/utf8>>,
         description = <<"随机获得一个传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 1,
         price = [{3, 100}, {4, 100}, {5, 100}, {6, 100}],
-        quality_type = 4
+        quality_type = 4,
+        args = undefined
     };
 get(201) ->
     #cfg_item{
         id = 201,
         name = <<"人族传说卡"/utf8>>,
         macro_name = undefined,
-        icon = <<"10.png"/utf8>>,
         description = <<"随机获得一个人族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 2,
         price = [{3, 500}],
-        quality_type = 5
+        quality_type = 5,
+        args = undefined
     };
 get(202) ->
     #cfg_item{
         id = 202,
         name = <<"兽族传说卡"/utf8>>,
         macro_name = undefined,
-        icon = <<"11.png"/utf8>>,
         description = <<"随机获得一个兽族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 3,
         price = [{4, 500}],
-        quality_type = 5
+        quality_type = 5,
+        args = undefined
     };
 get(203) ->
     #cfg_item{
         id = 203,
         name = <<"机械传说卡"/utf8>>,
         macro_name = undefined,
-        icon = <<"12.png"/utf8>>,
         description = <<"随机获得一个机械族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 4,
         price = [{5, 500}],
-        quality_type = 5
+        quality_type = 5,
+        args = undefined
     };
 get(204) ->
     #cfg_item{
         id = 204,
         name = <<"神族传说卡"/utf8>>,
         macro_name = undefined,
-        icon = <<"13.png"/utf8>>,
         description = <<"随机获得一个神族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 5,
         price = [{6, 500}],
-        quality_type = 5
+        quality_type = 5,
+        args = undefined
     };
 get(_) ->
     undefined.

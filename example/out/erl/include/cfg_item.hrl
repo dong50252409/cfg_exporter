@@ -7,12 +7,12 @@
     id,    % 道具id
     name,    % 道具名称
     macro_name,    % 宏定义
-    icon,    % 图标资源
     description,    % 道具描述
     item_type,    % 道具类型
     item_sub_type,    % 道具子类型
     price,    % 出售价格 配置格式：[(道具id,数量),...]
-    quality_type    % 道具品质
+    quality_type,    % 道具品质
+    args    % 自定义数据
 }).
 -define(ITEM_DIAMOND, 1).    % 钻石
 -define(ITEM_GOLD, 2).    % 金币

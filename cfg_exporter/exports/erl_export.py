@@ -3,6 +3,7 @@ from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import Export
+from cfg_exporter.tables.base.raw import Raw
 
 ERL_EXTENSION = 'erl'
 HRL_EXTENSION = 'hrl'
@@ -18,6 +19,8 @@ def format_value(value):
         return f'<<"{value}"/utf8>>'
     elif isinstance(value, Iterable):
         return f'{value}'.replace('(', '{').replace(')', '}')
+    elif isinstance(value, Raw):
+        return f'{value}'
     else:
         return f'{value}'
 
