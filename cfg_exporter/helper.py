@@ -46,6 +46,11 @@ base_group.add_argument('--file_prefix',
                         default='',
                         help='specify the prefix of the output filename.')
 
+base_group.add_argument('--mandatory',
+                        default=False,
+                        action='store_true',
+                        help='specify the mandatory generation of all configuration tables.')
+
 base_group.add_argument('-o', '--output',
                         type=str,
                         default="",

@@ -159,7 +159,7 @@ def content_2():
 
 def exception_verity(rows):
     with pytest.raises(Exception) as err:
-        obj1 = Container(get_args())
+        obj1 = Container({}, get_args())
         obj1.set_data_rows(rows)
         obj1.create_table_obj(MemoryTable, sys._getframe().f_code.co_name)
         obj1.verify_table()
@@ -168,7 +168,7 @@ def exception_verity(rows):
 
 
 def test_base():
-    obj1 = Container(get_args())
+    obj1 = Container({}, get_args())
     obj1.set_data_rows(content_1())
     obj1.create_table_obj(MemoryTable, content_1.__name__)
 
@@ -321,7 +321,7 @@ def test_ref_rule():
     with pytest.raises(Exception) as err:
         heads1 = [['id', 'value'], ['int', 'int'], ['key:1', 'ref:test_ref_rule_1.id']]
         body1 = [['1', '3'], ['2', '2'], ['3', '1'], ['4', '5']]
-        obj1 = Container(get_args())
+        obj1 = Container({}, get_args())
         obj1.set_data_rows(heads1 + body1)
         obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
         obj1.verify_table()
@@ -333,7 +333,7 @@ def test_ref_rule():
         heads1 = [['id'], ['int'], ['ref:test_ref_rule_2.id']]
         body1 = [['1'], ['2'], ['3']]
 
-        obj1 = Container(get_args())
+        obj1 = Container({}, get_args())
         obj1.set_data_rows(heads1 + body1)
         obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
 
@@ -350,7 +350,7 @@ def test_ref_rule():
         heads1 = [['id'], ['int'], ['ref:test_ref_rule_2.id1']]
         body1 = [['1'], ['2'], ['3']]
 
-        obj1 = Container(get_args())
+        obj1 = Container({}, get_args())
         obj1.set_data_rows(heads1 + body1)
         obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
 
@@ -373,7 +373,7 @@ def test_struct_rule():
     exception_verity(heads + body)
 
     with pytest.raises(Exception) as err:
-        obj1 = Container(get_args())
+        obj1 = Container({}, get_args())
         heads1 = [['test_struct'], ['iter'], ['struct:[(ref:test_ref_rule_2.id|unique,range:50-500)]']]
         body1 = [
             ['[(1,50),(2,50),(3,50)]'],

@@ -16,7 +16,7 @@ FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 class Table(object):
     def __init__(self, container_obj, filename, args):
         self._container_obj = container_obj
-        self._full_filename = os.path.abspath(filename)
+        self._full_filename = filename
         self.args = args
         self.__parse_args()
         self._table = [[], [], [], [], []]
@@ -126,11 +126,11 @@ class Table(object):
 
     @property
     def filename(self):
-        return os.path.basename(self._full_filename)
+        return os.path.basename(self.full_filename)
 
     @property
     def table_name(self):
-        return os.path.splitext(os.path.basename(self._full_filename))[0]
+        return os.path.splitext(self.filename)[0]
 
     @property
     def field_name_row_num(self):

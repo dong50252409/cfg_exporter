@@ -6,8 +6,11 @@ from cfg_exporter.const import ExtensionType
 
 
 class Container(object):
-    def __init__(self, args):
-        self.__cfg_dict = {}
+    def __init__(self, source, args):
+        self._cfg_dict = {}
+        self._skipped_cfg_dict = {}
+        self._source = source
+        self._effect_cfg_list = []
         self.args = args
         log_level = logging.NOTSET if self.args.verbose else logging.WARNING
         logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s: %(message)s')
@@ -19,28 +22,32 @@ class Container(object):
 
     def create_table_obj(self, cls, filename):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
-        if table_obj.table_name in self.__cfg_dict:
-            old_table_obj = self.__cfg_dict[table_obj.table_name]
+        if table_obj.table_name in self._cfg_dict:
+            old_table_obj = self._cfg_dict[table_obj.table_name]
             logging.warning(
                 f'waring the `{table_obj.filename}` table has the same name as the `{old_table_obj.filename}` table.'
                 f'the `{old_table_obj.filename}` table will be replaced'
             )
-        self.__cfg_dict[table_obj.table_name] = table_obj
+        self._cfg_dict[table_obj.table_name] = table_obj
 
     def has_table_and_field(self, table_name, field_name):
-        if table_name in self.__cfg_dict:
-            table_obj = self.__cfg_dict[table_name]
-            if not table_obj.is_load:
-                table_obj.load_table()
+        table_obj = self.get_table_obj(table_name)
+        if table_obj:
             return True, field_name in table_obj.field_names
+
         return False, False
 
     def get_table_obj(self, table_name):
-        if table_name in self.__cfg_dict:
-            table_obj = self.__cfg_dict[table_name]
+        if table_name in self._cfg_dict:
+            table_obj = self._cfg_dict[table_name]
             if not table_obj.is_load:
                 table_obj.load_table()
             return table_obj
+        elif table_name in self._skipped_cfg_dict:
+            macro, file = self._skipped_cfg_dict.pop(table_name)
+            logging.debug(f"reference table {file}")
+            self.create_table_obj(macro.value, file)
+            return self.get_table_obj(table_name)
 
     def import_table(self):
         for macro in ExtensionType.__members__.values():
@@ -51,19 +58,29 @@ class Container(object):
                 else:
                     source = os.path.join(source, f'*.{macro.name}')
                 for file in glob.iglob(source, recursive=self.args.recursive):
-                    if os.path.basename(file) not in self.args.exclude_files:
-                        self.create_table_obj(macro.value, file)
+                    file = os.path.abspath(file)
+                    basename = os.path.basename(file)
+                    if basename not in self.args.exclude_files:
+                        if basename in self._source and self._source[basename] == os.stat(file).st_mtime:
+                            self._skipped_cfg_dict[os.path.splitext(basename)[0]] = (macro, file)
+                        else:
+                            self.create_table_obj(macro.value, file)
+
             elif os.path.isfile(source) and source.endswith(f'.{macro.name}'):
                 self.create_table_obj(macro.value, source)
+        self._effect_cfg_list = list(self._cfg_dict.keys())
 
     def verify_table(self):
-        for _, table_obj, in self.__cfg_dict.items():
+        for table_name in self._effect_cfg_list:
+            table_obj = self._cfg_dict[table_name]
             if not table_obj.is_load:
                 table_obj.load_table()
             table_obj.verify()
 
     def export_table(self):
-        for source, table_obj, in self.__cfg_dict.items():
+        for table_name in self._effect_cfg_list:
+            table_obj = self._cfg_dict[table_name]
             if not table_obj.is_load:
                 table_obj.load_table()
             self.__export_obj.export(table_obj)
+            self._source[table_obj.filename] = os.stat(table_obj.full_filename).st_mtime
