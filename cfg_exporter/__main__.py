@@ -17,7 +17,7 @@ def __load_source(args):
     if not os.path.exists(SOURCE_DIR):
         os.makedirs(SOURCE_DIR)
 
-    filename = hashlib.md5(args.source.encode('utf-8')).hexdigest()
+    filename = hashlib.md5(f'{args.source}_{args.output}'.encode('utf8')).hexdigest()
     filename = os.path.join(SOURCE_DIR, filename)
 
     if args.mandatory:
