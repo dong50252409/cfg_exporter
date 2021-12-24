@@ -4,23 +4,23 @@ from typing import Iterable
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import Export
 
-EXTENSION = 'json'
+EXTENSION = 'lua'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
 BASE_TEMPLATE = f'{EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
 
 def format_value(value):
     if value is None:
-        return '""'
+        return 'nil'
     elif isinstance(value, str):
         return f'"{value}"'
     elif isinstance(value, Iterable):
-        return f'{value}'.replace('(', '[').replace(')', ']').replace('\'', '"')
+        return f'{value}'.replace('(', '{').replace(')', '}').replace('[', '{').replace(']', '}')
     else:
         return f'{value}'
 
 
-class JSONExport(Export):
+class LuaExport(Export):
 
     def __init__(self, args):
         global_vars = {'format_value': format_value}

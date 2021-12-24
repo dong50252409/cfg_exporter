@@ -7,9 +7,9 @@ from cfg_exporter.tables.base.raw import Raw
 
 ERL_EXTENSION = 'erl'
 HRL_EXTENSION = 'hrl'
-BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', 'erl')
-ERL_BASE_TEMPLATE = f'erl_base.{TEMPLATE_EXTENSION}'
-HRL_BASE_TEMPLATE = f'hrl_base.{TEMPLATE_EXTENSION}'
+BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', ERL_EXTENSION)
+ERL_BASE_TEMPLATE = f'{ERL_EXTENSION}_base.{TEMPLATE_EXTENSION}'
+HRL_BASE_TEMPLATE = f'{HRL_EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
 
 def format_value(value):
