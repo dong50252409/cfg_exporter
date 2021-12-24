@@ -5,6 +5,7 @@ import logging
 import hashlib
 import json
 import os
+import timeit
 
 import cfg_exporter.helper as helper
 from cfg_exporter.container import Container
@@ -46,6 +47,5 @@ def run():
 
 if __name__ == '__main__':
     # multiprocessing.Pool(multiprocessing.cpu_count() - 1)
-    run()
-    logging.info('down')
+    logging.info('down! elapsed {:.3f}/s'.format(timeit.timeit(stmt=run, number=1)))
     pass
