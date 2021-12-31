@@ -1,18 +1,23 @@
 -------------------------------------
 --  AUTO GENERATE BY CFG_EXPORTER  --
 -------------------------------------
-return {
+local cfg_item = {}
 
---  id                  道具id
---  name                道具名称
---  macro_name          宏定义
---  icon                图标资源
---  description         道具描述
---  item_type           道具类型
---  item_sub_type       道具子类型
---  price               出售价格 配置格式：[(道具id,数量),...]
---  quality_type        道具品质
+cfg_item.table_name = "cfg_item"
 
+cfg_item.field_names = {
+    id = 1,                                                                     -- 道具id
+    name = 2,                                                                   -- 道具名称
+    macro_name = 3,                                                             -- 宏定义
+    icon = 4,                                                                   -- 图标资源
+    description = 5,                                                            -- 道具描述
+    item_type = 6,                                                              -- 道具类型
+    item_sub_type = 7,                                                          -- 道具子类型
+    price = 8,                                                                  -- 出售价格 配置格式：[(道具id,数量),...]
+    quality_type = 9,                                                           -- 道具品质
+}
+
+cfg_item.rows = {
     [1] = {1, "钻石", "ITEM_DIAMOND", "1.png", "充值货币，可以通过充值、活动获得", 1, 1, {}, 5},
     [2] = {2, "金币", "ITEM_GOLD", "2.png", "常规货币", 1, 2, {}, 3},
     [3] = {3, "水晶", "RES_CRYSTAL", "3.png", "基础资源", 2, 1, {}, 1},
@@ -27,3 +32,13 @@ return {
     [203] = {203, "机械传说卡", nil, "12.png", "随机获得一个机械族的传说英雄", 7, 4, {{5, 500}}, 5},
     [204] = {204, "神族传说卡", nil, "13.png", "随机获得一个神族的传说英雄", 7, 5, {{6, 500}}, 5},
 }
+
+
+cfg_item.ITEM_DIAMOND = 1                                                       -- 钻石
+cfg_item.ITEM_GOLD = 2                                                          -- 金币
+cfg_item.RES_CRYSTAL = 3                                                        -- 水晶
+cfg_item.RES_METAL = 4                                                          -- 金属
+cfg_item.RES_OIL = 5                                                            -- 石油
+cfg_item.RES_FOOD = 6                                                           -- 粮食
+
+return cfg_item

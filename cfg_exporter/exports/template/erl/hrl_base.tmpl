@@ -4,12 +4,15 @@
 %%===================================
 -ifndef(@`prefix.upper()`@`table_obj.table_name.upper()`_HRL).
 -define(@`prefix.upper()`@`table_obj.table_name.upper()`_HRL, true).
+
 -record(@`prefix`@`table_obj.table_name`, {
-    @`(',{}\n    '.join(table_obj.field_names) + '{}').format(*[f'    % {desc}'  if desc else '' for desc in table_obj.descriptions])`
+@`('\n'.join('{:<80}{}'.format(f'    {field_name}{seq}', '% ' + desc if desc else '') for field_name, seq, desc in zip(table_obj.field_names, [','] * (len(table_obj.field_names) - 1) + [''],table_obj.descriptions)))`
 }).
+
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
 @if macro_name is not None and macro_value is not None:
--define(@`macro_name.upper()`, @`format_value(macro_value)`).@`macro_desc and f'    % {macro_desc}' or ''`
+@`'{:<80}{}'.format(f'-define({macro_name.upper()}, {format_value(macro_value)}).', '% ' + macro_desc if macro_desc else '')`
 @end
 @end
+
 -endif.

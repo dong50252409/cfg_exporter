@@ -27,7 +27,7 @@ class LuaExport(Export):
         super().__init__(args, BASE_TEMPLATE_PATH, [EXTENSION], global_vars)
 
     def export(self, table_obj):
-        ctx = {'table_obj': table_obj}
+        ctx = {'table_obj': table_obj, 'prefix': self.args.file_prefix}
         table_name = table_obj.table_name
 
         filename = f'{table_name}.{EXTENSION}'
