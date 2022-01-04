@@ -1,4 +1,5 @@
 import os
+import re
 from enum import Enum
 from typing import Sized
 
@@ -184,6 +185,22 @@ class RefRule(BaseRule):
 
             if data not in data_set:
                 self._raise_verify_error(f'data:`{data}` reference does not exist', row_num)
+
+
+class ReRule(BaseRule):
+
+    @BaseRule.value.setter
+    def value(self, clause):
+        pattern = re.compile(clause)
+        self._value = pattern
+
+    def verify(self, column_data_iter):
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                continue
+
+            if not self._value.match(data):
+                self._raise_verify_error(f'data:`{data}` matching failure', row_num)
 
 
 class StructRule(BaseRule):
