@@ -199,7 +199,7 @@ class ReRule(BaseRule):
             if data is None:
                 continue
 
-            if not self._value.match(data):
+            if not self._value.match(str(data)):
                 self._raise_verify_error(f'data:`{data}` matching failure', row_num)
 
 
@@ -381,5 +381,6 @@ RuleType = Enum('RuleType', {
     'unique': UniqueRule, 'not_empty': NotEmptyRule,
     'min': MinRule, 'max': MaxRule,
     'source': SourceRule, 'ref': RefRule,
+    're': ReRule,
     'struct': StructRule, '_': IgnoreRule
 })

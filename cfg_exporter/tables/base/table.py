@@ -90,11 +90,9 @@ class Table(object):
             try:
                 if loadable_column:
                     real_data_type = convert_data_type(data_type)
-                    real_rules = [] if real_data_type is Raw else convert_rules(self, index, rules)
-                    real_desc = convert_desc(desc)
                     self._table[DATA_TYPE_INDEX].append(real_data_type)
-                    self._table[RULE_INDEX].append(real_rules)
-                    self._table[DESC_INDEX].append(real_desc)
+                    self._table[RULE_INDEX].append([] if real_data_type is Raw else convert_rules(self, index, rules))
+                    self._table[DESC_INDEX].append(convert_desc(desc))
                     for row_num, rows in enumerate(data_list):
                         real_data = convert_data(real_data_type, rows[index])
                         self._table[DATA_INDEX][row_num].append(real_data)
@@ -268,7 +266,7 @@ class Table(object):
             except RuleException as e:
                 err = f'r{self.data_row_num + e.row_num}:c{col_num + 1} table:`{self.filename}` ' \
                       f'field:`{self.field_name_by_column_num(col_num)}` ' \
-                      f'type:`{self.data_type_by_column_num(col_num).name}`{e.err} ' \
+                      f'type:`{self.data_type_by_column_num(col_num).name}` ' \
                       f'rule:`{e.rule_str}` {e.err}'
                 raise TableException(err)
 

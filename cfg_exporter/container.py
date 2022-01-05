@@ -17,9 +17,6 @@ class Container(object):
         cls = self.args.export_type.value
         self.__export_obj = type(cls.__name__, (cls,), dict())(self.args)
 
-    def set_data_rows(self, data_rows):
-        setattr(self.args, "data_rows", data_rows)
-
     def create_table_obj(self, cls, filename):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
         if table_obj.table_name in self._cfg_dict:
@@ -68,6 +65,11 @@ class Container(object):
 
             elif os.path.isfile(source) and source.endswith(f'.{macro.name}'):
                 self.create_table_obj(macro.value, source)
+        self._effect_cfg_list = list(self._cfg_dict.keys())
+
+    def import_custom_table(self, cls, filename, data_rows):
+        setattr(self.args, "data_rows", data_rows)
+        self.create_table_obj(cls, filename)
         self._effect_cfg_list = list(self._cfg_dict.keys())
 
     def verify_table(self):

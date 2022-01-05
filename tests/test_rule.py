@@ -81,7 +81,8 @@ def content_1():
         'mix:0', 'mix:0',
         'max:99', 'max:10',
         'source:.', f'ref:{content_2.__name__}.id',
-        'not_empty|struct:[min:50|max:500]', f'struct:[(ref:{content_2.__name__}.id|unique,min:50|max:500)]'
+        r'not_empty|re:^\[((\d*)(\s*,\s*)?)*\]$|struct:[min:50|max:500]',
+        fr're:^\[(\(\d*\s*,\s*\d+\s*,\s*\d+\)(\s*,\s*)?)*\]$|struct:[(ref:{content_2.__name__}.id|unique,min:50|max:500,_)]'
     ]
     body = [
         [
@@ -91,7 +92,7 @@ def content_1():
             '0', '[]',
             '99', '[0,1,2,3,4,5,6,7,8,9]',
             'test_rule.py', '100',
-            '[50,60,70,80,90,100]', '[(100,50),(200,50),(300,50)]'
+            '[50, 60, 70, 80, 90, 100]', '[(100,50,10),(200,50,10),(300,50,10)]'
         ],
 
         [
@@ -101,7 +102,7 @@ def content_1():
             '99', '[0,1,2,3,4,5,6,7,8,9]',
             '0', '[]',
             '__init__.py', '200',
-            '[100,110,120,130,140,150]', '[(400,50),(500,50),(600,50)]'
+            '[100, 110, 120, 130, 140, 150]', '[(400,50,100), (500,50,100) ,(600,50,200)]'
         ],
 
         [
@@ -111,7 +112,7 @@ def content_1():
             '50', '[0,1,2,3,4]',
             '50', '[0,1,2,3,4]',
             '.pytest_cache/README.md', '300',
-            '[50,60,70,80,90,100]', '[(100,50),(200,50)]'
+            '[50, 60, 70, 80, 90, 100]', '[(100 , 50 , 10) , (200,50,10)]'
         ],
 
         [
@@ -121,7 +122,7 @@ def content_1():
             '0', '(0,1,2,3,4,5)',
             '0', '(0,1,2,3,4,5,6,7,8,9)',
             '.pytest_cache/v/cache/stepwise', '400',
-            '[100,110,120,130,140,150]', '[(300,50)]'
+            '[100,110,120,130,140,150]', '[(300 , 50 , 100)]'
         ],
 
         [
@@ -160,8 +161,7 @@ def content_2():
 def exception_verity(rows):
     with pytest.raises(Exception) as err:
         obj1 = Container({}, get_args())
-        obj1.set_data_rows(rows)
-        obj1.create_table_obj(MemoryTable, sys._getframe().f_code.co_name)
+        obj1.import_custom_table(MemoryTable, sys._getframe().f_code.co_name, rows)
         obj1.verify_table()
     assert err.type is TableException
     print(err.value)
@@ -169,11 +169,9 @@ def exception_verity(rows):
 
 def test_base():
     obj1 = Container({}, get_args())
-    obj1.set_data_rows(content_1())
-    obj1.create_table_obj(MemoryTable, content_1.__name__)
+    obj1.import_custom_table(MemoryTable, content_1.__name__, content_1())
 
-    obj1.set_data_rows(content_2())
-    obj1.create_table_obj(MemoryTable, content_2.__name__)
+    obj1.import_custom_table(MemoryTable, content_2.__name__, content_2())
     obj1.verify_table()
     pass
 
@@ -322,8 +320,7 @@ def test_ref_rule():
         heads1 = [['id', 'value'], ['int', 'int'], ['key:1', 'ref:test_ref_rule_1.id']]
         body1 = [['1', '3'], ['2', '2'], ['3', '1'], ['4', '5']]
         obj1 = Container({}, get_args())
-        obj1.set_data_rows(heads1 + body1)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_1', heads1 + body1)
         obj1.verify_table()
     assert err.type is TableException
     print(err.value)
@@ -334,13 +331,11 @@ def test_ref_rule():
         body1 = [['1'], ['2'], ['3']]
 
         obj1 = Container({}, get_args())
-        obj1.set_data_rows(heads1 + body1)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_1', heads1 + body1)
 
         heads2 = [['id'], ['int'], ['']]
         body2 = [['1'], ['2']]
-        obj1.set_data_rows(heads2 + body2)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_2')
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_2', heads2 + body2)
         obj1.verify_table()
     assert err.type is TableException
     print(err.value)
@@ -351,13 +346,11 @@ def test_ref_rule():
         body1 = [['1'], ['2'], ['3']]
 
         obj1 = Container({}, get_args())
-        obj1.set_data_rows(heads1 + body1)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_1', heads1 + body1)
 
         heads2 = [['id'], ['int'], ['']]
         body2 = [['1'], ['2']]
-        obj1.set_data_rows(heads2 + body2)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_2')
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_2', heads2 + body2)
         obj1.verify_table()
     assert err.type is TableException
     print(err.value)
@@ -374,19 +367,31 @@ def test_struct_rule():
 
     with pytest.raises(Exception) as err:
         obj1 = Container({}, get_args())
-        heads1 = [['test_struct'], ['iter'], ['struct:[(ref:test_ref_rule_2.id|unique,range:50-500)]']]
-        body1 = [
-            ['[(1,50),(2,50),(3,50)]'],
-            ['[(4,50),(5,50),(6,50)]'],
+        heads1 = [
+            ['test_struct'],
+            ['iter'],
+            ['struct:[(ref:test_ref_rule_2.id|unique,range:50-500, _)]']
         ]
-        obj1.set_data_rows(heads1 + body1)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_1')
+        body1 = [
+            ['[(1,50,0),(2,50,1),(3,50,1)]'],
+            ['[(4,50,1),(5,50,1),(6,50,0)]'],
+        ]
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_1', heads1 + body1)
 
         heads2 = [['id'], ['int'], ['unique']]
         body2 = [['1'], ['2'], ['3'], ['4'], ['5']]
-        obj1.set_data_rows(heads2 + body2)
-        obj1.create_table_obj(MemoryTable, 'test_ref_rule_2')
+        obj1.import_custom_table(MemoryTable, 'test_ref_rule_2', heads2 + body2)
         obj1.verify_table()
     assert err.type is TableException
     print(err.value)
     pass
+
+
+def test_re_rule():
+    print('part 1')
+    heads = [['test_re'], ['iter'], [r're:^\[(\d*(,\s*)?)*\]$']]
+    body = [
+        ['[50,60,70,80,90,100]'],
+        ['[200,300,400,500,(1,1)]'],
+    ]
+    exception_verity(heads + body)
