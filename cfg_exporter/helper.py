@@ -1,6 +1,7 @@
 import os
 from argparse import RawTextHelpFormatter, ArgumentTypeError, ArgumentParser
 
+from cfg_exporter.language import LANG
 from cfg_exporter.const import ExportType, ExtensionType, TEMPLATE_EXTENSION
 
 
@@ -8,14 +9,14 @@ def valid_source(source):
     if os.path.exists(source):
         return source
     else:
-        raise ArgumentTypeError(f'the source path does not exists {source}')
+        raise ArgumentTypeError(LANG.VALID_SOURCE.format(source=source))
 
 
 def valid_export(export):
     if export in ExportType.__members__:
         return ExportType[export]
     else:
-        raise ArgumentTypeError(f'the export file type does not exits {export}')
+        raise ArgumentTypeError(LANG.VALID_EXPORT.format(export=export))
 
 
 def valid_table(row_num):
@@ -24,119 +25,58 @@ def valid_table(row_num):
         assert row_num > 0
         return row_num
     except (ValueError, AssertionError):
-        raise ArgumentTypeError(f'{row_num} is not a valid line number')
+        raise ArgumentTypeError(LANG.VALID_TABLE.format(row_num=row_num))
 
 
-parser = ArgumentParser(description='Configuration table export toolset', formatter_class=RawTextHelpFormatter)
+parser = ArgumentParser(description=LANG.DESCRIPTION, formatter_class=RawTextHelpFormatter)
 
-base_group = parser.add_argument_group(title='base options:')
+base_group = parser.add_argument_group(title=LANG.BASE_OPTIONS)
 
-base_group.add_argument('--exclude_files',
-                        default=[],
-                        action="extend",
-                        nargs="+",
-                        help='specify a list of file names not to load.')
+base_group.add_argument('--exclude_files', default=[], action="extend", nargs="+", help=LANG.EXCLUDE_FILES)
 
-base_group.add_argument('-e', '--export_type',
-                        type=valid_export,
-                        metavar=f'[{",".join(ExportType.__members__.keys())}]',
-                        help='specify the configuration table export type.')
+base_group.add_argument('-e', '--export_type', type=valid_export,
+                        metavar=f'[{",".join(ExportType.__members__.keys())}]', help=LANG.EXPORT_TYPE)
 
-base_group.add_argument('--file_prefix',
-                        default='',
-                        help='specify the prefix of the output filename.')
+base_group.add_argument('--file_prefix', default='', help=LANG.FILE_PREFIX)
 
-base_group.add_argument('--mandatory',
-                        default=False,
-                        action='store_true',
-                        help='specify the mandatory generation of all configuration tables.')
+base_group.add_argument('--force', default=False, action='store_true', help=LANG.FORCE)
 
-base_group.add_argument('-o', '--output',
-                        type=str,
-                        default="",
-                        help='specify the configuration table output path.')
+base_group.add_argument('-o', '--output', type=str, default="", help=LANG.OUTPUT)
 
-base_group.add_argument('-r', '--recursive',
-                        default=False,
-                        action='store_true',
-                        help='recursively search the source path.')
+base_group.add_argument('-r', '--recursive', default=False, action='store_true', help=LANG.RECURSIVE)
 
-base_group.add_argument('--verification',
-                        default=False,
-                        action='store_true',
-                        help='verify only the correctness of the configuration table.')
+base_group.add_argument('--verification', default=False, action='store_true', help=LANG.VERIFICATION)
 
-base_group.add_argument('-s', '--source',
-                        type=valid_source,
-                        required=True,
-                        help=f'specify the configuration table source path.\n'
-                             f'supported file types '
-                             f'[{",".join(ExtensionType.__members__.keys())}]')
+base_group.add_argument('-s', '--source', type=valid_source, required=True,
+                        help=LANG.SOURCE.format(extensions=",".join(ExtensionType.__members__.keys())))
 
-base_group.add_argument('--template_path',
-                        help='specify the extension template path.\n'
-                             f'the template name consists of the table name, export type, '
-                             f'and {TEMPLATE_EXTENSION} extension\n'
-                             'e.g:\n'
-                             f'`item.erl.{TEMPLATE_EXTENSION}` `item.hrl.{TEMPLATE_EXTENSION}` '
-                             f'`item.lua.{TEMPLATE_EXTENSION}` ...\n'
-                             'loads the template based on the specified export type\n'
-                             'e.g\n'
-                             f'`--export_type erl` templates ending with `.erl.{TEMPLATE_EXTENSION}` '
-                             f'and `.hrl.{TEMPLATE_EXTENSION}` will be loaded\n'
-                             f'`--export_type lua` templates ending with `.lua.{TEMPLATE_EXTENSION}` will be loaded')
+base_group.add_argument('--template_path', help=LANG.TEMPLATE_PATH.format(template_extension=TEMPLATE_EXTENSION))
 
-base_group.add_argument('--verbose',
-                        default=False,
-                        action='store_true',
-                        help='show the details.')
+base_group.add_argument('--verbose', default=False, action='store_true', help=LANG.VERBOSE)
 
-table_group = parser.add_argument_group(title='table options:')
+table_group = parser.add_argument_group(title=LANG.TABLE_OPTIONS)
 
-table_group.add_argument('--data_row',
-                         type=valid_table,
-                         required=True,
-                         help='specify the start line number of the configuration table body data.')
+table_group.add_argument('--data_row', type=valid_table, required=True, help=LANG.DATA_ROW)
 
-table_group.add_argument('--desc_row',
-                         type=valid_table,
-                         help='specify the line number of the configuration table column description.')
+table_group.add_argument('--desc_row', type=valid_table, help=LANG.DESC_ROW)
 
-table_group.add_argument('--field_row',
-                         type=valid_table,
-                         required=True,
-                         help='specify the line number of the configuration table field name.')
+table_group.add_argument('--field_row', type=valid_table, required=True, help=LANG.FIELD_ROW)
 
-table_group.add_argument('--rule_row',
-                         type=valid_table,
-                         help='specify the line number of the configuration table check rule.')
+table_group.add_argument('--rule_row', type=valid_table, help=LANG.RULE_ROW)
 
-table_group.add_argument('--type_row',
-                         type=valid_table,
-                         required=True,
-                         help='specify the line number of the configuration table data type.')
+table_group.add_argument('--type_row', type=valid_table, required=True, help=LANG.TYPE_ROW)
 
-csv_group = parser.add_argument_group(title='csv options:')
+csv_group = parser.add_argument_group(title=LANG.CSV_OPTIONS)
 
-csv_group.add_argument('--csv_encoding',
-                       default='utf-8-sig',
-                       metavar='ENCODING',
-                       help='specify the default encoding format for CSV files.\n'
-                            'DEFAULT UTF-8')
+csv_group.add_argument('--csv_encoding', default='utf-8-sig', metavar='ENCODING', help=LANG.CSV_ENCODING)
 
-erl_group = parser.add_argument_group(title='erlang options:')
+erl_group = parser.add_argument_group(title=LANG.ERLANG_OPTIONS)
 
-erl_group.add_argument('--erl_dir',
-                       default='',
-                       help='specify output directory for where to generate the .erl.')
+erl_group.add_argument('--erl_dir', default='', help=LANG.ERL_DIR)
 
-erl_group.add_argument('--erl_prefix',
-                       default='',
-                       help='specify the prefix of the record name.')
+erl_group.add_argument('--erl_prefix', default='', help=LANG.ERL_PREFIX)
 
-erl_group.add_argument('--hrl_dir',
-                       default='',
-                       help='specify output directory for where to generate the .hrl.')
+erl_group.add_argument('--hrl_dir', default='', help=LANG.HRL_DIR)
 
 args = parser.parse_args()
 

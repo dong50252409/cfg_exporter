@@ -21,7 +21,7 @@ def __load_source(args):
     filename = hashlib.md5(f'{args.source}_{args.output}'.encode('utf8')).hexdigest()
     filename = os.path.join(SOURCE_DIR, filename)
 
-    if args.mandatory:
+    if args.force:
         return filename, {}
 
     if os.path.exists(filename):
