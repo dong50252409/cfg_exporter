@@ -2,7 +2,7 @@ import os
 from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
-from cfg_exporter.exports.base.export import Export
+from cfg_exporter.exports.base.baseexport import BaseExport
 from cfg_exporter.tables.base.raw import RawType
 
 ERL_EXTENSION = 'erl'
@@ -25,7 +25,7 @@ def format_value(value):
         return f'{value}'
 
 
-class ErlExport(Export):
+class ErlExport(BaseExport):
 
     def __init__(self, args):
         global_vars = {'format_value': format_value}

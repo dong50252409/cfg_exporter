@@ -2,7 +2,7 @@ import os
 from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
-from cfg_exporter.exports.base.export import Export
+from cfg_exporter.exports.base.baseexport import BaseExport
 
 EXTENSION = 'lua'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
@@ -20,7 +20,7 @@ def format_value(value):
         return f'{value}'
 
 
-class LuaExport(Export):
+class LuaExport(BaseExport):
 
     def __init__(self, args):
         global_vars = {'format_value': format_value}

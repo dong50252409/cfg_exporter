@@ -19,7 +19,7 @@ class ExpressionExtension:
         }
 
 
-class Export(object):
+class BaseExport(object):
     def __init__(self, args, base_template_path, extend_template_type_list, global_vars=None):
         self.args = args
         self.output = self.args.output
@@ -46,7 +46,10 @@ class Export(object):
         if global_vars is not None:
             self.engine.global_vars.update(global_vars)
 
-    def render(self, filename, template_name, ctx):
+    def render(self, filename: str, template_name: str, ctx: dict) -> None:
+        """
+        渲染模板
+        """
         filename = f'{self.args.file_prefix}{filename}'
         logging.debug(f'render {filename} ...')
         full_filename = os.path.abspath(os.path.join(self.output, filename))
@@ -58,7 +61,10 @@ class Export(object):
             f.write(content)
 
     @abstractmethod
-    def export(self, table_obj):
+    def export(self, table_obj) -> None:
+        """
+        需要实现的导出方法
+        """
         ...
 
 
@@ -67,4 +73,4 @@ def search_extend_template(source, ext):
     return glob.iglob(source)
 
 
-__all__ = 'Export',
+__all__ = 'BaseExport',
