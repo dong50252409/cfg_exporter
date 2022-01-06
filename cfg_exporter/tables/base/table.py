@@ -1,8 +1,8 @@
 import itertools
 import logging
 import os
+from typing import *
 from abc import abstractmethod
-from typing import Iterable
 
 import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
@@ -11,6 +11,7 @@ from cfg_exporter.tables.base.raw import RawType
 from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
+AnyType = TypeVar('DataType', int, float, str, list, tuple, RawType)
 
 
 class Table(object):
@@ -111,6 +112,10 @@ class Table(object):
                       f'field:`{self.field_name_by_column_num(col_num)}` {e.err}'
                 raise TableException(err)
 
+    @property
+    def is_load(self):
+        return self._is_load
+
     def has_table_and_field(self, table_name, field_name):
         if table_name == self.table_name:
             return True, field_name in self.field_names
@@ -120,108 +125,179 @@ class Table(object):
         return self._container_obj.get_table_obj(full_filename)
 
     @property
-    def full_filename(self):
+    def full_filename(self) -> str:
+        """
+        返回配置表的完整路径以及全名
+        """
         return self._full_filename
 
     @property
-    def filename(self):
+    def filename(self) -> str:
+        """
+        返回配置表的全名
+        """
         return os.path.basename(self.full_filename)
 
     @property
-    def table_name(self):
+    def table_name(self) -> str:
+        """
+        返回配置表的表名
+        """
         return os.path.splitext(self.filename)[0]
 
     @property
-    def field_name_row_num(self):
+    def field_name_row_num(self) -> int:
+        """
+        返回配置表的列字段名行号
+        """
         return self._field_row + 1
 
     @property
-    def data_type_row_num(self):
+    def data_type_row_num(self) -> int:
+        """
+        返回配置表的列数据类型行号
+        """
         return self._type_row + 1
 
     @property
-    def data_row_num(self):
+    def data_row_num(self) -> int:
+        """
+        返回配置表的数据行起始行号
+        """
         return self._data_row + 1
 
     @property
-    def rule_row_num(self):
+    def rule_row_num(self) -> int:
+        """
+        返回配置表的列规则行号
+        """
         return self._rule_row + 1
 
     @property
-    def description_row_num(self):
+    def description_row_num(self) -> int:
+        """
+        返回配置表的列描述行号
+        """
         return self._desc_row + 1
 
     @property
-    def is_load(self):
-        return self._is_load
-
-    @property
-    def row_count(self):
+    def row_count(self) -> int:
+        """
+        返回配置表的总数据数
+        """
         return self._row_count
 
     @property
-    def column_count(self):
+    def column_count(self) -> int:
+        """
+        返回配置表的总列数
+        """
         return self._column_count
 
     @property
-    def field_names(self):
+    def field_names(self) -> list[str]:
+        """
+        返回配置表的字段名列表
+        """
         return self._table[FIELD_NAME_INDEX]
 
-    def field_name_by_column_num(self, column_num):
+    def field_name_by_column_num(self, column_num: int) -> str:
+        """
+        根据列号，从0开始，返回配置表的字段名
+        """
         return self.field_names[column_num]
 
     @property
-    def data_types(self):
+    def data_types(self) -> list[Any]:
+        """
+        返回配置表的数据类型列表
+        """
         return self._table[DATA_TYPE_INDEX]
 
-    def data_type_by_column_num(self, column_num):
+    def data_type_by_column_num(self, column_num: int) -> Any:
+        """
+        根据列号，从0开始，返回配置表的数据类型
+        """
         return self.data_types[column_num]
 
     @property
-    def rules(self):
+    def rules(self) -> list[list[rule.BaseRule]]:
+        """
+        返回配置表的规则列表
+        """
         return self._table[RULE_INDEX]
 
-    def rule_by_column_num(self, column_num):
+    def rule_by_column_num(self, column_num: int) -> list[rule.BaseRule]:
+        """
+        根据列号，从0开始，返回配置表的规则
+        """
         return self.rules[column_num]
 
     @property
-    def global_rules(self):
+    def global_rules(self) -> dict[str, rule.BaseRule]:
+        """
+        返回配置表的全局规则列表
+        """
         return self._global_rules
 
     @property
-    def descriptions(self):
+    def descriptions(self) -> list[str]:
+        """
+        返回配置表的描述列表
+        """
         return self._table[DESC_INDEX]
 
-    def description_by_column_num(self, column_num):
+    def description_by_column_num(self, column_num: int) -> str:
+        """
+        返回配置表的描述，根据列号，从0开始
+        """
         return self.descriptions[column_num]
 
     @property
-    def row_iter(self):
+    def row_iter(self) -> Iterator[list[AnyType]]:
+        """
+        迭代返回配置表的每行数据
+        """
         for row in self._table[DATA_INDEX]:
             yield row
 
-    def data_iter_by_column_num(self, column_num):
+    def data_iter_by_column_num(self, column_num: int) -> Iterator[AnyType]:
+        """
+        根据列号，从0开始，迭代返回配置表的每列数据
+        """
         for row in self.row_iter:
             yield row[column_num]
 
-    def data_iter_by_field_name(self, field_name):
+    def data_iter_by_field_name(self, field_name: str) -> Iterator[str]:
+        """
+        根据字段名，迭代返回配置表的每列数据
+        """
         if field_name in self.field_names:
             column_num = self.field_names.index(field_name)
             for row in self.row_iter:
                 yield row[column_num]
 
     @property
-    def key_columns(self):
+    def key_columns(self) -> list[int]:
+        """
+        返回主键列列号，列号从0开始
+        """
         return self._key_columns
 
     @property
-    def key_data_iter(self):
+    def key_data_iter(self) -> Iterator[AnyType, tuple[AnyType, ...]]:
+        """
+        迭代返回主键列数据，多值以元祖形式返回
+        """
         func = multi_value_func(self.key_columns) if len(self.key_columns) > 1 else sgl_value_func(self.key_columns[0])
         for row in self.row_iter:
             yield func(row)
 
     @property
-    def macro_data_iter(self):
+    def macro_data_iter(self) -> Iterator[tuple[str, AnyType, str]]:
+        """
+        迭代返回宏定义名、宏定义值、宏定义描述的元祖
+        """
         if MacroRule.__name__ in self.global_rules:
             macro_dict = self.global_rules[MacroRule.__name__].values
             if MacroType.name in macro_dict and MacroType.desc in macro_dict:
@@ -235,7 +311,11 @@ class Table(object):
                     if macro_name is not None:
                         yield macro_name, row[macro_dict[MacroType.value]], None
 
-    def index_list(self, index_field_names, value_field_names):
+    def index_list(self, index_field_names: list[str], value_field_names: list[str]) -> Iterator[AnyType, tuple]:
+        """
+        根据下标字段列表和值字段列表迭代返回对应数据，多值以元祖形式返回
+        例如：有多个同一种类型的道具，可返回当前类型的所有道具id
+        """
         if len(index_field_names) > 1:
             index_func = multi_field_func([self.field_names.index(field_name) for field_name in index_field_names])
         else:
@@ -259,7 +339,10 @@ class Table(object):
         for values in d.values():
             yield values
 
-    def verify(self):
+    def verify(self) -> None:
+        """
+        执行配置表的规则验证
+        """
         for col_num, rules in enumerate(self.rules):
             try:
                 for rule_obj in rules:
