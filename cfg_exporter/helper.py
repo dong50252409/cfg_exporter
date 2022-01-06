@@ -32,6 +32,8 @@ parser = ArgumentParser(description=LANG.DESCRIPTION, formatter_class=RawTextHel
 
 base_group = parser.add_argument_group(title=LANG.BASE_OPTIONS)
 
+base_group.add_argument('--clear_dir', default=False, action='store_true', help=LANG.CLEAR_DIR)
+
 base_group.add_argument('--exclude_files', default=[], action="extend", nargs="+", help=LANG.EXCLUDE_FILES)
 
 base_group.add_argument('-e', '--export_type', type=valid_export,

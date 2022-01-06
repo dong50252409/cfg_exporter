@@ -1,4 +1,5 @@
 import os
+import shutil
 import glob
 import logging
 
@@ -80,6 +81,8 @@ class Container(object):
             table_obj.verify()
 
     def export_table(self):
+        if self.args.clear_dir:
+            shutil.rmtree(self.args.output, ignore_errors=True)
         for table_name in self._effect_cfg_list:
             table_obj = self._cfg_dict[table_name]
             if not table_obj.is_load:
