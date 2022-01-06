@@ -23,10 +23,9 @@
     * `memory`
     * 扩展：继承`Table`类，实现`load_table`方法，参考`csv_table.py` `memory_table.py` `xlsx_table.py`
 * 可支持多种数据结构导出
-    * `protobuf` 待实现
     * `json`
     * `erl`
-    * `lua` 待实现
+    * `lua`
     * 通过模板支持自定义格式
     * ....
 

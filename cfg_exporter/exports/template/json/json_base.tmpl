@@ -1,4 +1,12 @@
 @require(table_obj)
-[
-@`',\n'.join(['    {\n    %s\n    }' % ',\n    '.join([f'    "{field_name}" : {format_value(value)}' for field_name, value in zip(table_obj.field_names, row)]) for row in table_obj.row_iter])`
-]
+{
+    "table_name" : "@table_obj.table_name",
+    "field_list" : [@`", ".join([f'"{field_name}"' for field_name in table_obj.field_names])`],
+    "desc_list" : [@`", ".join([f'"{desc}"' if desc else '""' for desc in table_obj.descriptions])`],
+    "data_list" : [
+@`',\n'.join(['        {%s}' % ', '.join([f'"{field_name}":{format_value(value)}' for field_name, value in zip(table_obj.field_names, row)]) for row in table_obj.row_iter])`
+    ],
+    "macro_list" : {
+@`',\n'.join([f'        "{macro_name.upper()}" : {format_value(macro_value)}' for macro_name, macro_value, macro_desc in table_obj.macro_data_iter])`
+    }
+}
