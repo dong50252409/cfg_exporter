@@ -7,7 +7,7 @@ from typing import Iterable
 import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
 from cfg_exporter.const import DataType
-from cfg_exporter.tables.base.raw import Raw
+from cfg_exporter.tables.base.raw import RawType
 from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
@@ -91,7 +91,8 @@ class Table(object):
                 if loadable_column:
                     real_data_type = convert_data_type(data_type)
                     self._table[DATA_TYPE_INDEX].append(real_data_type)
-                    self._table[RULE_INDEX].append([] if real_data_type is Raw else convert_rules(self, index, rules))
+                    self._table[RULE_INDEX].append(
+                        [] if real_data_type is RawType else convert_rules(self, index, rules))
                     self._table[DESC_INDEX].append(convert_desc(desc))
                     for row_num, rows in enumerate(data_list):
                         real_data = convert_data(real_data_type, rows[index])
@@ -406,8 +407,8 @@ def convert_data(data_type, row):
                 data = eval(row)
                 assert isinstance(data, data_type.value)
                 return data
-            elif data_type.value is Raw:
-                return Raw(row)
+            elif data_type.value is RawType:
+                return RawType(row)
             else:
                 return data_type.value(row)
         else:

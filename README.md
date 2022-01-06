@@ -81,6 +81,5 @@
   | `max:number` | 检查当前列的值是否小于等于规定值<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `min:99｜max:99`<br/>数值恒等99 |
   | `source:path` | 检查引用资源是否存在 | `str` | 要检查资源目录的相对或绝对路径<br/>`source:source/ui`<br/>`source:D:/project/source/ui` |
   | `ref:table_name.field_name` | 检查当前列的值是否在`table_name`表`field_name`列中存在 | `str` | `ref:item.id` 当前的列值引用于`item`表的`id`列的值 |
-  | `re:string` | 正则匹配 | `str` | `re:^\[(\(\d+,\d+\),?)*\]$`<br/>匹配`[(123,123)] [(123,123),(123,123)]`<br/>无效匹配`[(123,123),123] [(123,123),('qwe',123)]` |
   | `struct:rules` | 对`iter`类型结构中的各项值进行规则检查<br/>仅支持指定普通规则 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/>`struct:[(unique｜ref:item.id,min:0｜max:10000,_)]`<br/>对 `1` `2`进行`unique` `ref`规则检查<br/>对`100` `200`进行`min` `max`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[max:10]`<br/>对`"abc"` `[1,2,3]` `(4,5,6)` 进行长度检查 |
   | `_` | 无特殊意义，仅用作占位，配合`struct`规则使用 | | |

@@ -1,4 +1,4 @@
-class Raw:
+class RawType:
     def __init__(self, value):
         self._value = str(value)
 

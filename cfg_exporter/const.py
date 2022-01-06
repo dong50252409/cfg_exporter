@@ -9,9 +9,9 @@ TEMPLATE_EXTENSION = 'tmpl'
 # 支持的数据类型定义
 ###############################
 from typing import Iterable
-from cfg_exporter.tables.base.raw import Raw
+from cfg_exporter.tables.base.raw import RawType
 
-DataType = Enum('DataType', {'int': int, 'float': float, 'str': str, 'iter': Iterable, 'raw': Raw})
+DataType = Enum('DataType', {'int': int, 'float': float, 'str': str, 'iter': Iterable, 'raw': RawType})
 
 ###############################
 # 支持的导出文件类型

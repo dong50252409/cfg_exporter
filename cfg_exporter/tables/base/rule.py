@@ -1,5 +1,4 @@
 import os
-import re
 from enum import Enum
 from typing import Sized
 
@@ -66,7 +65,7 @@ class MacroRule(BaseRule):
         global_macro_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalMacroRule())
 
         if MacroType[clause] in global_macro_rule.values:
-            err = f'already defined at r{self._table_obj.rule_row_num}:c{global_macro_rule.values[MacroType[clause]] + 1}'
+            err = f'defined at r{self._table_obj.rule_row_num}:c{global_macro_rule.values[MacroType[clause]] + 1}'
             self._raise_parse_error(err)
 
         global_macro_rule.values[MacroType[clause]] = self._column_num
@@ -185,22 +184,6 @@ class RefRule(BaseRule):
 
             if data not in data_set:
                 self._raise_verify_error(f'data:`{data}` reference does not exist', row_num)
-
-
-class ReRule(BaseRule):
-
-    @BaseRule.value.setter
-    def value(self, clause):
-        pattern = re.compile(clause)
-        self._value = pattern
-
-    def verify(self, column_data_iter):
-        for row_num, data in enumerate(column_data_iter):
-            if data is None:
-                continue
-
-            if not self._value.match(str(data)):
-                self._raise_verify_error(f'data:`{data}` matching failure', row_num)
 
 
 class StructRule(BaseRule):
@@ -381,6 +364,5 @@ RuleType = Enum('RuleType', {
     'unique': UniqueRule, 'not_empty': NotEmptyRule,
     'min': MinRule, 'max': MaxRule,
     'source': SourceRule, 'ref': RefRule,
-    're': ReRule,
     'struct': StructRule, '_': IgnoreRule
 })

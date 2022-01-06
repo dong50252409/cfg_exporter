@@ -81,8 +81,8 @@ def content_1():
         'mix:0', 'mix:0',
         'max:99', 'max:10',
         'source:.', f'ref:{content_2.__name__}.id',
-        r'not_empty|re:^\[((\d*)(\s*,\s*)?)*\]$|struct:[min:50|max:500]',
-        fr're:^\[(\(\d*\s*,\s*\d+\s*,\s*\d+\)(\s*,\s*)?)*\]$|struct:[(ref:{content_2.__name__}.id|unique,min:50|max:500,_)]'
+        r'not_empty|struct:[min:50|max:500]',
+        fr'struct:[(ref:{content_2.__name__}.id|unique,min:50|max:500,_)]'
     ]
     body = [
         [
@@ -385,13 +385,3 @@ def test_struct_rule():
     assert err.type is TableException
     print(err.value)
     pass
-
-
-def test_re_rule():
-    print('part 1')
-    heads = [['test_re'], ['iter'], [r're:^\[(\d*(,\s*)?)*\]$']]
-    body = [
-        ['[50,60,70,80,90,100]'],
-        ['[200,300,400,500,(1,1)]'],
-    ]
-    exception_verity(heads + body)
