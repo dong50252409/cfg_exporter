@@ -12,6 +12,7 @@ from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, Rul
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 AnyType = TypeVar('DataType', int, float, str, list, tuple, RawType)
+Iter = TypeVar('Iter', Iterator[AnyType], Iterator[tuple])
 
 
 class Table(object):
@@ -234,7 +235,7 @@ class Table(object):
         return self.rules[column_num]
 
     @property
-    def global_rules(self) -> dict[str, rule.BaseRule]:
+    def global_rules(self) -> dict[str, rule.GlobalRule]:
         """
         返回配置表的全局规则列表
         """
@@ -285,7 +286,7 @@ class Table(object):
         return self._key_columns
 
     @property
-    def key_data_iter(self) -> Iterator[AnyType, tuple[AnyType, ...]]:
+    def key_data_iter(self) -> Iter:
         """
         迭代返回主键列数据，多值以元祖形式返回
         """
@@ -311,7 +312,7 @@ class Table(object):
                     if macro_name is not None:
                         yield macro_name, row[macro_dict[MacroType.value]], None
 
-    def index_list(self, index_field_names: list[str], value_field_names: list[str]) -> Iterator[AnyType, tuple]:
+    def index_list(self, index_field_names: list[str], value_field_names: list[str]) -> Iter:
         """
         根据下标字段列表和值字段列表迭代返回对应数据，多值以元祖形式返回
         例如：有多个同一种类型的道具，可返回当前类型的所有道具id
