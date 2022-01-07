@@ -4,6 +4,7 @@ from typing import Sized
 
 from cfg_exporter import util
 from cfg_exporter.const import DataType
+from cfg_exporter.language import LANG
 
 
 class BaseRule(object):
@@ -47,7 +48,8 @@ class KeyRule(BaseRule):
         global_key_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalKeyRule())
 
         if key_num in global_key_rule.values:
-            err = f'already defined at r{self._table_obj.rule_row_num}:c{global_key_rule.values[key_num] + 1}'
+            err = LANG.KEY_RULE_PARSE_ERROR.format(
+                row_num=self._table_obj.rule_row_num, col_num=global_key_rule.values[key_num] + 1)
             self._raise_parse_error(err)
 
         global_key_rule.values[key_num] = self._column_num
@@ -60,12 +62,13 @@ class MacroRule(BaseRule):
     @BaseRule.value.setter
     def value(self, clause):
         if clause not in MacroType.__members__:
-            self._raise_parse_error('does not exist')
+            self._raise_parse_error(LANG.MACRO_RULE_NOT_EXIST)
 
         global_macro_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalMacroRule())
 
         if MacroType[clause] in global_macro_rule.values:
-            err = f'defined at r{self._table_obj.rule_row_num}:c{global_macro_rule.values[MacroType[clause]] + 1}'
+            err = LANG.MACRO_RULE_DUPLICATE_DEFINITION.format(row_num=self._table_obj.rule_row_num,
+                                                              col_num=global_macro_rule.values[MacroType[clause]] + 1)
             self._raise_parse_error(err)
 
         global_macro_rule.values[MacroType[clause]] = self._column_num
@@ -81,8 +84,8 @@ class UniqueRule(BaseRule):
                 continue
 
             if data in d:
-                err = f'data:`{data}` is not unique already defined at ' \
-                      f'r{self._table_obj.data_row_num + d[data]}:c{self._column_num + 1}'
+                err = LANG.UNIQUE_RULE_FAILED.format(data=data, row_num=self._table_obj.data_row_num + d[data],
+                                                     col_num=self._column_num + 1)
                 self._raise_verify_error(err, row_num)
             d[data] = row_num
 
@@ -91,7 +94,7 @@ class NotEmptyRule(BaseRule):
     def verify(self, column_data_iter):
         for row_num, data in enumerate(column_data_iter):
             if data is None:
-                self._raise_verify_error('the data is empty', row_num)
+                self._raise_verify_error(LANG.NOT_EMPTY_RULE_FAILED, row_num)
 
 
 class MinRule(BaseRule):
@@ -107,16 +110,15 @@ class MinRule(BaseRule):
 
             if isinstance(data, int):
                 if data < self._value:
-                    self._raise_verify_error(f'data:`{data}` the minimum limit was not reached', row_num)
+                    self._raise_verify_error(LANG.MIN_RULE_FAILED_1.format(data=data), row_num)
 
             elif isinstance(data, float):
                 if data < self._value:
-                    self._raise_verify_error(f'data:`{data}` the minimum limit was not reached', row_num)
+                    self._raise_verify_error(LANG.MIN_RULE_FAILED_1.format(data=data), row_num)
 
             elif isinstance(data, Sized):
                 if len(data) < self._value:
-                    self._raise_verify_error(f'data:`{data}` length:`{len(data)}` the minimum limit was not reached',
-                                             row_num)
+                    self._raise_verify_error(LANG.MIN_RULE_FAILED_2.format(data=data, len=len(data)), row_num)
 
 
 class MaxRule(BaseRule):
@@ -132,16 +134,15 @@ class MaxRule(BaseRule):
 
             if isinstance(data, int):
                 if data > self._value:
-                    self._raise_verify_error(f'data:`{data}` the maximum limit was exceeded', row_num)
+                    self._raise_verify_error(LANG.MAX_RULE_FAILED_1.format(data=data), row_num)
 
             elif isinstance(data, float):
                 if data > self._value:
-                    self._raise_verify_error(f'data:`{data}` the maximum limit was exceeded', row_num)
+                    self._raise_verify_error(LANG.MAX_RULE_FAILED_1.format(data=data), row_num)
 
             elif isinstance(data, Sized):
                 if len(data) > self._value:
-                    self._raise_verify_error(f'data:`{data}` length:`{len(data)}` the maximum limit was exceeded',
-                                             row_num)
+                    self._raise_verify_error(LANG.MAX_RULE_FAILED_2.format(data=data, len=len(data)), row_num)
 
 
 class SourceRule(BaseRule):
@@ -156,7 +157,7 @@ class SourceRule(BaseRule):
                 continue
 
             if not os.path.exists(os.path.join(self._value, data)):
-                self._raise_verify_error(f'data:`{data}` path not found', row_num)
+                self._raise_verify_error(LANG.SOURCE_RULE_FAILED.format(data=data), row_num)
 
 
 class RefRule(BaseRule):
@@ -167,10 +168,10 @@ class RefRule(BaseRule):
 
         has_table, has_field = self._table_obj.has_table_and_field(table_name, table_field)
         if not has_table:
-            self._raise_parse_error(f'table:`{table_name}` does not exist')
+            self._raise_parse_error(LANG.REF_RULE_PARSE_ERROR_1.format(table=table_name))
 
         if not has_field:
-            self._raise_parse_error(f'field:`{table_field}` does not exist')
+            self._raise_parse_error(LANG.REF_RULE_PARSE_ERROR_2.format(field=table_field))
 
         self._value = (table_name, table_field)
 
@@ -183,7 +184,7 @@ class RefRule(BaseRule):
                 continue
 
             if data not in data_set:
-                self._raise_verify_error(f'data:`{data}` reference does not exist', row_num)
+                self._raise_verify_error(LANG.REF_RULE_FAILED.format(data=data), row_num)
 
 
 class StructRule(BaseRule):
@@ -199,7 +200,7 @@ class StructRule(BaseRule):
                 if data is not None:
                     self.__verify(data, self._value)
             except RuleException as e:
-                err = f'index:`{e.row_num + 1}` {e.err}'
+                err = LANG.STRUCT_RULE_FAILED.format(row_num=e.row_num, err=e.err)
                 raise RuleException(err, self._rule_str, row_num)
 
     def __verify(self, cell_data, rules):
@@ -244,14 +245,14 @@ class GlobalKeyRule(GlobalRule):
         for row_num, data_t in enumerate(zip(*column_data_iter_list)):
             for col_num, data in enumerate(data_t):
                 if data is None:
-                    raise RuleException('primary key is empty', row_num=row_num, col_num=column_num_list[col_num] + 1)
+                    raise RuleException(LANG.GLOBAL_KEY_RULE_FAILED_1, row_num=row_num,
+                                        col_num=column_num_list[col_num] + 1)
 
             if data_t in d:
                 r_num, c_num = d[data_t]
                 raise RuleException(
-                    f'primary key repeat at r{table_obj.data_row_num + r_num}:c{c_num}',
-                    row_num=row_num,
-                    col_num=",".join([f'{col_num + 1}' for col_num in column_num_list])
+                    LANG.GLOBAL_KEY_RULE_FAILED_2.format(row_num=table_obj.data_row_num + r_num, col_num=c_num),
+                    row_num=row_num, col_num=",".join([f'{col_num + 1}' for col_num in column_num_list])
                 )
             d[data_t] = (row_num, ",".join([f'{col_num + 1}' for col_num in column_num_list]))
 
@@ -259,15 +260,15 @@ class GlobalKeyRule(GlobalRule):
 class GlobalMacroRule(GlobalRule):
     def verify(self, table_obj):
         if MacroType.name not in self._values:
-            raise RuleException('does not exist', 'macro:name')
+            raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_1, 'macro:name')
 
         if MacroType.value not in self._values:
-            raise RuleException('does not exist', 'macro:value')
+            raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_1, 'macro:value')
 
         column_num = self._values[MacroType.name]
         data_type = table_obj.data_type_by_column_num(column_num)
         if data_type is not DataType.str:
-            raise RuleException('data type is not `str`', 'macro:name', table_obj.rule_row_num, column_num + 1)
+            raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_2, 'macro:name', table_obj.rule_row_num, column_num + 1)
 
         d = {}
         column_data_iter = table_obj.data_iter_by_column_num(column_num)
@@ -276,14 +277,14 @@ class GlobalMacroRule(GlobalRule):
                 continue
 
             if not util.check_naming(data):
-                raise RuleException('invalid macro name', row_num=row_num, col_num=column_num + 1)
+                raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_3, row_num=row_num, col_num=column_num + 1)
 
             if data in d:
                 r_num = d[data]
                 raise RuleException(
-                    f'macro name repeat at r{table_obj.data_row_num + r_num}:c{column_num + 1}',
-                    row_num=row_num,
-                    col_num=column_num + 1
+                    LANG.GLOBAL_MACRO_RULE_FAILED_4.format(row_num=table_obj.data_row_num + r_num,
+                                                           col_num=column_num + 1),
+                    row_num=row_num, col_num=column_num + 1
                 )
 
             d[data] = row_num

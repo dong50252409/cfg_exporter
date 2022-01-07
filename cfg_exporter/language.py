@@ -1,6 +1,7 @@
 import locale
 
 en_US = {
+    # helper.py
     'VALID_SOURCE': 'the source path does not exists {source}',
     'VALID_EXPORT': 'the export file type does not exits {export}',
     'VALID_TABLE': '{row_num} is not a valid line number',
@@ -37,10 +38,50 @@ en_US = {
     'ERLANG_OPTIONS': 'Erlang options',
     'ERL_DIR': 'specify output directory for where to generate the .erl.',
     'ERL_PREFIX': 'specify the prefix of the record name.',
-    'HRL_DIR': 'specify output directory for where to generate the .hrl.'
+    'HRL_DIR': 'specify output directory for where to generate the .hrl.',
+    'REPLACE_TABLE': 'waring the `{new_filename}` table has the same name as the `{new_filename}` table.'
+                     'the `{old_filename}` table will be replaced',
+    'REFERENCE_TABLE': 'reference table {table}',
+    # __main__.py
+    'FINISHED': 'down! elapsed {:.3f} /s',
+    # table.py
+    'LOAD_TABLE': 'loading table {table} ...',
+    'TABLE_LOADED': 'table {table} loaded!',
+    'ROW_COL_NUM': 'r{row_num}:c{col_num}',
+    'TABLE': 'table:`{table}`',
+    'FIELD': 'field:`{field}`',
+    'TYPE': 'type:`{type}`',
+    'RULE': 'rule:`{rule}`',
+    'INVALID_FIELD_NAME': 'invalid field name',
+    'UNDEFINED_DATA_TYPE': 'the data type is undefined',
+    'UNSUPPORTED_DATA_TYPE': 'data type `{type}` is unsupported\nsupported data types [{supported}]',
+    'PARSE_RULE_EXCEPTION': '`{rule}` is invalid rule',
+    'CONVERT_DATA_EXCEPTION': 'type:`{type}` `{data}` is invalid data',
+    # rule.py
+    'KEY_RULE_PARSE_ERROR': 'already defined at r{row_num}:c{col_num}',
+    'MACRO_RULE_NOT_EXIST': 'does not exist',
+    'MACRO_RULE_DUPLICATE_DEFINITION': 'defined at r{row_num}:c{col_num}',
+    'UNIQUE_RULE_FAILED': 'data:`{data}` is not unique already defined at r{row_num}:c{col_num}',
+    'NOT_EMPTY_RULE_FAILED': 'the data is empty',
+    'MIN_RULE_FAILED_1': 'data:`{data}` the minimum limit was not reached',
+    'MIN_RULE_FAILED_2': 'data:`{data}` length:`{len}` the minimum limit was not reached',
+    'MAX_RULE_FAILED_1': 'data:`{data}` the maximum limit was exceeded',
+    'MAX_RULE_FAILED_2': 'data:`{data}` length:`{len}` the maximum limit was exceeded',
+    'SOURCE_RULE_FAILED': 'data:`{data}` path not found',
+    'REF_RULE_PARSE_ERROR_1': 'table:`{table}` does not exist',
+    'REF_RULE_PARSE_ERROR_2': 'field:`{field}` does not exist',
+    'REF_RULE_FAILED': 'data:`{data}` reference does not exist',
+    'STRUCT_RULE_FAILED': 'index:`{row_num}` {err}',
+    'GLOBAL_KEY_RULE_FAILED_1': 'primary key is empty',
+    'GLOBAL_KEY_RULE_FAILED_2': 'primary key repeat at r{row_num}:c{col_num}',
+    'GLOBAL_MACRO_RULE_FAILED_1': 'does not exist',
+    'GLOBAL_MACRO_RULE_FAILED_2': 'data type is not `str`',
+    'GLOBAL_MACRO_RULE_FAILED_3': 'invalid macro name',
+    'GLOBAL_MACRO_RULE_FAILED_4': 'macro name repeat at r{row_num}:c{col_num}',
 }
 
 zh_CN = {
+    # helper.py
     'VALID_SOURCE': '{source} 路径不存在。',
     'VALID_EXPORT': '{export} 导出文件类型不存在。',
     'VALID_TABLE': '{row_num} 不是有效的行号。',
@@ -75,7 +116,43 @@ zh_CN = {
     'ERLANG_OPTIONS': 'Erlang选项',
     'ERL_DIR': '指定.erl文件输出目录。',
     'ERL_PREFIX': '指定record字段名前缀名。',
-    'HRL_DIR': '指定.hrl文件输出目录。'
+    'HRL_DIR': '指定.hrl文件输出目录。',
+    # __main__.py
+    'FINISHED': '完成! 耗时 {:.3f} /秒',
+    # table.py
+    'LOAD_TABLE': '载入配置表 {table} ...',
+    'TABLE_LOADED': '配置表 {table} 已载入!',
+    'ROW_COL_NUM': '行{row_num}:列{col_num}',
+    'TABLE': '配置表:`{table}`',
+    'FIELD': '字段:`{field}`',
+    'TYPE': '类型:`{type}`',
+    'RULE': '规则:`{rule}`',
+    'INVALID_FIELD_NAME': '非法的字段名',
+    'UNDEFINED_DATA_TYPE': '未定义的数据类型',
+    'UNSUPPORTED_DATA_TYPE': '不支持的类型 `{type}`\n支持的类型 [{supported}]',
+    'PARSE_RULE_EXCEPTION': '非法的规则 `{rule}`',
+    'CONVERT_DATA_EXCEPTION': '非法的数据 类型:`{type}` `{data}`',
+    # rule.py
+    'KEY_RULE_PARSE_ERROR': '在 行{row_num}:列{col_num} 已经定义',
+    'MACRO_RULE_NOT_EXIST': '不存在',
+    'MACRO_RULE_DUPLICATE_DEFINITION': '在 行{row_num}:列{col_num} 已经定义',
+    'UNIQUE_RULE_FAILED': '数据:`{data}` 不唯一，在 行{row_num}:列{col_num} 已经定义',
+    'NOT_EMPTY_RULE_FAILED': '数据不能为空',
+    'MIN_RULE_FAILED_1': '数据:`{data}` 小于最小限制',
+    'MIN_RULE_FAILED_2': '数据:`{data}` 长度:`{len}` 小于最小限制',
+    'MAX_RULE_FAILED_1': '数据:`{data}` 超过最大限制',
+    'MAX_RULE_FAILED_2': '数据:`{data}` 长度:`{len}` 大于最大限制',
+    'SOURCE_RULE_FAILED': '数据:`{data}` 路径不存在',
+    'REF_RULE_PARSE_ERROR_1': '配置表:`{table}` 不存在',
+    'REF_RULE_PARSE_ERROR_2': '字段:`{field}` 不存在',
+    'REF_RULE_FAILED': '数据:`{data}` 引用数据不存在',
+    'STRUCT_RULE_FAILED': '行:`{row_num}` {err}',
+    'GLOBAL_KEY_RULE_FAILED_1': '主键为空',
+    'GLOBAL_KEY_RULE_FAILED_2': '在 行{row_num}:列{col_num} 主键值重复',
+    'GLOBAL_MACRO_RULE_FAILED_1': '不存在',
+    'GLOBAL_MACRO_RULE_FAILED_2': '数据不能是 `str` 类型',
+    'GLOBAL_MACRO_RULE_FAILED_3': '非法的宏定义名称',
+    'GLOBAL_MACRO_RULE_FAILED_4': '在 行{row_num}:列{col_num} 宏定义名称重复',
 }
 
 

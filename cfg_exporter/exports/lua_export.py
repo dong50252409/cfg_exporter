@@ -2,7 +2,7 @@ import os
 from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
-from cfg_exporter.exports.base.baseexport import BaseExport
+from cfg_exporter.exports.base.export import BaseExport
 
 EXTENSION = 'lua'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)

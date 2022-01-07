@@ -2,7 +2,7 @@ import os
 import shutil
 import glob
 import logging
-
+from cfg_exporter.language import LANG
 from cfg_exporter.const import ExtensionType
 
 
@@ -22,10 +22,8 @@ class Container(object):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
         if table_obj.table_name in self._cfg_dict:
             old_table_obj = self._cfg_dict[table_obj.table_name]
-            logging.warning(
-                f'waring the `{table_obj.filename}` table has the same name as the `{old_table_obj.filename}` table.'
-                f'the `{old_table_obj.filename}` table will be replaced'
-            )
+            logging.warning(LANG.REPLACE_TABLE_WARNING.format(new_filename=table_obj.full_filename,
+                                                              old_filename=old_table_obj.full_filename))
         self._cfg_dict[table_obj.table_name] = table_obj
 
     def has_table_and_field(self, table_name, field_name):
@@ -43,7 +41,7 @@ class Container(object):
             return table_obj
         elif table_name in self._skipped_cfg_dict:
             macro, file = self._skipped_cfg_dict.pop(table_name)
-            logging.debug(f"reference table {file}")
+            logging.debug(LANG.REFERENCE_TABLE.format(table=file))
             self.create_table_obj(macro.value, file)
             return self.get_table_obj(table_name)
 

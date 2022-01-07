@@ -2,7 +2,7 @@ import os
 from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
-from cfg_exporter.exports.base.baseexport import BaseExport
+from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.tables.base.raw import RawType
 
 ERL_EXTENSION = 'erl'

@@ -1,18 +1,17 @@
 import itertools
 import logging
 import os
-from typing import *
 from abc import abstractmethod
 
+from cfg_exporter import *
 import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
 from cfg_exporter.const import DataType
+from cfg_exporter.language import LANG
 from cfg_exporter.tables.base.raw import RawType
 from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
-AnyType = TypeVar('DataType', int, float, str, list, tuple, RawType)
-Iter = TypeVar('Iter', Iterator[AnyType], Iterator[tuple])
 
 
 class Table(object):
@@ -48,7 +47,7 @@ class Table(object):
         ...
 
     def _load_table(self, rows):
-        logging.debug(f'loading table {self.filename} ...')
+        logging.debug(LANG.LOAD_TABLE.format(table=self.filename))
         loadable_column_list = self.__load_field_name(rows)
 
         self.__load_other(rows, loadable_column_list)
@@ -57,7 +56,7 @@ class Table(object):
             self._key_columns = [col_num for col_num in sorted(self._global_rules[KeyRule.__name__].values.values())]
 
         self._is_load = True
-        logging.debug(f'table {self.filename} loaded!')
+        logging.debug(LANG.TABLE_LOADED.format(table=self.filename))
 
     def __load_field_name(self, rows):
         column_list = []
@@ -72,7 +71,10 @@ class Table(object):
                     column_list.append(False)
 
             except DataException as e:
-                err = f'r{self.data_type_row_num}:c{index + 1} table:`{self.filename}` field:`{field_name}` {e.err}'
+                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
+                err = ' '.join(err_list).format(
+                    row_num=self.data_type_row_num, col_num=index + 1,
+                    table=self.filename, field=field_name)
                 raise TableException(err)
         return column_list
 
@@ -102,15 +104,18 @@ class Table(object):
                     col_num += 1
 
             except RuleException as e:
-                err = f'r{self.rule_row_num}:c{index + 1} table:`{self.filename}` ' \
-                      f'field:`{self.field_name_by_column_num(col_num)}` ' \
-                      f'type:`{self.data_type_by_column_num(col_num).name}` ' \
-                      f'rule:`{e.rule_str}` {e.err}'
+                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, LANG.TYPE, LANG.RULE, e.err]
+                err = ' '.join(err_list).format(
+                    row_num=self.rule_row_num, col_num=index + 1,
+                    table=self.filename, field=self.field_name_by_column_num(col_num),
+                    type=self.data_type_by_column_num(col_num).name, rule=e.rule_str)
                 raise TableException(err)
 
             except DataException as e:
-                err = f'r{self.data_type_row_num}:c{index + 1} table:`{self.filename}` ' \
-                      f'field:`{self.field_name_by_column_num(col_num)}` {e.err}'
+                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
+                err = ' '.join(err_list).format(
+                    row_num=self.data_type_row_num, col_num=index + 1,
+                    table=self.filename, field=self.field_name_by_column_num(col_num))
                 raise TableException(err)
 
     @property
@@ -349,26 +354,29 @@ class Table(object):
                 for rule_obj in rules:
                     rule_obj.verify(self.data_iter_by_column_num(col_num))
             except RuleException as e:
-                err = f'r{self.data_row_num + e.row_num}:c{col_num + 1} table:`{self.filename}` ' \
-                      f'field:`{self.field_name_by_column_num(col_num)}` ' \
-                      f'type:`{self.data_type_by_column_num(col_num).name}` ' \
-                      f'rule:`{e.rule_str}` {e.err}'
+                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, LANG.TYPE, LANG.RULE, e.err]
+                err = ' '.join(err_list).format(
+                    row_num=self.data_row_num + e.row_num, col_num=col_num + 1,
+                    table=self.filename, field=self.field_name_by_column_num(col_num),
+                    type=self.data_type_by_column_num(col_num).name, rule=e.rule_str
+                )
                 raise TableException(err)
 
         for global_rule_obj in self.global_rules.values():
             try:
                 global_rule_obj.verify(self)
             except RuleException as e:
+                err_list = []
                 if e.row_num is not None and e.col_num is not None:
-                    err = f'r{self.data_row_num + e.row_num}:c{e.col_num} table:`{self.filename}'
-                else:
-                    err = f' table:`{self.filename}'
+                    err_list.append(LANG.ROW_COL_NUM.format(row_num=self.data_row_num + e.row_num, col_num=e.col_num))
+
+                err_list.append(LANG.TABLE.format(table=self.filename))
 
                 if e.rule_str:
-                    err = f'{err} rule:`{e.rule_str}`'
+                    err_list.append(LANG.RULE.format(rule=e.rule_str))
 
-                err = f'{err} {e.err}'
-                raise TableException(err)
+                err_list.append(e.err)
+                raise TableException(' '.join(err_list))
 
 
 class TableException(Exception):
@@ -405,23 +413,22 @@ def sgl_field_func(col_num):
     return lambda row: [row[col_num]]
 
 
-def convert_field_name(field_name):
+def convert_field_name(field_name: str) -> StrOrNone:
     field_name = util.trim(field_name)
     if field_name:
         if not util.check_naming(field_name):
-            raise DataException("invalid field name")
+            raise DataException(LANG.INVALID_FIELD_NAME)
         return field_name
 
 
 def convert_data_type(data_type):
     data_type = util.trim(data_type)
     if data_type == '':
-        raise DataException('the data type is undefined')
+        raise DataException(LANG.UNDEFINED_DATA_TYPE)
 
     if data_type not in DataType.__members__:
         raise DataException(
-            f'data type `{data_type}` is unsupported\nsupported data types [{", ".join(DataType.__members__.keys())}]')
-
+            LANG.UNSUPPORTED_DATA_TYPE.format(type=data_type, supported={", ".join(DataType.__members__.keys())}))
     return DataType[data_type]
 
 
@@ -439,7 +446,7 @@ def parse_rules(table_obj, column_num, rules):
             rule_obj = rule.create_rule_obj(table_obj, column_num, each_rule)
             rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            raise DataException(f'{each_rule} is invalid rule')
+            raise DataException(LANG.PARSE_RULE_EXCEPTION.format(rule=each_rule))
     return rule_list
 
 
@@ -498,7 +505,7 @@ def convert_data(data_type, row):
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):
-        raise DataException(f'type:{data_type.name} {row} is invalid data')
+        raise DataException(LANG.CONVERT_DATA_EXCEPTION.format(type=data_type.name, data=row))
 
 
-__all__ = 'Table', 'TableException'
+__all__ = ('Table', 'TableException')

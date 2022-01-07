@@ -9,6 +9,7 @@ import timeit
 
 import cfg_exporter.helper as helper
 from cfg_exporter.container import Container
+from cfg_exporter.language import LANG
 from cfg_exporter.tables.base.table import TableException
 
 SOURCE_DIR = '.source'
@@ -47,5 +48,5 @@ def run():
 
 if __name__ == '__main__':
     # multiprocessing.Pool(multiprocessing.cpu_count() - 1)
-    logging.info('down! elapsed {:.3f}/s'.format(timeit.timeit(stmt=run, number=1)))
+    logging.info(LANG.FINISHED.format(timeit.timeit(stmt=run, number=1)))
     pass

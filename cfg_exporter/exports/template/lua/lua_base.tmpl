@@ -1,0 +1,27 @@
+@require(table_obj, prefix)
+-------------------------------------
+--  AUTO GENERATE BY CFG_EXPORTER  --
+-------------------------------------
+local @`prefix`@`table_obj.table_name` = {}
+
+@`prefix`@`table_obj.table_name`.table_name = "@`table_obj.table_name`"
+
+@`prefix`@`table_obj.table_name`.field_list = {
+@for index, (field_name, desc) in enumerate(zip(table_obj.field_names,table_obj.descriptions),start=1):
+@`'{:<80}{}'.format(f'    {field_name} = {index},', '-- ' + desc if desc else '')`
+@end
+}
+
+@`prefix`@`table_obj.table_name`.data_list = {
+@for row in table_obj.row_iter:
+    [@`' .. '.join([str(row[index]) for index in table_obj.key_columns])`] = {@`', '.join([format_value(value) for value in row])`},
+@end
+}
+
+@for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
+@if macro_name is not None and macro_value is not None:
+@`'{:<80}{}'.format(f'{prefix}{table_obj.table_name}.{macro_name.upper()} = {format_value(macro_value)}', '-- ' + macro_desc if macro_desc else '')`
+@end
+@end
+
+return @`prefix`@`table_obj.table_name`
