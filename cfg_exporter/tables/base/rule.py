@@ -262,9 +262,6 @@ class GlobalMacroRule(GlobalRule):
         if MacroType.name not in self._values:
             raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_1, 'macro:name')
 
-        if MacroType.value not in self._values:
-            raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_1, 'macro:value')
-
         column_num = self._values[MacroType.name]
         data_type = table_obj.data_type_by_column_num(column_num)
         if data_type is not DataType.str:

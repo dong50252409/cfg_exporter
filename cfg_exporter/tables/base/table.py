@@ -66,14 +66,12 @@ class Table(object):
                 field_name = convert_field_name(field_name)
                 if field_name:
                     self._table[FIELD_NAME_INDEX].append(field_name)
-                    column_list.append(True)
-                else:
-                    column_list.append(False)
+                column_list.append(field_name)
 
-            except DataException as e:
+            except FieldNameException as e:
                 err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
                 err = ' '.join(err_list).format(
-                    row_num=self.data_type_row_num, col_num=index + 1,
+                    row_num=self.field_name_row_num, col_num=index + 1,
                     table=self.filename, field=field_name)
                 raise TableException(err)
         return column_list
@@ -88,34 +86,41 @@ class Table(object):
         self._column_count = len(self._table[FIELD_NAME_INDEX])
         self._table[DATA_INDEX].extend([[] for _ in range(self._row_count)])
 
-        col_num = 0
+        real_col_num = 0
         zip_iter = itertools.zip_longest(loadable_column_list, data_type_list, rule_list, desc_list)
-        for index, (loadable_column, data_type, rules, desc) in enumerate(zip_iter):
+        for index, (field_name, data_type, rules, desc) in enumerate(zip_iter):
             try:
-                if loadable_column:
+                if field_name:
                     real_data_type = convert_data_type(data_type)
                     self._table[DATA_TYPE_INDEX].append(real_data_type)
                     self._table[RULE_INDEX].append(
-                        [] if real_data_type is RawType else convert_rules(self, index, rules))
+                        [] if real_data_type is RawType else convert_rules(self, real_col_num, rules))
                     self._table[DESC_INDEX].append(convert_desc(desc))
                     for row_num, rows in enumerate(data_list):
-                        real_data = convert_data(real_data_type, rows[index])
-                        self._table[DATA_INDEX][row_num].append(real_data)
-                    col_num += 1
+                        try:
+                            real_data = convert_data(real_data_type, rows[index])
+                            self._table[DATA_INDEX][row_num].append(real_data)
+                        except DataException as e:
+                            err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
+                            err = ' '.join(err_list).format(
+                                row_num=self.data_row_num + row_num, col_num=index + 1,
+                                table=self.filename, field=field_name)
+                            raise TableException(err)
+                    real_col_num += 1
+
+            except DataTypeException as e:
+                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
+                err = ' '.join(err_list).format(
+                    row_num=self.data_type_row_num, col_num=index + 1,
+                    table=self.filename, field=field_name)
+                raise TableException(err)
 
             except RuleException as e:
                 err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, LANG.TYPE, LANG.RULE, e.err]
                 err = ' '.join(err_list).format(
                     row_num=self.rule_row_num, col_num=index + 1,
-                    table=self.filename, field=self.field_name_by_column_num(col_num),
-                    type=self.data_type_by_column_num(col_num).name, rule=e.rule_str)
-                raise TableException(err)
-
-            except DataException as e:
-                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
-                err = ' '.join(err_list).format(
-                    row_num=self.data_type_row_num, col_num=index + 1,
-                    table=self.filename, field=self.field_name_by_column_num(col_num))
+                    table=self.filename, field=field_name,
+                    type=real_data_type.name, rule=e.rule_str)
                 raise TableException(err)
 
     @property
@@ -201,7 +206,7 @@ class Table(object):
         return self._column_count
 
     @property
-    def field_names(self) -> list[str]:
+    def field_names(self) -> List[str]:
         """
         返回配置表的字段名列表
         """
@@ -214,7 +219,7 @@ class Table(object):
         return self.field_names[column_num]
 
     @property
-    def data_types(self) -> list[Any]:
+    def data_types(self) -> List[Any]:
         """
         返回配置表的数据类型列表
         """
@@ -227,27 +232,27 @@ class Table(object):
         return self.data_types[column_num]
 
     @property
-    def rules(self) -> list[list[rule.BaseRule]]:
+    def rules(self) -> List[List[rule.BaseRule]]:
         """
         返回配置表的规则列表
         """
         return self._table[RULE_INDEX]
 
-    def rule_by_column_num(self, column_num: int) -> list[rule.BaseRule]:
+    def rule_by_column_num(self, column_num: int) -> List[rule.BaseRule]:
         """
         根据列号，从0开始，返回配置表的规则
         """
         return self.rules[column_num]
 
     @property
-    def global_rules(self) -> dict[str, rule.GlobalRule]:
+    def global_rules(self) -> Dict[str, rule.GlobalRule]:
         """
         返回配置表的全局规则列表
         """
         return self._global_rules
 
     @property
-    def descriptions(self) -> list[str]:
+    def descriptions(self) -> List[str]:
         """
         返回配置表的描述列表
         """
@@ -260,7 +265,7 @@ class Table(object):
         return self.descriptions[column_num]
 
     @property
-    def row_iter(self) -> Iterator[list[AnyType]]:
+    def row_iter(self) -> Iterator[List[AnyType]]:
         """
         迭代返回配置表的每行数据
         """
@@ -284,7 +289,7 @@ class Table(object):
                 yield row[column_num]
 
     @property
-    def key_columns(self) -> list[int]:
+    def key_columns(self) -> List[int]:
         """
         返回主键列列号，列号从0开始
         """
@@ -295,29 +300,50 @@ class Table(object):
         """
         迭代返回主键列数据，多值以元祖形式返回
         """
-        func = multi_value_func(self.key_columns) if len(self.key_columns) > 1 else sgl_value_func(self.key_columns[0])
-        for row in self.row_iter:
-            yield func(row)
+        key_count = len(self.key_columns)
+        if key_count != 0:
+            func = multi_value_func(self.key_columns) if len(self.key_columns) > 1 else sgl_value_func(
+                self.key_columns[0])
+            for row in self.row_iter:
+                yield func(row)
 
     @property
-    def macro_data_iter(self) -> Iterator[tuple[str, AnyType, str]]:
+    def macro_data_iter(self) -> Iterator[Tuple[str, AnyType, str]]:
         """
         迭代返回宏定义名、宏定义值、宏定义描述的元祖
         """
         if MacroRule.__name__ in self.global_rules:
-            macro_dict = self.global_rules[MacroRule.__name__].values
-            if MacroType.name in macro_dict and MacroType.desc in macro_dict:
-                for row in self.row_iter:
-                    macro_name = row[macro_dict[MacroType.name]]
-                    if macro_name is not None:
-                        yield macro_name, row[macro_dict[MacroType.value]], row[macro_dict[MacroType.desc]]
-            elif MacroType.name in macro_dict:
-                for row in self.row_iter:
-                    macro_name = row[macro_dict[MacroType.name]]
-                    if macro_name is not None:
-                        yield macro_name, row[macro_dict[MacroType.value]], None
+            for macro_name, macro_value, macro_desc in zip(self.macro_name_iter(), self.macro_value_iter(),
+                                                           self.macro_desc_iter()):
+                yield macro_name, macro_value, macro_desc
 
-    def index_list(self, index_field_names: list[str], value_field_names: list[str]) -> Iter:
+    def macro_name_iter(self):
+        if MacroRule.__name__ in self.global_rules:
+            col_num = self.global_rules[MacroRule.__name__].values[MacroType.name]
+            for row in self.row_iter:
+                yield row[col_num]
+
+    def macro_value_iter(self):
+        if MacroRule.__name__ in self.global_rules:
+            if MacroType.value in self.global_rules[MacroRule.__name__].values:
+                col_num = self.global_rules[MacroRule.__name__].values[MacroType.value]
+                for row in self.row_iter:
+                    yield row[col_num]
+            else:
+                for index, _ in enumerate(self.row_iter, start=1):
+                    yield index
+
+    def macro_desc_iter(self):
+        if MacroRule.__name__ in self.global_rules:
+            if MacroType.desc in self.global_rules[MacroRule.__name__].values:
+                col_num = self.global_rules[MacroRule.__name__].values[MacroType.desc]
+                for row in self.row_iter:
+                    yield row[col_num]
+            else:
+                for _ in self.row_iter:
+                    yield None
+
+    def index_list(self, index_field_names: List[str], value_field_names: List[str]) -> Iter:
         """
         根据下标字段列表和值字段列表迭代返回对应数据，多值以元祖形式返回
         例如：有多个同一种类型的道具，可返回当前类型的所有道具id
@@ -379,24 +405,6 @@ class Table(object):
                 raise TableException(' '.join(err_list))
 
 
-class TableException(Exception):
-    def __init__(self, err):
-        super().__init__(self)
-        self.err = err
-
-    def __str__(self):
-        return self.err
-
-
-class DataException(Exception):
-    def __init__(self, err):
-        super().__init__(self)
-        self.err = err
-
-    def __str__(self):
-        return self.err
-
-
 def multi_value_func(key_columns):
     return lambda row: tuple([row[col_num] for col_num in key_columns])
 
@@ -417,18 +425,18 @@ def convert_field_name(field_name: str) -> StrOrNone:
     field_name = util.trim(field_name)
     if field_name:
         if not util.check_naming(field_name):
-            raise DataException(LANG.INVALID_FIELD_NAME)
+            raise FieldNameException(LANG.INVALID_FIELD_NAME)
         return field_name
 
 
 def convert_data_type(data_type):
     data_type = util.trim(data_type)
     if data_type == '':
-        raise DataException(LANG.UNDEFINED_DATA_TYPE)
+        raise DataTypeException(LANG.UNDEFINED_DATA_TYPE)
 
     if data_type not in DataType.__members__:
-        raise DataException(
-            LANG.UNSUPPORTED_DATA_TYPE.format(type=data_type, supported={", ".join(DataType.__members__.keys())}))
+        raise DataTypeException(
+            LANG.UNSUPPORTED_DATA_TYPE.format(type=data_type, supported=", ".join(DataType.__members__.keys())))
     return DataType[data_type]
 
 
@@ -446,7 +454,7 @@ def parse_rules(table_obj, column_num, rules):
             rule_obj = rule.create_rule_obj(table_obj, column_num, each_rule)
             rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            raise DataException(LANG.PARSE_RULE_EXCEPTION.format(rule=each_rule))
+            raise RuleException(LANG.PARSE_RULE_EXCEPTION, each_rule)
     return rule_list
 
 
@@ -506,6 +514,36 @@ def convert_data(data_type, row):
             return None
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):
         raise DataException(LANG.CONVERT_DATA_EXCEPTION.format(type=data_type.name, data=row))
+
+
+class TableException(Exception):
+    def __init__(self, err):
+        super().__init__(self)
+        self.err = err
+
+    def __str__(self):
+        return self.err
+
+
+class FieldNameException(Exception):
+    def __init__(self, err):
+        super().__init__(self)
+        self.err = err
+
+
+class DataTypeException(Exception):
+    def __init__(self, err):
+        super().__init__(self)
+        self.err = err
+
+
+class DataException(Exception):
+    def __init__(self, err):
+        super().__init__(self)
+        self.err = err
+
+    def __str__(self):
+        return self.err
 
 
 __all__ = ('Table', 'TableException')

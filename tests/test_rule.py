@@ -211,11 +211,6 @@ def test_macro_rule():
     body = [['1'], ['2']]
     exception_verity(heads + body)
 
-    print("part 4")
-    heads = [['name'], ['str'], ['macro:name']]
-    body = [['a'], ['b']]
-    exception_verity(heads + body)
-
     print("part 5")
     heads = [['id', 'value'], ['int', 'int'], ['macro:value', 'macro:name']]
     body = [['1', '10'], ['2', '20']]

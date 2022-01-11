@@ -55,7 +55,7 @@ en_US = {
     'INVALID_FIELD_NAME': 'invalid field name',
     'UNDEFINED_DATA_TYPE': 'the data type is undefined',
     'UNSUPPORTED_DATA_TYPE': 'data type `{type}` is unsupported\nsupported data types [{supported}]',
-    'PARSE_RULE_EXCEPTION': '`{rule}` is invalid rule',
+    'PARSE_RULE_EXCEPTION': 'is invalid rule',
     'CONVERT_DATA_EXCEPTION': 'type:`{type}` `{data}` is invalid data',
     # rule.py
     'KEY_RULE_PARSE_ERROR': 'already defined at r{row_num}:c{col_num}',
@@ -130,7 +130,7 @@ zh_CN = {
     'INVALID_FIELD_NAME': '非法的字段名',
     'UNDEFINED_DATA_TYPE': '未定义的数据类型',
     'UNSUPPORTED_DATA_TYPE': '不支持的类型 `{type}`\n支持的类型 [{supported}]',
-    'PARSE_RULE_EXCEPTION': '非法的规则 `{rule}`',
+    'PARSE_RULE_EXCEPTION': '非法的规则',
     'CONVERT_DATA_EXCEPTION': '非法的数据 类型:`{type}` `{data}`',
     # rule.py
     'KEY_RULE_PARSE_ERROR': '在 行{row_num}:列{col_num} 已经定义',
@@ -148,11 +148,11 @@ zh_CN = {
     'REF_RULE_FAILED': '数据:`{data}` 引用数据不存在',
     'STRUCT_RULE_FAILED': '行:`{row_num}` {err}',
     'GLOBAL_KEY_RULE_FAILED_1': '主键为空',
-    'GLOBAL_KEY_RULE_FAILED_2': '在 行{row_num}:列{col_num} 主键值重复',
+    'GLOBAL_KEY_RULE_FAILED_2': '在 行{row_num}:列{col_num} 主键值重复定义',
     'GLOBAL_MACRO_RULE_FAILED_1': '不存在',
     'GLOBAL_MACRO_RULE_FAILED_2': '数据不能是 `str` 类型',
     'GLOBAL_MACRO_RULE_FAILED_3': '非法的宏定义名称',
-    'GLOBAL_MACRO_RULE_FAILED_4': '在 行{row_num}:列{col_num} 宏定义名称重复',
+    'GLOBAL_MACRO_RULE_FAILED_4': '在 行{row_num}:列{col_num} 宏定义名称重复定义',
 }
 
 
