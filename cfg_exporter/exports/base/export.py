@@ -4,11 +4,10 @@ import os
 import re
 import typing
 from abc import abstractmethod
-
 from wheezy.template import Engine, FileLoader, CoreExtension, CodeExtension
 from wheezy.template.ext.core import rvalue_token
 from wheezy.template.typing import LexerRule
-
+from cfg_exporter import *
 from cfg_exporter.const import TEMPLATE_EXTENSION
 
 
@@ -46,7 +45,7 @@ class BaseExport(object):
         if global_vars is not None:
             self.engine.global_vars.update(global_vars)
 
-    def render(self, filename: str, template_name: str, ctx: dict) -> None:
+    def render(self, filename: str, template_name: str, ctx: dict) -> NoReturn:
         """
         渲染模板
         """
@@ -61,7 +60,7 @@ class BaseExport(object):
             f.write(content)
 
     @abstractmethod
-    def export(self, table_obj) -> None:
+    def export(self, table_obj) -> NoReturn:
         """
         需要实现的导出方法
         """
@@ -73,4 +72,4 @@ def search_extend_template(source, ext):
     return glob.iglob(source)
 
 
-__all__ = 'BaseExport',
+__all__ = ('BaseExport',),
