@@ -11,6 +11,8 @@ BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', ERL_EXT
 ERL_BASE_TEMPLATE = f'{ERL_EXTENSION}_base.{TEMPLATE_EXTENSION}'
 HRL_BASE_TEMPLATE = f'{HRL_EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
+tab = str.maketrans('()', "{}")
+
 
 def format_value(value):
     if value is None:
@@ -18,7 +20,7 @@ def format_value(value):
     elif isinstance(value, str):
         return f'<<"{value}"/utf8>>'
     elif isinstance(value, Iterable):
-        return f'{value}'.replace('(', '{').replace(')', '}')
+        return f'{value}'.translate(tab)
     elif isinstance(value, RawType):
         return f'{value}'
     else:

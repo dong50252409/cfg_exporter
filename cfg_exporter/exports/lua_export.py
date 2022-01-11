@@ -8,6 +8,8 @@ EXTENSION = 'lua'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
 BASE_TEMPLATE = f'{EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
+tab = str.maketrans('()[]', '{}{}')
+
 
 def format_value(value):
     if value is None:
@@ -15,7 +17,7 @@ def format_value(value):
     elif isinstance(value, str):
         return f'"{value}"'
     elif isinstance(value, Iterable):
-        return f'{value}'.replace('(', '{').replace(')', '}').replace('[', '{').replace(']', '}')
+        return f'{value}'.translate(tab)
     else:
         return f'{value}'
 
