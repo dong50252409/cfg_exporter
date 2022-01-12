@@ -1,4 +1,5 @@
 import os
+import re
 from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
@@ -11,7 +12,7 @@ BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', ERL_EXT
 ERL_BASE_TEMPLATE = f'{ERL_EXTENSION}_base.{TEMPLATE_EXTENSION}'
 HRL_BASE_TEMPLATE = f'{HRL_EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
-tab = str.maketrans('()', "{}")
+tab = str.maketrans('()', '{}')
 
 
 def format_value(value):

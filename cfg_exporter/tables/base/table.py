@@ -506,6 +506,8 @@ def convert_data(data_type, row):
                 data = eval(row)
                 assert isinstance(data, data_type.value)
                 return data
+            elif data_type.value is str:
+                return util.escape(data_type.value(row))
             elif data_type.value is RawType:
                 return RawType(row)
             else:
