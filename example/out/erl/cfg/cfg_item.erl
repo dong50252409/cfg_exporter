@@ -81,7 +81,7 @@ get(101) ->
     #cfg_item{
         id = 101,
         name = <<"传说召唤券"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"可以在“传说英雄”卡池中免费进行一次召唤"/utf8>>,
         item_type = 8,
         item_sub_type = 1,
@@ -93,7 +93,7 @@ get(102) ->
     #cfg_item{
         id = 102,
         name = <<"霸业召唤券"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"可以在霸业卡池“征服之军”、“整装待发”、“秩序重构”、“星战将起”、“战争号角”、“星球主宰”中免费进行一次召唤"/utf8>>,
         item_type = 8,
         item_sub_type = 2,
@@ -105,7 +105,7 @@ get(103) ->
     #cfg_item{
         id = 103,
         name = <<"传说英雄卡"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"随机获得一个传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 1,
@@ -117,7 +117,7 @@ get(201) ->
     #cfg_item{
         id = 201,
         name = <<"人族传说卡"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"随机获得一个人族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 2,
@@ -129,7 +129,7 @@ get(202) ->
     #cfg_item{
         id = 202,
         name = <<"兽族传说卡"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"随机获得一个兽族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 3,
@@ -141,7 +141,7 @@ get(203) ->
     #cfg_item{
         id = 203,
         name = <<"机械传说卡"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"随机获得一个机械族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 4,
@@ -153,7 +153,7 @@ get(204) ->
     #cfg_item{
         id = 204,
         name = <<"神族传说卡"/utf8>>,
-        macro_name = undefined,
+        macro_name = <<""/utf8>>,
         description = <<"随机获得一个神族的传说英雄"/utf8>>,
         item_type = 7,
         item_sub_type = 5,

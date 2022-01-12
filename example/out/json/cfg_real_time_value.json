@@ -1,0 +1,21 @@
+{
+    "table_name" : "real_time_value",
+    "field_list" : ["auto_macro_key", "value", "export", "desc"],
+    "desc_list" : ["key", "", "1：仅前端读2：仅后端读", ""],
+    "data_list" : [
+        {"auto_macro_key":"ERLANG_ATOM", "value":abc, "export":2, "desc":"Erlang数据类型"},
+        {"auto_macro_key":"ERLANG_TERM", "value":[{21,6},{22,6},{24,12}], "export":2, "desc":"Erlang数据类型"},
+        {"auto_macro_key":"TUPLE_OR_TABLE", "value":{180,1}, "export":"", "desc":"Erlang元祖或LuaTable"},
+        {"auto_macro_key":"INTEGER", "value":604800, "export":"", "desc":"数值"},
+        {"auto_macro_key":"DESC_1", "value":"积分越高，每个官职可领取的奖励越多", "export":1, "desc":"单行描述"},
+        {"auto_macro_key":"DESC_2", "value":"[cefffe]元素适性会影响英雄的基础属性，\n不同英雄最适合的元素不同，其中[ffd967]S级[-]\n为原属性120%，[f69df3]A级[-]为100%，[80caed]B级[-]\n为85%，[8fe6a3]C级[-]为70%", "export":1, "desc":"多行描述"}
+    ],
+    "macro_list" : {
+        "ERLANG_ATOM" : 1,
+        "ERLANG_TERM" : 2,
+        "TUPLE_OR_TABLE" : 3,
+        "INTEGER" : 4,
+        "DESC_1" : 5,
+        "DESC_2" : 6
+    }
+}

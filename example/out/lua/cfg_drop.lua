@@ -3,8 +3,6 @@
 -------------------------------------
 local cfg_drop = {}
 
-cfg_drop.table_name = "drop"
-
 cfg_drop.field_list = {
     id = 1,                                                                     
     world_level = 2,                                                            -- 世界等级
