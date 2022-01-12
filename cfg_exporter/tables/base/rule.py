@@ -80,7 +80,7 @@ class UniqueRule(BaseRule):
     def verify(self, column_data_iter):
         d = {}
         for row_num, data in enumerate(column_data_iter):
-            if data is None:
+            if data is None or data == "":
                 continue
 
             if data in d:
@@ -93,7 +93,7 @@ class UniqueRule(BaseRule):
 class NotEmptyRule(BaseRule):
     def verify(self, column_data_iter):
         for row_num, data in enumerate(column_data_iter):
-            if data is None:
+            if data is None or data == "":
                 self._raise_verify_error(LANG.NOT_EMPTY_RULE_FAILED, row_num)
 
 
@@ -153,7 +153,7 @@ class SourceRule(BaseRule):
 
     def verify(self, column_data_iter):
         for row_num, data in enumerate(column_data_iter):
-            if data is None:
+            if data is None or data == "":
                 continue
 
             if not os.path.exists(os.path.join(self._value, data)):
@@ -177,7 +177,7 @@ class RefRule(BaseRule):
 
     def verify(self, column_data_iter):
         ref_table_obj = self._table_obj.get_table_obj(self._value[0])
-        ref_column_data_iter = ref_table_obj.data_iter_by_field_name(self._value[1])
+        ref_column_data_iter = ref_table_obj.data_iter_by_field_names(self._value[1])
         data_set = set(ref_column_data_iter)
         for row_num, data in enumerate(column_data_iter):
             if data is None:
@@ -240,7 +240,7 @@ class GlobalRule(object):
 class GlobalKeyRule(GlobalRule):
     def verify(self, table_obj):
         column_num_list = sorted(self._values.values())
-        column_data_iter_list = [table_obj.data_iter_by_column_num(col_num) for col_num in column_num_list]
+        column_data_iter_list = [table_obj.data_iter_by_column_nums(col_num) for col_num in column_num_list]
         d = {}
         for row_num, data_t in enumerate(zip(*column_data_iter_list)):
             for col_num, data in enumerate(data_t):
@@ -268,9 +268,9 @@ class GlobalMacroRule(GlobalRule):
             raise RuleException(LANG.GLOBAL_MACRO_RULE_FAILED_2, 'macro:name', table_obj.rule_row_num, column_num + 1)
 
         d = {}
-        column_data_iter = table_obj.data_iter_by_column_num(column_num)
+        column_data_iter = table_obj.data_iter_by_column_nums(column_num)
         for row_num, data in enumerate(column_data_iter):
-            if data is None:
+            if data is None or data == "":
                 continue
 
             if not util.check_naming(data):

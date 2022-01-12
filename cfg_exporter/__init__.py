@@ -1,8 +1,7 @@
 from typing import *
-
-StrOrNone = TypeVar('StrOrNone', str, None)
 from cfg_exporter.tables.base.raw import RawType
 
+StrOrNone = TypeVar('StrOrNone', str, None)
 AnyType = TypeVar('DataType', int, float, str, list, tuple, RawType)
 Iter = TypeVar('Iter', Iterator[AnyType], Iterator[tuple])
 

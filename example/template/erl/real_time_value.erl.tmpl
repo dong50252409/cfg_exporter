@@ -1,0 +1,10 @@
+@require(table_obj, prefix)
+-module(@`prefix`@`table_obj.table_name`).
+-export([get/1]).
+
+@for index, (value, export) in enumerate(table_obj.data_iter_by_field_names('value', 'export'), start=1):
+@if export is None or export == 2:
+get(@index!s)-> @format_value(value);
+@end
+@end
+get(_)-> undefined.

@@ -2,7 +2,7 @@ import glob
 import logging
 import os
 import re
-import typing
+import traceback
 from abc import abstractmethod
 from wheezy.template import Engine, FileLoader, CoreExtension, CodeExtension
 from wheezy.template.ext.core import rvalue_token
@@ -13,7 +13,7 @@ from cfg_exporter.const import TEMPLATE_EXTENSION
 
 class ExpressionExtension:
     def __init__(self):
-        self.lexer_rules: typing.Dict[int, LexerRule] = {
+        self.lexer_rules: Dict[int, LexerRule] = {
             201: (re.compile(r"@`(.*?)`"), rvalue_token)
         }
 
@@ -55,14 +55,24 @@ class BaseExport(object):
         if not os.path.exists(self.output):
             os.makedirs(self.output)
         with open(full_filename, 'w', encoding='utf-8') as f:
-            content = self.engine.get_template(template_name).render(ctx)
-            logging.debug(f'render {filename} finished!')
-            f.write(content)
+            try:
+                content = self.engine.get_template(template_name).render(ctx)
+                logging.debug(f'render {filename} finished!')
+                f.write(f'{self.file_desc()}{content}')
+            except:
+                logging.error(traceback.print_exc())
+
+    @abstractmethod
+    def file_desc(self) -> str:
+        """
+        文件顶部描述
+        """
+        return ""
 
     @abstractmethod
     def export(self, table_obj) -> NoReturn:
         """
-        需要实现的导出方法
+        导出方法
         """
         ...
 
@@ -72,4 +82,4 @@ def search_extend_template(source, ext):
     return glob.iglob(source)
 
 
-__all__ = ('BaseExport',),
+__all__ = ('BaseExport',)

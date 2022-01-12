@@ -272,21 +272,22 @@ class Table(object):
         for row in self._table[DATA_INDEX]:
             yield row
 
-    def data_iter_by_column_num(self, column_num: int) -> Iterator[AnyType]:
+    def data_iter_by_column_nums(self, *column_nums) -> Iterator[AnyType]:
         """
         根据列号，从0开始，迭代返回配置表的每列数据
         """
+        func = multi_value_func(column_nums) if len(column_nums) > 1 else sgl_value_func(column_nums[0])
         for row in self.row_iter:
-            yield row[column_num]
+            yield func(row)
 
-    def data_iter_by_field_name(self, field_name: str) -> Iterator[str]:
+    def data_iter_by_field_names(self, *field_names) -> Iterator[str]:
         """
         根据字段名，迭代返回配置表的每列数据
         """
-        if field_name in self.field_names:
-            column_num = self.field_names.index(field_name)
-            for row in self.row_iter:
-                yield row[column_num]
+        column_nums = [self.field_names.index(field_name) for field_name in field_names]
+        func = multi_value_func(column_nums) if len(column_nums) > 1 else sgl_value_func(column_nums[0])
+        for row in self.row_iter:
+            yield func(row)
 
     @property
     def key_columns(self) -> List[int]:
@@ -349,9 +350,10 @@ class Table(object):
         例如：有多个同一种类型的道具，可返回当前类型的所有道具id
         """
         if len(index_field_names) > 1:
-            index_func = multi_field_func([self.field_names.index(field_name) for field_name in index_field_names])
+            index_func = multi_value_func([self.field_names.index(field_name) for field_name in index_field_names])
         else:
-            index_func = sgl_field_func(self.field_names.index(index_field_names[0]))
+            f = sgl_value_func(self.field_names.index(index_field_names[0]))
+            index_func = lambda _: (f(row),)
 
         if len(value_field_names) > 1:
             value_func = multi_value_func([self.field_names.index(field_name) for field_name in value_field_names])
@@ -378,7 +380,7 @@ class Table(object):
         for col_num, rules in enumerate(self.rules):
             try:
                 for rule_obj in rules:
-                    rule_obj.verify(self.data_iter_by_column_num(col_num))
+                    rule_obj.verify(self.data_iter_by_column_nums(col_num))
             except RuleException as e:
                 err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, LANG.TYPE, LANG.RULE, e.err]
                 err = ' '.join(err_list).format(
@@ -406,19 +408,11 @@ class Table(object):
 
 
 def multi_value_func(key_columns):
-    return lambda row: tuple([row[col_num] for col_num in key_columns])
+    return lambda row: tuple(row[col_num] for col_num in key_columns)
 
 
 def sgl_value_func(col_num):
     return lambda row: row[col_num]
-
-
-def multi_field_func(col_num_list):
-    return lambda row: tuple([row[col_num] for col_num in col_num_list])
-
-
-def sgl_field_func(col_num):
-    return lambda row: [row[col_num]]
 
 
 def convert_field_name(field_name: str) -> StrOrNone:
@@ -501,13 +495,13 @@ def convert_desc(desc):
 
 def convert_data(data_type, row):
     try:
-        if row != '':
+        if data_type.value is str:
+            return util.escape(row)
+        elif row != '':
             if data_type.value is Iterable:
                 data = eval(row)
                 assert isinstance(data, data_type.value)
                 return data
-            elif data_type.value is str:
-                return util.escape(data_type.value(row))
             elif data_type.value is RawType:
                 return RawType(row)
             else:

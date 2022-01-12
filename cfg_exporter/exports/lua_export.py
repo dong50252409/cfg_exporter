@@ -37,3 +37,8 @@ class LuaExport(BaseExport):
             self.render(filename, f'{table_name}.{EXTENSION}.{TEMPLATE_EXTENSION}', ctx)
         else:
             self.render(filename, BASE_TEMPLATE, ctx)
+
+    def file_desc(self) -> str:
+        return "-------------------------------------\n" \
+               "--  AUTO GENERATE BY CFG_EXPORTER  --\n" \
+               "-------------------------------------\n"

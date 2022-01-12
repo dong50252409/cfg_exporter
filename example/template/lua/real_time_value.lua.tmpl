@@ -10,8 +10,10 @@ local @`prefix`@`table_obj.table_name` = {}
 }
 
 @`prefix`@`table_obj.table_name`.data_list = {
-@for row in table_obj.row_iter:
-    [@`' .. '.join([str(row[index]) for index in table_obj.key_columns])`] = {@`', '.join([format_value(value) for value in row])`},
+@for index, (value, export) in enumerate(table_obj.data_iter_by_field_names('value', 'export'), start=1):
+    @if export is None or export == 1:
+    [@index!s] = @format_value(value)
+    @end
 @end
 }
 

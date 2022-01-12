@@ -1,5 +1,4 @@
-﻿id,name,macro_name,icon,description,item_type,item_sub_type,price,quality_type,
-id,name,macro_name,,description,item_type,item_sub_type,price,quality_type,args
+﻿id,name,macro_name,,description,item_type,item_sub_type,price,quality_type,args
 int,str,str,str,str,int,int,iter,int,raw
 道具id,道具名称,宏定义,图标资源,道具描述,道具类型,道具子类型,"出售价格 配置格式：[(道具id,数量),...]",道具品质,自定义数据
 key:1|macro:value,macro:desc,macro:name,not_empty|source:example/source,,not_empty,not_empty,"struct:[(ref:item.id|unique,min:0|max:999999999)]",min:1|max:5,

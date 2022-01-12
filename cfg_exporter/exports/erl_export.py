@@ -1,10 +1,8 @@
 import os
-import re
 from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import BaseExport
-from cfg_exporter.tables.base.raw import RawType
 
 ERL_EXTENSION = 'erl'
 HRL_EXTENSION = 'hrl'
@@ -22,8 +20,6 @@ def format_value(value):
         return f'<<"{value}"/utf8>>'
     elif isinstance(value, Iterable):
         return f'{value}'.translate(tab)
-    elif isinstance(value, RawType):
-        return f'{value}'
     else:
         return f'{value}'
 
@@ -52,3 +48,8 @@ class ErlExport(BaseExport):
             self.render(hrl_filename, f'{table_name}.{HRL_EXTENSION}.{TEMPLATE_EXTENSION}', ctx)
         else:
             self.render(hrl_filename, HRL_BASE_TEMPLATE, ctx)
+
+    def file_desc(self) -> str:
+        return "%%===================================\n" \
+               "%%  AUTO GENERATE BY CFG_EXPORTER\n" \
+               "%%===================================\n"
