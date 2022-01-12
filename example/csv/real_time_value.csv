@@ -1,0 +1,12 @@
+﻿auto_macro_key,value,export,desc
+str,raw,int,str
+key,,"1：仅前端读
+2：仅后端读",
+macro:name,,,macro:desc
+,,,
+ERLANG_ATOM,abc,2,Erlang数据类型
+ERLANG_TERM,"[{21,6},{22,6},{24,12}]",2,Erlang数据类型
+TUPLE_OR_TABLE,"{180,1}",,Erlang元祖或LuaTable
+INTEGER,604800,,数值
+DESC_1,"""积分越高，每个官职可领取的奖励越多""",1,单行描述
+DESC_2,"""[cefffe]元素适性会影响英雄的基础属性，\n不同英雄最适合的元素不同，其中[ffd967]S级[-]\n为原属性120%，[f69df3]A级[-]为100%，[80caed]B级[-]\n为85%，[8fe6a3]C级[-]为70%""",1,多行描述

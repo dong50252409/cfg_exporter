@@ -7,9 +7,7 @@
 }).
 
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
-@if macro_name is not None and macro_value is not None:
 @`'{:<80}{}'.format(f'-define({macro_name.upper()}, {format_value(macro_value)}).', '% ' + macro_desc if macro_desc else '')`
-@end
 @end
 
 -endif.

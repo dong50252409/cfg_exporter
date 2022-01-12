@@ -316,7 +316,8 @@ class Table(object):
         if MacroRule.__name__ in self.global_rules:
             for macro_name, macro_value, macro_desc in zip(self.macro_name_iter(), self.macro_value_iter(),
                                                            self.macro_desc_iter()):
-                yield macro_name, macro_value, macro_desc
+                if macro_name and macro_value is not None:
+                    yield macro_name, macro_value, macro_desc
 
     def macro_name_iter(self):
         if MacroRule.__name__ in self.global_rules:

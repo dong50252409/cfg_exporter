@@ -8,7 +8,7 @@ EXTENSION = 'json'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
 BASE_TEMPLATE = f'{EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
-tab = str.maketrans('()\'', '{}"')
+tab = str.maketrans('()', '[]')
 
 
 def format_value(value):

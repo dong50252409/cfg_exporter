@@ -1,8 +1,6 @@
 @require(table_obj, prefix)
 local @`prefix`@`table_obj.table_name` = {}
 
-@`prefix`@`table_obj.table_name`.table_name = "@`table_obj.table_name`"
-
 @`prefix`@`table_obj.table_name`.field_list = {
 @for index, (field_name, desc) in enumerate(zip(table_obj.field_names,table_obj.descriptions),start=1):
 @`'{:<80}{}'.format(f'    {field_name} = {index},', '-- ' + desc if desc else '')`
@@ -12,7 +10,7 @@ local @`prefix`@`table_obj.table_name` = {}
 @`prefix`@`table_obj.table_name`.data_list = {
 @for index, (value, export) in enumerate(table_obj.data_iter_by_field_names('value', 'export'), start=1):
     @if export is None or export == 1:
-    [@index!s] = @format_value(value)
+    [@index!s] = @format_value(value),
     @end
 @end
 }
