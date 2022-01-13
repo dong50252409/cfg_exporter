@@ -1,27 +1,34 @@
 -------------------------------------
 --  AUTO GENERATE BY CFG_EXPORTER  --
 -------------------------------------
-local cfg_real_time_value = {}
+--- @class cfg_real_time_value
+--- @field auto_macro_key @ key
+--- @field value 
+--- @field export @ 1：仅前端读2：仅后端读
+--- @field desc 
 
-cfg_real_time_value.field_list = {
-    auto_macro_key = 1,                                                         -- key
-    value = 2,                                                                  
-    export = 3,                                                                 -- 1：仅前端读2：仅后端读
-    desc = 4,                                                                   
+local tab = {}
+
+tab.macro = {
+    --- @field ERLANG_ATOM @ Erlang数据类型
+    ERLANG_ATOM = 1,
+    --- @field ERLANG_TERM @ Erlang数据类型
+    ERLANG_TERM = 2,
+    --- @field TUPLE_OR_TABLE @ Erlang元祖或LuaTable
+    TUPLE_OR_TABLE = 3,
+    --- @field INTEGER @ 数值
+    INTEGER = 4,
+    --- @field DESC_1 @ 单行描述
+    DESC_1 = 5,
+    --- @field DESC_2 @ 多行描述
+    DESC_2 = 6,
 }
 
-cfg_real_time_value.data_list = {
+tab.data_list = {
     [3] = {180,1},
     [4] = 604800,
     [5] = "积分越高，每个官职可领取的奖励越多",
     [6] = "[cefffe]元素适性会影响英雄的基础属性，\n不同英雄最适合的元素不同，其中[ffd967]S级[-]\n为原属性120%，[f69df3]A级[-]为100%，[80caed]B级[-]\n为85%，[8fe6a3]C级[-]为70%",
 }
 
-cfg_real_time_value.ERLANG_ATOM = 1                                             -- Erlang数据类型
-cfg_real_time_value.ERLANG_TERM = 2                                             -- Erlang数据类型
-cfg_real_time_value.TUPLE_OR_TABLE = 3                                          -- Erlang元祖或LuaTable
-cfg_real_time_value.INTEGER = 4                                                 -- 数值
-cfg_real_time_value.DESC_1 = 5                                                  -- 单行描述
-cfg_real_time_value.DESC_2 = 6                                                  -- 多行描述
-
-return cfg_real_time_value
+return tab

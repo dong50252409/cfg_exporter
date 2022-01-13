@@ -309,6 +309,13 @@ class Table(object):
                 yield func(row)
 
     @property
+    def has_macro(self):
+        """
+        查看配表是否存在宏定义
+        """
+        return MacroRule.__name__ in self.global_rules
+
+    @property
     def macro_data_iter(self) -> Iterator[Tuple[str, AnyType, str]]:
         """
         迭代返回宏定义名、宏定义值、宏定义描述的元祖

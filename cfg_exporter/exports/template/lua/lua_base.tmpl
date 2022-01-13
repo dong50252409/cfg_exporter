@@ -1,20 +1,32 @@
-@require(table_obj, prefix)
-local @`prefix`@`table_obj.table_name` = {}
-
-@`prefix`@`table_obj.table_name`.field_list = {
-@for index, (field_name, desc) in enumerate(zip(table_obj.field_names,table_obj.descriptions),start=1):
-@`'{:<80}{}'.format(f'    {field_name} = {index},', '-- ' + desc if desc else '')`
+@def gen_head(table_obj, prefix):
+--- @`f'@class {prefix}{table_obj.table_name}'`
+@for field_name, desc in zip(table_obj.field_names,table_obj.descriptions):
+@`f'--- @field {field_name}'` @`desc and '@ ' + desc or ''`
 @end
-}
 
-@`prefix`@`table_obj.table_name`.data_list = {
-@for row in table_obj.row_iter:
-    [@`' .. '.join([str(row[index]) for index in table_obj.key_columns])`] = {@`', '.join([format_value(value) for value in row])`},
+local tab = {}
 @end
-}
-
+@def gen_macro(table_obj, prefix):
+@#ignore
+@if table_obj.has_macro:
+tab.macro = {
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
-@`'{:<80}{}'.format(f'{prefix}{table_obj.table_name}.{macro_name.upper()} = {format_value(macro_value)}', '-- ' + macro_desc if macro_desc else '')`
+    --- @`f'@field {macro_name.upper()}'` @`macro_desc and '@ ' + macro_desc or ''`
+    @`macro_name.upper()` = @format_value(macro_value),
 @end
+}
+@end
+@end
+@require(table_obj, prefix)
+@gen_head(table_obj, prefix)
+@gen_macro(table_obj, prefix)
+--- @`f'@type table<number | string, {prefix}{table_obj.table_name}>'`
+tab.data_list = {
+@for row in table_obj.row_iter:
+    [@`' .. '.join([str(row[index]) for index in table_obj.key_columns])`] = {
+        @`',\n        '.join([f'{field_name} = {format_value(value)}' for field_name, value in zip(table_obj.field_names, row)])`
+    },
+@end
+}
 
-return @`prefix`@`table_obj.table_name`
+return tab
