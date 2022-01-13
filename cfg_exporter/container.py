@@ -22,8 +22,8 @@ class Container(object):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
         if table_obj.table_name in self._cfg_dict:
             old_table_obj = self._cfg_dict[table_obj.table_name]
-            logging.warning(LANG.REPLACE_TABLE_WARNING.format(new_filename=table_obj.full_filename,
-                                                              old_filename=old_table_obj.full_filename))
+            logging.warning(LANG.REPLACE_TABLE.format(new_filename=table_obj.full_filename,
+                                                      old_filename=old_table_obj.full_filename))
         self._cfg_dict[table_obj.table_name] = table_obj
 
     def has_table_and_field(self, table_name, field_name):
