@@ -37,3 +37,6 @@ class JSONExport(BaseExport):
             self.render(filename, f'{table_name}.{EXTENSION}.{TEMPLATE_EXTENSION}', ctx)
         else:
             self.render(filename, BASE_TEMPLATE, ctx)
+
+    def file_desc(self) -> str:
+        pass
