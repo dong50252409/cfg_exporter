@@ -12,8 +12,10 @@ class XLSXExport(BaseExport):
     def export(self, table_obj):
         if not os.path.exists(self.output):
             os.makedirs(self.output)
+
         filename = f'{self.args.file_prefix}{table_obj.table_name}.xlsx'
         full_filename = os.path.join(self.args.output, filename)
+
         wb = Workbook()
         sheet = wb.active
         sheet.title = table_obj.table_name
@@ -25,7 +27,7 @@ class XLSXExport(BaseExport):
         for row_idx, row in enumerate(table_obj.row_iter, 6):
             for col_idx, content in enumerate(row, 1):
                 if content:
-                    if isinstance(content, (int, float, str)):
+                    if type(content) in {int, float, str}:
                         sheet.cell(row=row_idx, column=col_idx).value = content
                     else:
                         sheet.cell(row=row_idx, column=col_idx).value = str(content)
