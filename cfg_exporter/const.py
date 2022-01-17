@@ -11,12 +11,12 @@ TEMPLATE_EXTENSION = 'tmpl'
 from typing import Iterable
 from cfg_exporter.tables.base.raw import RawType
 
-DataType = Enum('DataType', {'int': int, 'float': float, 'str': str, 'iter': Iterable, 'raw': RawType})
+DataType = Enum('DataType', {'int': int, 'int64': int, 'float': float, 'str': str, 'iter': Iterable, 'raw': RawType})
 
 ###############################
 # 支持的导出文件类型
 ###############################
-from cfg_exporter.exports import erl_export, lua_export, json_export, csv_export,xlsx_export
+from cfg_exporter.exports import erl_export, lua_export, json_export, csv_export, xlsx_export
 
 ExportType = Enum('ExportType', {
     'erl': erl_export.ErlExport,
