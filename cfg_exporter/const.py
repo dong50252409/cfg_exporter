@@ -16,13 +16,14 @@ DataType = Enum('DataType', {'int': int, 'float': float, 'str': str, 'iter': Ite
 ###############################
 # 支持的导出文件类型
 ###############################
-from cfg_exporter.exports import erl_export, lua_export, json_export
+from cfg_exporter.exports import erl_export, lua_export, json_export, csv_export,xlsx_export
 
 ExportType = Enum('ExportType', {
     'erl': erl_export.ErlExport,
     'lua': lua_export.LuaExport,
     'json': json_export.JSONExport,
-    'proto': None
+    'csv': csv_export.CSVExport,
+    'xlsx': xlsx_export.XLSXExport,
 })
 
 ###############################

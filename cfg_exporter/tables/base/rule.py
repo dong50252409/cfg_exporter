@@ -23,6 +23,10 @@ class BaseRule(object):
         return self._column_num
 
     @property
+    def rule_str(self):
+        return self._rule_str
+
+    @property
     def value(self):
         return self._value
 
@@ -108,11 +112,7 @@ class MinRule(BaseRule):
             if data is None:
                 continue
 
-            if isinstance(data, int):
-                if data < self._value:
-                    self._raise_verify_error(LANG.MIN_RULE_FAILED_1.format(data=data), row_num)
-
-            elif isinstance(data, float):
+            if isinstance(data, (int, float)):
                 if data < self._value:
                     self._raise_verify_error(LANG.MIN_RULE_FAILED_1.format(data=data), row_num)
 
@@ -132,11 +132,7 @@ class MaxRule(BaseRule):
             if data is None:
                 continue
 
-            if isinstance(data, int):
-                if data > self._value:
-                    self._raise_verify_error(LANG.MAX_RULE_FAILED_1.format(data=data), row_num)
-
-            elif isinstance(data, float):
+            if isinstance(data, (int, float)):
                 if data > self._value:
                     self._raise_verify_error(LANG.MAX_RULE_FAILED_1.format(data=data), row_num)
 
