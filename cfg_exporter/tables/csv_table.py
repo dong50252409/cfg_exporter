@@ -7,6 +7,6 @@ class CSVTable(Table):
         super().__init__(container, file, args)
 
     def load_table(self):
-        with open(self.full_filename, 'r', encoding='utf-8-sig') as f:
+        with open(self.full_filename, 'r', encoding=self.args.csv_encoding) as f:
             rows = list(csv.reader(f))
         self._load_table(rows)

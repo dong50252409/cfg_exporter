@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import traceback
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from wheezy.template import Engine, FileLoader, CoreExtension, CodeExtension
 from wheezy.template.ext.core import rvalue_token
 from wheezy.template.typing import LexerRule
@@ -19,6 +19,8 @@ class ExpressionExtension:
 
 
 class BaseExport(object):
+    __metaclass__ = ABCMeta
+
     def __init__(self, args, base_template_path, extend_template_type_list, global_vars=None):
         self.args = args
         self.output = self.args.output

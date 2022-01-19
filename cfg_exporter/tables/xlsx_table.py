@@ -10,4 +10,5 @@ class XLSXTable(Table):
         book = openpyxl.load_workbook(self.full_filename, read_only=True, data_only=True)
         sheet = book[book.sheetnames[0]]
         rows = list(sheet.iter_rows(values_only=True))
+        book.close()
         self._load_table(rows)

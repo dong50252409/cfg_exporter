@@ -433,7 +433,7 @@ def convert_field_name(field_name: str) -> StrOrNone:
 
 def convert_data_type(data_type):
     data_type = util.trim(data_type)
-    if data_type == '':
+    if data_type == '' or data_type is None:
         raise DataTypeException(LANG.UNDEFINED_DATA_TYPE)
 
     if data_type not in DataType.__members__:
@@ -503,17 +503,8 @@ def convert_desc(desc):
 
 def convert_data(data_type, row):
     try:
-        if data_type.value is str:
-            return util.escape(row)
-        elif row != '':
-            if data_type.value is Iterable:
-                data = eval(row)
-                assert isinstance(data, data_type.value)
-                return data
-            elif data_type.value is RawType:
-                return RawType(row)
-            else:
-                return data_type.value(row)
+        if row is not None:
+            return data_type.value(row)
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):

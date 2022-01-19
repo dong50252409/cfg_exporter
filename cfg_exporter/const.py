@@ -8,10 +8,14 @@ TEMPLATE_EXTENSION = 'tmpl'
 ###############################
 # 支持的数据类型定义
 ###############################
-from typing import Iterable
+from functools import partial
 from cfg_exporter.tables.base.raw import RawType
+from cfg_exporter.util import escape
 
-DataType = Enum('DataType', {'int': int, 'int64': int, 'float': float, 'str': str, 'iter': Iterable, 'raw': RawType})
+DataType = Enum('DataType', {
+    'int': int, 'int64': int, 'float': float,
+    'str': partial(escape), 'iter': eval, 'raw': RawType
+})
 
 ###############################
 # 支持的导出文件类型

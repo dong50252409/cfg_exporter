@@ -1,3 +1,4 @@
+import logging
 import os
 
 import csv
@@ -14,6 +15,7 @@ class CSVExport(BaseExport):
             os.makedirs(self.output)
 
         filename = f'{self.args.file_prefix}{table_obj.table_name}.csv'
+        logging.debug(f'render {filename} ...')
         full_filename = os.path.join(self.args.output, filename)
 
         with open(full_filename, 'w', encoding=self.args.csv_encoding, newline='') as wf:
