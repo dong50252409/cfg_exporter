@@ -20,12 +20,23 @@ class CSVExport(BaseExport):
 
         with open(full_filename, 'w', encoding=self.args.csv_encoding, newline='') as wf:
             csv_writer = csv.writer(wf)
-            csv_writer.writerow(table_obj.field_names)
-            csv_writer.writerow(data_type.name for data_type in table_obj.data_types)
-            csv_writer.writerow(desc if desc else '' for desc in table_obj.descriptions)
-            csv_writer.writerow(
-                '|'.join(rule.rule_str for rule in rule_group) if rule_group else '' for rule_group in table_obj.rules)
-            csv_writer.writerow([''] * len(table_obj.field_names))
+            line = 1
+            while True:
+                if line == self.args.field_row:
+                    csv_writer.writerow(table_obj.field_names)
+                elif line == self.args.type_row:
+                    csv_writer.writerow(data_type.name for data_type in table_obj.data_types)
+                elif line == self.args.desc_row:
+                    csv_writer.writerow(desc if desc else '' for desc in table_obj.descriptions)
+                elif line == self.args.rule_row:
+                    csv_writer.writerow(
+                        '|'.join(rule.rule_str for rule in rule_group) if rule_group else ''
+                        for rule_group in table_obj.rules)
+                elif line == self.args.data_row:
+                    break
+                else:
+                    csv_writer.writerow([''] * len(table_obj.field_names))
+                line += 1
             csv_writer.writerows(table_obj.row_iter)
 
     def file_desc(self) -> str:

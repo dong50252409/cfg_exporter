@@ -503,7 +503,7 @@ def convert_desc(desc):
 
 def convert_data(data_type, row):
     try:
-        if row is not None:
+        if row != '' and row is not None:
             return data_type.value(row)
         else:
             return None
