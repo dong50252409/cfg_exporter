@@ -52,14 +52,12 @@ class BaseExport(object):
         渲染模板
         """
         filename = f'{self.args.file_prefix}{filename}'
-        logging.debug(f'render {filename} ...')
         full_filename = os.path.abspath(os.path.join(self.output, filename))
         if not os.path.exists(self.output):
             os.makedirs(self.output)
         with open(full_filename, 'w', encoding='utf-8') as f:
             try:
                 content = self.engine.get_template(template_name).render(ctx)
-                logging.debug(f'render {filename} finished!')
                 f.write(f'{self.file_desc()}{content}')
             except:
                 logging.error(traceback.print_exc())

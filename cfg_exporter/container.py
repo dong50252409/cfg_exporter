@@ -2,6 +2,8 @@ import os
 import shutil
 import glob
 import logging
+import timeit
+
 from cfg_exporter.language import LANG
 from cfg_exporter.const import ExtensionType
 
@@ -17,6 +19,15 @@ class Container(object):
         logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s: %(message)s')
         cls = self.args.export_type.value
         self.__export_obj = type(cls.__name__, (cls,), dict())(self.args)
+
+    def __load_table(self, table_name):
+        table_obj = self._cfg_dict[table_name]
+        if not table_obj.is_load:
+            logging.debug(LANG.LOAD_TABLE.format(table=table_obj.filename))
+            elapsed_time = '{:.3f}'.format(timeit.timeit(stmt=table_obj.load_table, number=1))
+            logging.debug(
+                LANG.TABLE_LOADED.format(table=table_obj.filename, elapsed_time=elapsed_time))
+        return table_obj
 
     def create_table_obj(self, cls, filename):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
@@ -35,10 +46,7 @@ class Container(object):
 
     def get_table_obj(self, table_name):
         if table_name in self._cfg_dict:
-            table_obj = self._cfg_dict[table_name]
-            if not table_obj.is_load:
-                table_obj.load_table()
-            return table_obj
+            return self.__load_table(table_name)
         elif table_name in self._skipped_cfg_dict:
             macro, file = self._skipped_cfg_dict.pop(table_name)
             logging.debug(LANG.REFERENCE_TABLE.format(table=file))
@@ -73,17 +81,15 @@ class Container(object):
 
     def verify_table(self):
         for table_name in self._effect_cfg_list:
-            table_obj = self._cfg_dict[table_name]
-            if not table_obj.is_load:
-                table_obj.load_table()
+            table_obj = self.__load_table(table_name)
             table_obj.verify()
 
     def export_table(self):
         if self.args.clear_dir:
             shutil.rmtree(self.args.output, ignore_errors=True)
         for table_name in self._effect_cfg_list:
-            table_obj = self._cfg_dict[table_name]
-            if not table_obj.is_load:
-                table_obj.load_table()
-            self.__export_obj.export(table_obj)
+            table_obj = self.__load_table(table_name)
+            logging.debug(f'export {table_obj.filename} ...')
+            elapsed_time = '{:.3f}'.format(timeit.timeit(stmt=lambda: self.__export_obj.export(table_obj), number=1))
+            logging.debug(f'export {table_obj.filename} finished! elapsed_time:{elapsed_time}/s')
             self._source[table_obj.filename] = os.stat(table_obj.full_filename).st_mtime

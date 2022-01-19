@@ -1,8 +1,7 @@
 import itertools
 import logging
 import os
-from abc import abstractmethod
-
+from abc import ABC, abstractmethod
 from cfg_exporter import *
 import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
@@ -14,7 +13,8 @@ from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, Rul
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
 
-class Table(object):
+class Table(ABC):
+
     def __init__(self, container_obj, filename, args):
         self._container_obj = container_obj
         self._full_filename = filename
@@ -24,6 +24,9 @@ class Table(object):
         self._key_columns = []
         self._global_rules = {}
         self._is_load = False
+
+    def __call__(self, *args, **kwargs):
+        pass
 
     def __parse_args(self):
         self._field_row = self.args.field_row - 1
@@ -47,7 +50,6 @@ class Table(object):
         ...
 
     def _load_table(self, rows):
-        logging.debug(LANG.LOAD_TABLE.format(table=self.filename))
         loadable_column_list = self.__load_field_name(rows)
 
         self.__load_other(rows, loadable_column_list)
@@ -56,7 +58,6 @@ class Table(object):
             self._key_columns = [col_num for col_num in sorted(self._global_rules[KeyRule.__name__].values.values())]
 
         self._is_load = True
-        logging.debug(LANG.TABLE_LOADED.format(table=self.filename))
 
     def __load_field_name(self, rows):
         column_list = []

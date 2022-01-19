@@ -46,7 +46,7 @@ en_US = {
     'FINISHED': 'down! elapsed {:.3f} /s',
     # table.py
     'LOAD_TABLE': 'loading table {table} ...',
-    'TABLE_LOADED': 'table {table} loaded!',
+    'TABLE_LOADED': 'table {table} loaded! elapsed time:{elapsed_time}/s',
     'ROW_COL_NUM': 'r{row_num}:c{col_num}',
     'TABLE': 'table:`{table}`',
     'FIELD': 'field:`{field}`',
@@ -121,7 +121,7 @@ zh_CN = {
     'FINISHED': '完成! 耗时 {:.3f} /秒',
     # table.py
     'LOAD_TABLE': '载入配置表 {table} ...',
-    'TABLE_LOADED': '配置表 {table} 已载入!',
+    'TABLE_LOADED': '配置表 {table} 已载入! 耗时：{elapsed_time}/s',
     'ROW_COL_NUM': '行{row_num}:列{col_num}',
     'TABLE': '配置表:`{table}`',
     'FIELD': '字段:`{field}`',
