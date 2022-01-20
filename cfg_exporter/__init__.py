@@ -1,5 +1,5 @@
 from typing import *
-from cfg_exporter.tables.base.raw import RawType
+from cfg_exporter.tables.base.type import RawType
 
 StrOrNone = TypeVar('StrOrNone', str, None)
 AnyType = TypeVar('DataType', int, float, str, list, tuple, RawType)

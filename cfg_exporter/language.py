@@ -170,4 +170,4 @@ class _Language:
 
 LANG = _Language()
 
-__all__ = 'LANG'
+__all__ = ('LANG',)

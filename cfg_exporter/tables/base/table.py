@@ -7,7 +7,7 @@ import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
 from cfg_exporter.const import DataType
 from cfg_exporter.language import LANG
-from cfg_exporter.tables.base.raw import RawType
+from cfg_exporter.tables.base.type import RawType
 from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)

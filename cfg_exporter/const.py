@@ -8,7 +8,7 @@ TEMPLATE_EXTENSION = 'tmpl'
 ###############################
 # 支持的数据类型定义
 ###############################
-from cfg_exporter.tables.base.raw import RawType
+from cfg_exporter.tables.base.type import LangType, RawType
 import cfg_exporter.util as util
 
 
@@ -22,7 +22,8 @@ class _Str:
 
 DataType = Enum('DataType', {
     'int': int, 'int64': int, 'float': float,
-    'str': _Str(util.escape), 'iter': eval, 'raw': RawType
+    'str': _Str(util.escape), 'lang': LangType,
+    'iter': eval, 'raw': RawType
 })
 
 ###############################
