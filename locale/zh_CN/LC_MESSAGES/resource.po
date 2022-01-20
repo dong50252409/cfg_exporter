@@ -22,7 +22,7 @@ msgid "table {table} loaded! elapsed time:{elapsed_time}/s"
 msgstr "配置表 {table} 已载入! 耗时：{elapsed_time}/s"
 
 #: cfg_exporter/container.py:34
-sgid "waring! the {new_filename} table has been loaded the {old_filename} table will be replaced"
+msgid "waring! the {new_filename} table has been loaded the {old_filename} table will be replaced"
 msgstr "警告！表 {new_filename} 已经载入，旧配置表 {old_filename} 将被替换"
 
 #: cfg_exporter/container.py:51
