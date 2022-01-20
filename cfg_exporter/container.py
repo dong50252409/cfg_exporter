@@ -3,8 +3,6 @@ import shutil
 import glob
 import logging
 import timeit
-
-from cfg_exporter.language import LANG
 from cfg_exporter.const import ExtensionType
 
 
@@ -23,18 +21,19 @@ class Container(object):
     def __load_table(self, table_name):
         table_obj = self._cfg_dict[table_name]
         if not table_obj.is_load:
-            logging.debug(LANG.LOAD_TABLE.format(table=table_obj.filename))
+            logging.debug(_('loading table {table} ...').format(table=table_obj.filename))
             elapsed_time = '{:.3f}'.format(timeit.timeit(stmt=table_obj.load_table, number=1))
-            logging.debug(
-                LANG.TABLE_LOADED.format(table=table_obj.filename, elapsed_time=elapsed_time))
+            logging.debug(_('table {table} loaded! elapsed time:{elapsed_time}/s')
+                          .format(table=table_obj.filename, elapsed_time=elapsed_time))
         return table_obj
 
     def create_table_obj(self, cls, filename):
         table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
         if table_obj.table_name in self._cfg_dict:
             old_table_obj = self._cfg_dict[table_obj.table_name]
-            logging.warning(LANG.REPLACE_TABLE.format(new_filename=table_obj.full_filename,
-                                                      old_filename=old_table_obj.full_filename))
+            logging.warning(_('waring! the {new_filename} table has been loaded '
+                              'the {old_filename} table will be replaced')
+                            .format(new_filename=table_obj.full_filename, old_filename=old_table_obj.full_filename))
         self._cfg_dict[table_obj.table_name] = table_obj
 
     def has_table_and_field(self, table_name, field_name):
@@ -49,7 +48,7 @@ class Container(object):
             return self.__load_table(table_name)
         elif table_name in self._skipped_cfg_dict:
             macro, file = self._skipped_cfg_dict.pop(table_name)
-            logging.debug(LANG.REFERENCE_TABLE.format(table=file))
+            logging.debug(_('reference table `{table}`').format(table=file))
             self.create_table_obj(macro.value, file)
             return self.get_table_obj(table_name)
 
@@ -89,7 +88,8 @@ class Container(object):
             shutil.rmtree(self.args.output, ignore_errors=True)
         for table_name in self._effect_cfg_list:
             table_obj = self.__load_table(table_name)
-            logging.debug(f'export {table_obj.filename} ...')
+            logging.debug(_('export {filename} ...').format(filename=table_obj.filename))
             elapsed_time = '{:.3f}'.format(timeit.timeit(stmt=lambda: self.__export_obj.export(table_obj), number=1))
-            logging.debug(f'export {table_obj.filename} finished! elapsed_time:{elapsed_time}/s')
+            logging.debug(_('export {filename} finished! elapsed_time:{elapsed_time}/s')
+                          .format(filename=table_obj.filename, elapsed_time=elapsed_time))
             self._source[table_obj.filename] = os.stat(table_obj.full_filename).st_mtime

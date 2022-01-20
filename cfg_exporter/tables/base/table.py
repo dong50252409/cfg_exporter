@@ -1,12 +1,10 @@
 import itertools
-import logging
 import os
 from abc import ABC, abstractmethod
 from cfg_exporter import *
 import cfg_exporter.util as util
 import cfg_exporter.tables.base.rule as rule
 from cfg_exporter.const import DataType
-from cfg_exporter.language import LANG
 from cfg_exporter.tables.base.type import RawType
 from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
 
@@ -70,10 +68,9 @@ class Table(ABC):
                 column_list.append(field_name)
 
             except FieldNameException as e:
-                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
-                err = ' '.join(err_list).format(
-                    row_num=self.field_name_row_num, col_num=index + 1,
-                    table=self.filename, field=field_name)
+                err_list = [_('r{row_num}:c{col_num}'), _('table:`{table}`'), _('field:`{field}`'), e.err]
+                err = ' '.join(err_list) \
+                    .format(row_num=self.field_name_row_num, col_num=index + 1, table=self.filename, field=field_name)
                 raise TableException(err)
         return column_list
 
@@ -102,26 +99,25 @@ class Table(ABC):
                             real_data = convert_data(real_data_type, rows[index])
                             self._table[DATA_INDEX][row_num].append(real_data)
                         except DataException as e:
-                            err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
-                            err = ' '.join(err_list).format(
-                                row_num=self.data_row_num + row_num, col_num=index + 1,
-                                table=self.filename, field=field_name)
+                            err_list = [_('r{row_num}:c{col_num}'), _('table:`{table}`'), _('field:`{field}`'), e.err]
+                            err = ' '.join(err_list) \
+                                .format(row_num=self.data_row_num + row_num, col_num=index + 1, table=self.filename,
+                                        field=field_name)
                             raise TableException(err)
                     real_col_num += 1
 
             except DataTypeException as e:
-                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, e.err]
-                err = ' '.join(err_list).format(
-                    row_num=self.data_type_row_num, col_num=index + 1,
-                    table=self.filename, field=field_name)
+                err_list = [_('r{row_num}:c{col_num}'), _('table:`{table}`'), _('field:`{field}`'), e.err]
+                err = ' '.join(err_list) \
+                    .format(row_num=self.data_type_row_num, col_num=index + 1, table=self.filename, field=field_name)
                 raise TableException(err)
 
             except RuleException as e:
-                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, LANG.TYPE, LANG.RULE, e.err]
-                err = ' '.join(err_list).format(
-                    row_num=self.rule_row_num, col_num=index + 1,
-                    table=self.filename, field=field_name,
-                    type=real_data_type.name, rule=e.rule_str)
+                err_list = [_('r{row_num}:c{col_num}'), _('table:`{table}`'), _('field:`{field}`'), _('type:`{type}`'),
+                            _('rule:`{rule}`'), e.err]
+                err = ' '.join(err_list) \
+                    .format(row_num=self.rule_row_num, col_num=index + 1, table=self.filename, field=field_name,
+                            type=real_data_type.name, rule=e.rule_str)
                 raise TableException(err)
 
     @property
@@ -391,7 +387,8 @@ class Table(ABC):
                 for rule_obj in rules:
                     rule_obj.verify(self.data_iter_by_column_nums(col_num))
             except RuleException as e:
-                err_list = [LANG.ROW_COL_NUM, LANG.TABLE, LANG.FIELD, LANG.TYPE, LANG.RULE, e.err]
+                err_list = [_('r{row_num}:c{col_num}'), _('table:`{table}`'), _('field:`{field}`'), _('type:`{type}`'),
+                            _('rule:`{rule}`'), e.err]
                 err = ' '.join(err_list).format(
                     row_num=self.data_row_num + e.row_num, col_num=col_num + 1,
                     table=self.filename, field=self.field_name_by_column_num(col_num),
@@ -405,12 +402,13 @@ class Table(ABC):
             except RuleException as e:
                 err_list = []
                 if e.row_num is not None and e.col_num is not None:
-                    err_list.append(LANG.ROW_COL_NUM.format(row_num=self.data_row_num + e.row_num, col_num=e.col_num))
+                    err_list.append(_('r{row_num}:c{col_num}')
+                                    .format(row_num=self.data_row_num + e.row_num, col_num=e.col_num))
 
-                err_list.append(LANG.TABLE.format(table=self.filename))
+                err_list.append(_('table:`{table}`').format(table=self.filename))
 
                 if e.rule_str:
-                    err_list.append(LANG.RULE.format(rule=e.rule_str))
+                    err_list.append(_('rule:`{rule}`').format(rule=e.rule_str))
 
                 err_list.append(e.err)
                 raise TableException(' '.join(err_list))
@@ -428,18 +426,18 @@ def convert_field_name(field_name: str) -> StrOrNone:
     field_name = util.trim(field_name)
     if field_name:
         if not util.check_naming(field_name):
-            raise FieldNameException(LANG.INVALID_FIELD_NAME)
+            raise FieldNameException(_('invalid field name'))
         return field_name
 
 
 def convert_data_type(data_type):
     data_type = util.trim(data_type)
     if data_type == '' or data_type is None:
-        raise DataTypeException(LANG.UNDEFINED_DATA_TYPE)
+        raise DataTypeException(_('the data type is undefined'))
 
     if data_type not in DataType.__members__:
-        raise DataTypeException(
-            LANG.UNSUPPORTED_DATA_TYPE.format(type=data_type, supported=", ".join(DataType.__members__.keys())))
+        raise DataTypeException(_('data type `{type}` is unsupported\nsupported data types [{supported}]')
+                                .format(type=data_type, supported=", ".join(DataType.__members__.keys())))
     return DataType[data_type]
 
 
@@ -457,7 +455,7 @@ def parse_rules(table_obj, column_num, rules):
             rule_obj = rule.create_rule_obj(table_obj, column_num, each_rule)
             rule_list.append(rule_obj)
         except (AssertionError, ValueError, KeyError):
-            raise RuleException(LANG.PARSE_RULE_EXCEPTION, each_rule)
+            raise RuleException(_('is invalid rule'), each_rule)
     return rule_list
 
 
@@ -509,7 +507,7 @@ def convert_data(data_type, row):
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):
-        raise DataException(LANG.CONVERT_DATA_EXCEPTION.format(type=data_type.name, data=row))
+        raise DataException(_('type:`{type}` `{data}` is invalid data').format(type=data_type.name, data=row))
 
 
 class TableException(Exception):

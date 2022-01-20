@@ -1,0 +1,302 @@
+"Project-Id-Version: PACKAGE VERSION\n"
+"POT-Creation-Date: 2022-01-20 21:24+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: DY <304887750@QQ.COM>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: pygettext.py 1.5\n"
+
+
+#: cfg_exporter/__main__.py:49
+msgid "down! elapsed {:.3f}/s"
+msgstr "完成! 耗时：{:.3f}/秒"
+
+#: cfg_exporter/container.py:24
+msgid "loading table {table} ..."
+msgstr "载入配置表 {table} ..."
+
+#: cfg_exporter/container.py:26
+msgid "table {table} loaded! elapsed time:{elapsed_time}/s"
+msgstr "配置表 {table} 已载入! 耗时：{elapsed_time}/s"
+
+#: cfg_exporter/container.py:34
+sgid "waring! the {new_filename} table has been loaded the {old_filename} table will be replaced"
+msgstr "警告！表 {new_filename} 已经载入，旧配置表 {old_filename} 将被替换"
+
+#: cfg_exporter/container.py:51
+msgid "reference table `{table}`"
+msgstr "配置表:`{table}` 不存在"
+
+#: cfg_exporter/container.py:91
+msgid "export {filename} ..."
+msgstr "导出 {filename} ..."
+
+#: cfg_exporter/container.py:94
+msgid "export {filename} finished! elapsed_time:{elapsed_time}/s"
+msgstr "{filename}已导出！耗时：{elapsed_time}/秒"
+
+#: cfg_exporter/helper.py:10
+msgid "the source path does not exists `{source}`"
+msgstr "`{source}` 路径不存在"
+
+#: cfg_exporter/helper.py:17
+msgid "the export file type does not exits {export}"
+msgstr "{export} 导出文件类型不存在"
+
+#: cfg_exporter/helper.py:26
+msgid "{row_num} is not a valid line number"
+msgstr "{row_num} 不是有效的行号"
+
+#: cfg_exporter/helper.py:29
+msgid "Configuration table export toolset"
+msgstr "配置表导出工具集"
+
+#: cfg_exporter/helper.py:31
+msgid "Base options"
+msgstr "基础选项"
+
+#: cfg_exporter/helper.py:34
+msgid "clear the output directory."
+msgstr "清空输出目录。"
+
+#: cfg_exporter/helper.py:37
+msgid "specify a list of file names not to load."
+msgstr "指定排除加载的文件名列表。"
+
+#: cfg_exporter/helper.py:41
+msgid "specify the configuration table export type."
+msgstr "指定配置表导出类型。"
+
+#: cfg_exporter/helper.py:44
+msgid "specify the prefix of the output filename."
+msgstr "指定导出文件名前缀。"
+
+#: cfg_exporter/helper.py:47
+msgid "force all configuration tables to be generated."
+msgstr "强制生成所有配置表。"
+
+#: cfg_exporter/helper.py:50
+msgid "specify the configuration table output path."
+msgstr "指定配置表输出路径。"
+
+#: cfg_exporter/helper.py:53
+msgid "recursively search the source path."
+msgstr "搜索子文件夹下的内容。"
+
+#: cfg_exporter/helper.py:56
+msgid "verify only the correctness of the configuration table."
+msgstr "仅验证配置表数据是否正确。"
+
+#: cfg_exporter/helper.py:59
+msgid ""
+"specify the configuration table source path.\n"
+"supported file types [{extensions}]"
+msgstr ""
+"指定配置表源路径\n"
+"支持的配置表类型 [{extensions}]。"
+
+#: cfg_exporter/helper.py:64
+msgid ""
+"specify the extension template path.\n"
+"the template name consists of the table name, export type, and {template_extension} extension\n"
+"e.g:\n"
+"`item.erl.{template_extension}` `item.hrl.{template_extension}` `item.lua.{template_extension}`\n"
+"loads the template based on the specified export type\n"
+"e.g:\n"
+"`--export_type erl` templates ending with `.erl.{template_extension}` and `.hrl.{template_extension}` will be loaded\n"
+"`--export_type lua` templates ending with `.lua.{template_extension}` will be loaded"
+msgstr ""
+"指定扩展模板路径。\n"
+"模板名由表名、导出文件类型以及{template_extension}扩展名组成\n"
+"例如：\n"
+"`item.erl.{template_extension}` `item.hrl.{template_extension}` `item.lua.{template_extension}`\n"
+"根据指定导出类型加载模板\n"
+"例如：\n"
+"`--export_type erl` 以 `.erl.{template_extension}`和`.hrl.{template_extension}` 结尾的模板将被载入\n"
+"`--export_type lua` 以 `.lua.{template_extension}` 结尾的模板将被载入"
+
+#: cfg_exporter/helper.py:78
+msgid "show the details."
+msgstr "显示详情。"
+
+#: cfg_exporter/helper.py:80
+msgid "Table options"
+msgstr "配置表选项"
+
+#: cfg_exporter/helper.py:83
+msgid "specify the start line number of the configuration table body data."
+msgstr "指定配置表数据起始行号。"
+
+#: cfg_exporter/helper.py:86
+msgid "specify the line number of the configuration table column description."
+msgstr "指定配置表描述行号。"
+
+#: cfg_exporter/helper.py:89
+msgid "specify the line number of the configuration table field name."
+msgstr "指定配置表字段名行号。"
+
+#: cfg_exporter/helper.py:92
+msgid "specify the line number of the configuration table check rule."
+msgstr "指定配置表规则行号。"
+
+#: cfg_exporter/helper.py:95
+msgid "specify the line number of the configuration table data type."
+msgstr "指定配置表数据类型行号。"
+
+#: cfg_exporter/helper.py:97
+msgid "CSV options"
+msgstr "CSV 选项"
+
+#: cfg_exporter/helper.py:100
+msgid ""
+"specify the default encoding format for CSV files.\n"
+"DEFAULT UTF-8"
+msgstr ""
+"指定读取CSV文件编码格式。"
+"\n默认 UTF-8"
+
+#: cfg_exporter/helper.py:102
+msgid "Erlang options"
+msgstr "Erlang选项"
+
+#: cfg_exporter/helper.py:105
+msgid "specify output directory for where to generate the .erl."
+msgstr "指定.erl文件输出目录。"
+
+#: cfg_exporter/helper.py:108
+msgid "specify the prefix of the record name."
+msgstr "指定record字段名前缀名。"
+
+#: cfg_exporter/helper.py:111
+msgid "specify output directory for where to generate the .hrl."
+msgstr "指定.hrl文件输出目录。"
+
+#: cfg_exporter/tables/base/rule.py:54
+msgid "already defined at r{row_num}:c{col_num}"
+msgstr "在 行{row_num}:列{col_num} 已经定义"
+
+#: cfg_exporter/tables/base/rule.py:68 cfg_exporter/tables/base/rule.py:262
+msgid "does not exist"
+msgstr "不存在"
+
+#: cfg_exporter/tables/base/rule.py:73
+msgid "defined at r{row_num}:c{col_num}"
+msgstr "在 行{row_num}:列{col_num} 已经定义"
+
+#: cfg_exporter/tables/base/rule.py:90
+msgid "data:`{data}` is not unique already defined at r{row_num}:c{col_num}"
+msgstr "数据:`{data}` 不唯一，在 行{row_num}:列{col_num} 已经定义"
+
+#: cfg_exporter/tables/base/rule.py:100
+msgid "the data is empty"
+msgstr "数据不能为空"
+
+#: cfg_exporter/tables/base/rule.py:116
+msgid "data:`{data}` the minimum limit was not reached"
+msgstr "数据:`{data}` 小于最小限制"
+
+#: cfg_exporter/tables/base/rule.py:121
+msgid "data:`{data}` length:`{len}` the minimum limit was not reached"
+msgstr "数据:`{data}` 长度:`{len}` 小于最小限制"
+
+#: cfg_exporter/tables/base/rule.py:138
+msgid "data:`{data}` the maximum limit was exceeded"
+msgstr "数据:`{data}` 超过最大限制"
+
+#: cfg_exporter/tables/base/rule.py:143
+msgid "data:`{data}` length:`{len}` the maximum limit was exceeded"
+msgstr "数据:`{data}` 长度:`{len}` 大于最大限制"
+
+#: cfg_exporter/tables/base/rule.py:159
+msgid "data:`{data}` path not found"
+msgstr "数据:`{data}` 路径不存在"
+
+#: cfg_exporter/tables/base/rule.py:170
+msgid "table:`{table}` does not exist"
+msgstr "配置表:`{table}` 不存在"
+
+#: cfg_exporter/tables/base/rule.py:173
+msgid "field:`{field}` does not exist"
+msgstr "字段:`{field}` 不存在"
+
+#: cfg_exporter/tables/base/rule.py:186
+msgid "data:`{data}` reference does not exist"
+msgstr "数据:`{data}` 引用数据不存在"
+
+#: cfg_exporter/tables/base/rule.py:202
+msgid "index:`{row_num}` {err}"
+msgstr "行:`{row_num}` {err}"
+
+#: cfg_exporter/tables/base/rule.py:247
+msgid "primary key is empty"
+msgstr "主键为空"
+
+#: cfg_exporter/tables/base/rule.py:252
+msgid "primary key repeat at r{row_num}:c{col_num}"
+msgstr "在 行{row_num}:列{col_num} 主键值重复定义"
+
+#: cfg_exporter/tables/base/rule.py:267
+msgid "data type is not `str`"
+msgstr "不存在"
+
+#: cfg_exporter/tables/base/rule.py:276
+msgid "invalid macro name"
+msgstr "数据不能是 `str` 类型"
+
+#: cfg_exporter/tables/base/rule.py:280
+msgid "macro name repeat at r{row_num}:c{col_num}"
+msgstr "非法的宏定义名称"
+
+#: cfg_exporter/tables/base/table.py:71 cfg_exporter/tables/base/table.py:102
+#: cfg_exporter/tables/base/table.py:110 cfg_exporter/tables/base/table.py:116
+#: cfg_exporter/tables/base/table.py:390
+msgid "field:`{field}`"
+msgstr "字段:`{field}`"
+
+#: cfg_exporter/tables/base/table.py:71 cfg_exporter/tables/base/table.py:102
+#: cfg_exporter/tables/base/table.py:110 cfg_exporter/tables/base/table.py:116
+#: cfg_exporter/tables/base/table.py:390 cfg_exporter/tables/base/table.py:405
+msgid "r{row_num}:c{col_num}"
+msgstr "行{row_num}:列{col_num}"
+
+#: cfg_exporter/tables/base/table.py:71 cfg_exporter/tables/base/table.py:102
+#: cfg_exporter/tables/base/table.py:110 cfg_exporter/tables/base/table.py:116
+#: cfg_exporter/tables/base/table.py:390 cfg_exporter/tables/base/table.py:408
+msgid "table:`{table}`"
+msgstr "配置表:`{table}`"
+
+#: cfg_exporter/tables/base/table.py:116 cfg_exporter/tables/base/table.py:390
+msgid "type:`{type}`"
+msgstr "类型:`{type}`"
+
+#: cfg_exporter/tables/base/table.py:117 cfg_exporter/tables/base/table.py:391
+#: cfg_exporter/tables/base/table.py:411
+msgid "rule:`{rule}`"
+msgstr "规则:`{rule}`"
+
+#: cfg_exporter/tables/base/table.py:429
+msgid "invalid field name"
+msgstr "非法的字段名"
+
+#: cfg_exporter/tables/base/table.py:436
+msgid "the data type is undefined"
+msgstr "未定义的数据类型"
+
+#: cfg_exporter/tables/base/table.py:439
+msgid ""
+"data type `{type}` is unsupported\n"
+"supported data types [{supported}]"
+msgstr ""
+"不支持的类型 `{type}`\n"
+"支持的类型 [{supported}]"
+
+#: cfg_exporter/tables/base/table.py:458
+msgid "is invalid rule"
+msgstr "非法的规则"
+
+#: cfg_exporter/tables/base/table.py:510
+msgid "type:`{type}` `{data}` is invalid data"
+msgstr "非法的数据 类型:`{type}` `{data}`"
+
