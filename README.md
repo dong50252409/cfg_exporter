@@ -91,7 +91,7 @@
 ---
   工具支持通过多语言模板在导出配表时动态替换输出内容
   
-  [模板](example/lang_template/lang_template.csv)
+  具体格式请参考[模板](example/lang_template/lang_template.csv)
 1. 将配置表中需要翻译的字段类型标记为`lang`
 2. 通过`--export_lang_template`命令行参数导出语言模板
    * 收集所有配表中`lang`类型的字段列
