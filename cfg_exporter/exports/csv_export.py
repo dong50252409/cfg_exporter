@@ -2,7 +2,19 @@ import logging
 import os
 
 import csv
+
 from cfg_exporter.exports.base.export import BaseExport
+from cfg_exporter.lang_template import lang
+from cfg_exporter.tables.base.type import LangType
+
+
+def format_value(value):
+    if value is None:
+        return ''
+    elif isinstance(value, LangType):
+        return lang(value.text)
+    else:
+        return value
 
 
 class CSVExport(BaseExport):
@@ -15,7 +27,8 @@ class CSVExport(BaseExport):
         }
 
         if self.args.desc_row is not None:
-            self._func_dict[self.args.desc_row] = lambda table_obj: (desc if desc else '' for desc in table_obj.descriptions)
+            self._func_dict[self.args.desc_row] = lambda table_obj: (desc if desc else '' for desc in
+                                                                     table_obj.descriptions)
 
         if self.args.rule_row is not None:
             self._func_dict[self.args.rule_row] = lambda table_obj: (
@@ -36,7 +49,8 @@ class CSVExport(BaseExport):
             for line in range(1, self.args.data_row):
                 func = self._func_dict.get(line, self._space_line)
                 csv_writer.writerow(func(table_obj))
-            csv_writer.writerows(table_obj.row_iter)
+            for row in table_obj.row_iter:
+                csv_writer.writerow(format_value(value) for value in row)
 
     def file_desc(self) -> str:
         pass

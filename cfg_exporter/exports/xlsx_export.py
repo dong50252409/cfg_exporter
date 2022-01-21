@@ -4,8 +4,22 @@ from typing import Iterable
 
 from openpyxl import Workbook
 
-from cfg_exporter import RawType
 from cfg_exporter.exports.base.export import BaseExport
+from cfg_exporter.lang_template import lang
+from cfg_exporter.tables.base.type import LangType, RawType
+
+
+def format_value(value):
+    if value is None:
+        return ''
+    elif isinstance(value, Iterable):
+        return str(value)
+    elif isinstance(value, RawType):
+        return str(value)
+    elif isinstance(value, LangType):
+        return lang(value.text)
+    else:
+        return value
 
 
 class XLSXExport(BaseExport):
@@ -18,7 +32,8 @@ class XLSXExport(BaseExport):
         }
 
         if self.args.desc_row is not None:
-            self._func_dict[self.args.desc_row] = lambda table_obj: (desc if desc else '' for desc in table_obj.descriptions)
+            self._func_dict[self.args.desc_row] = lambda table_obj: (desc if desc else '' for desc in
+                                                                     table_obj.descriptions)
 
         if self.args.rule_row is not None:
             self._func_dict[self.args.rule_row] = lambda table_obj: (
@@ -39,9 +54,7 @@ class XLSXExport(BaseExport):
             func = self._func_dict.get(line, self._space_line)
             sheet.append(func(table_obj))
         for row in table_obj.row_iter:
-            sheet.append(
-                '' if content is None else str(content) if isinstance(content, (Iterable, RawType)) else content for
-                content in row)
+            sheet.append(format_value(value) for value in row)
         wb.save(full_filename)
 
     def file_desc(self) -> str:

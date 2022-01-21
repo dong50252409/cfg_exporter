@@ -3,6 +3,8 @@ from typing import Iterable
 
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import BaseExport
+from cfg_exporter.lang_template import lang
+from cfg_exporter.tables.base.type import LangType
 
 EXTENSION = 'json'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
@@ -18,6 +20,8 @@ def format_value(value):
         return f'"{value}"'
     elif isinstance(value, Iterable):
         return f'{value}'.translate(tab)
+    elif isinstance(value, LangType):
+        return f'"{lang(value.text)}"'
     else:
         return f'{value}'
 

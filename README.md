@@ -43,7 +43,7 @@
 * `int64` 长整形
 * `float` 浮点型
 * `str` 字符串
-* `lang` 国际化文本
+* `lang` 多语言文本
 * `iter` 可迭代结构
     * `[]` 表示列表结构
     * `()` 表示元祖
@@ -86,3 +86,14 @@
   | `ref:table_name.field_name` | 检查当前列**非空值**是否在`table_name`表`field_name`列中存在 | `str` | `ref:item.id` 当前的列值引用于`item`表的`id`列的值 |
   | `struct:rules` | 对`iter`类型结构中的各项值进行规则检查<br/>仅支持指定普通规则 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/>`struct:[(unique｜ref:item.id,min:0｜max:10000,_)]`<br/>对 `1` `2`进行`unique` `ref`规则检查<br/>对`100` `200`进行`min` `max`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[max:10]`<br/>对`"abc"` `[1,2,3]` `(4,5,6)` 进行长度检查 |
   | `_` | 无特殊意义，仅用作占位，配合`struct`规则使用 | | |
+
+多语言文本
+---
+  工具支持通过多语言模板在导出配表时动态替换输出内容
+  
+  ![模板](example/lang_template/lang_template.csv)
+1. 将配置表中需要翻译的字段类型标记为`lang`
+2. 通过`--export_lang_template`命令行参数导出语言模板
+   * 收集所有配表中`lang`类型的字段列
+   * 将其整理到一个文件中
+3. 导出配表时通过`--lang_template`命令行参数指定多语言模板文件

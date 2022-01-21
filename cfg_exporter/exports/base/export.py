@@ -3,12 +3,13 @@ import logging
 import os
 import re
 import traceback
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from wheezy.template import Engine, FileLoader, CoreExtension, CodeExtension
 from wheezy.template.ext.core import rvalue_token
 from wheezy.template.typing import LexerRule
 from cfg_exporter import *
 from cfg_exporter.const import TEMPLATE_EXTENSION
+from cfg_exporter.lang_template import load
 
 
 class ExpressionExtension:
@@ -18,12 +19,15 @@ class ExpressionExtension:
         }
 
 
-class BaseExport(object):
-    __metaclass__ = ABCMeta
+class BaseExport(ABC):
 
     def __init__(self, args, base_template_path, extend_template_type_list, global_vars=None):
         self.args = args
         self.output = self.args.output
+
+        if self.args.lang_template is not None:
+            load(self.args.lang_template)
+
         self.extend_templates = {}
 
         template_path = [base_template_path]

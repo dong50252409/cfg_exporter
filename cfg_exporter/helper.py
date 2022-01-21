@@ -26,6 +26,14 @@ def valid_table(row_num):
         raise ArgumentTypeError(_('{row_num} is not a valid line number').format(row_num=row_num))
 
 
+def valid_lang_template(lang_template):
+    if os.path.exists(lang_template):
+        return lang_template
+    else:
+        raise ArgumentTypeError(_('the lang template path does not exists `{lang_template}`')
+                                .format(source=lang_template))
+
+
 parser = ArgumentParser(description=_('Configuration table export toolset'), formatter_class=RawTextHelpFormatter)
 
 base_group = parser.add_argument_group(title=_('Base options'))
@@ -94,6 +102,14 @@ table_group.add_argument('--rule_row', type=valid_table,
 table_group.add_argument('--type_row', type=valid_table, required=True,
                          help=_('specify the line number of the configuration table data type.'))
 
+lang_group = parser.add_argument_group(title=_('Multi languages options'))
+
+lang_group.add_argument('--lang_template', type=valid_lang_template,
+                        help=_('specify the language template path.'))
+
+lang_group.add_argument('--export_lang_template',
+                        help=_('output language template.'))
+
 csv_group = parser.add_argument_group(title=_('CSV options'))
 
 csv_group.add_argument('--csv_encoding', default='utf-8-sig', metavar='ENCODING',
@@ -112,4 +128,4 @@ erl_group.add_argument('--hrl_dir', default='',
 
 args = parser.parse_args()
 
-__all__ = 'args',
+__all__ = ('args',)

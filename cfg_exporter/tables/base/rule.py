@@ -87,7 +87,7 @@ class UniqueRule(BaseRule):
                 continue
 
             if data in d:
-                err = _('data:`{data}` is not unique already defined at r{row_num}:c{col_num}')\
+                err = _('data:`{data}` is not unique already defined at r{row_num}:c{col_num}') \
                     .format(data=data, row_num=self._table_obj.data_row_num + d[data], col_num=self._column_num + 1)
                 self._raise_verify_error(err, row_num)
             d[data] = row_num
@@ -263,8 +263,9 @@ class GlobalMacroRule(GlobalRule):
 
         column_num = self._values[MacroType.name]
         data_type = table_obj.data_type_by_column_num(column_num)
-        if data_type is not DataType.str:
-            raise RuleException(_('data type is not `str`'), 'macro:name', table_obj.rule_row_num, column_num + 1)
+        if data_type not in (DataType.str, DataType.lang):
+            raise RuleException(_('data type is not `str` or `lang`'), 'macro:name', table_obj.rule_row_num,
+                                column_num + 1)
 
         d = {}
         column_data_iter = table_obj.data_iter_by_column_nums(column_num)

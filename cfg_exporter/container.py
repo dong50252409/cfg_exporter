@@ -4,6 +4,7 @@ import glob
 import logging
 import timeit
 from cfg_exporter.const import ExtensionType
+from cfg_exporter.lang_template import LangTemplate
 
 
 class Container(object):
@@ -12,11 +13,9 @@ class Container(object):
         self._skipped_cfg_dict = {}
         self._source = source
         self._effect_cfg_list = []
-        self.args = args
-        log_level = logging.NOTSET if self.args.verbose else logging.WARNING
+        self._args = args
+        log_level = logging.NOTSET if self._args.verbose else logging.WARNING
         logging.basicConfig(level=log_level, format='%(asctime)s - %(levelname)s: %(message)s')
-        cls = self.args.export_type.value
-        self.__export_obj = type(cls.__name__, (cls,), dict())(self.args)
 
     def __load_table(self, table_name):
         table_obj = self._cfg_dict[table_name]
@@ -28,7 +27,7 @@ class Container(object):
         return table_obj
 
     def create_table_obj(self, cls, filename):
-        table_obj = type(cls.__name__, (cls,), dict())(self, filename, self.args)
+        table_obj = type(cls.__name__, (cls,), dict())(self, filename, self._args)
         if table_obj.table_name in self._cfg_dict:
             old_table_obj = self._cfg_dict[table_obj.table_name]
             logging.warning(_('waring! the {new_filename} table has been loaded '
@@ -54,16 +53,16 @@ class Container(object):
 
     def import_table(self):
         for macro in ExtensionType.__members__.values():
-            source = self.args.source
+            source = self._args.source
             if os.path.isdir(source):
-                if self.args.recursive:
+                if self._args.recursive:
                     source = os.path.join(source, '**', f'*.{macro.name}')
                 else:
                     source = os.path.join(source, f'*.{macro.name}')
-                for file in glob.iglob(source, recursive=self.args.recursive):
+                for file in glob.iglob(source, recursive=self._args.recursive):
                     file = os.path.abspath(file)
                     basename = os.path.basename(file)
-                    if basename not in self.args.exclude_files:
+                    if basename not in self._args.exclude_files:
                         if basename in self._source and self._source[basename] == os.stat(file).st_mtime:
                             self._skipped_cfg_dict[os.path.splitext(basename)[0]] = (macro, file)
                         else:
@@ -74,7 +73,7 @@ class Container(object):
         self._effect_cfg_list = list(self._cfg_dict.keys())
 
     def import_custom_table(self, cls, filename, data_rows):
-        setattr(self.args, "data_rows", data_rows)
+        setattr(self._args, "data_rows", data_rows)
         self.create_table_obj(cls, filename)
         self._effect_cfg_list = list(self._cfg_dict.keys())
 
@@ -84,12 +83,22 @@ class Container(object):
             table_obj.verify()
 
     def export_table(self):
-        if self.args.clear_dir:
-            shutil.rmtree(self.args.output, ignore_errors=True)
+        if self._args.clear_dir:
+            shutil.rmtree(self._args.output, ignore_errors=True)
+
+        cls = self._args.export_type.value
+        export_obj = type(cls.__name__, (cls,), dict())(self._args)
+
         for table_name in self._effect_cfg_list:
             table_obj = self.__load_table(table_name)
             logging.debug(_('export {filename} ...').format(filename=table_obj.filename))
-            elapsed_time = '{:.3f}'.format(timeit.timeit(stmt=lambda: self.__export_obj.export(table_obj), number=1))
+            elapsed_time = '{:.3f}'.format(timeit.timeit(stmt=lambda: export_obj.export(table_obj), number=1))
             logging.debug(_('export {filename} finished! elapsed_time:{elapsed_time}/s')
                           .format(filename=table_obj.filename, elapsed_time=elapsed_time))
             self._source[table_obj.filename] = os.stat(table_obj.full_filename).st_mtime
+
+    def export_lang_template(self):
+        lang_obj = LangTemplate(self._args)
+        for table_name in self._effect_cfg_list:
+            table_obj = self.__load_table(table_name)
+            lang_obj.export(table_obj)
