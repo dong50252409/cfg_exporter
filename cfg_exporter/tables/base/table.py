@@ -23,9 +23,6 @@ class Table(ABC):
         self._global_rules = {}
         self._is_load = False
 
-    def __call__(self, *args, **kwargs):
-        pass
-
     def __parse_args(self):
         self._field_row = self.args.field_row - 1
         self._type_row = self.args.type_row - 1

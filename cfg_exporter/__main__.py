@@ -44,7 +44,21 @@ def run():
         logging.error(e.err)
 
 
+def lang_template_run():
+    try:
+        helper.args.force = True
+        filename, source = __load_source(helper.args)
+        obj = Container(source, helper.args)
+        obj.import_table()
+        obj.export_lang_template()
+    except TableException as e:
+        logging.error(e.err)
+
+
 if __name__ == '__main__':
     # multiprocessing.Pool(multiprocessing.cpu_count() - 1)
-    logging.info(_('down! elapsed {:.3f}/s').format(timeit.timeit(stmt=run, number=1)))
+    if helper.args.export_lang_template is not None:
+        logging.info(_('down! elapsed {:.3f}/s').format(timeit.timeit(stmt=lang_template_run, number=1)))
+    else:
+        logging.info(_('down! elapsed {:.3f}/s').format(timeit.timeit(stmt=run, number=1)))
     pass
