@@ -291,6 +291,14 @@ class Table(ABC):
         return self._key_columns
 
     @property
+    def key_field_name_iter(self) -> List[str]:
+        """
+        返回主键列字段名
+        """
+        for index in self.key_columns:
+            yield self.field_names[index]
+
+    @property
     def key_data_iter(self) -> Iter:
         """
         迭代返回主键列数据，多值以元祖形式返回

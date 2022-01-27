@@ -1,0 +1,9 @@
+@import r'..\..\..\cfg_exporter\exports\template\lua\lua_base.tmpl' as lua_base
+@require(table_obj, prefix)
+@lua_base.gen_head(table_obj, prefix)
+@lua_base.gen_macro(table_obj, prefix)
+@lua_base.gen_config(table_obj)
+@lua_base.gen_get(table_obj, prefix)
+@lua_base.gen_index(table_obj,'get_by_type',['item_type'], ['id'])
+@lua_base.gen_index(table_obj,'get_by_sub_type',['item_type','item_sub_type'], ['id'])
+return tab

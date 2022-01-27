@@ -1,5 +1,5 @@
 @def gen_head(table_obj, prefix):
---- @`f'@class {prefix}{table_obj.table_name}'`
+@`f'--- @class {prefix}{table_obj.table_name}'`
 @for field_name, desc in zip(table_obj.field_names,table_obj.descriptions):
 @`f'--- @field {field_name}'` @`desc and '@ ' + desc or ''`
 @end
@@ -8,25 +8,53 @@ local tab = {}
 @end
 @def gen_macro(table_obj, prefix):
 @#ignore
-@if table_obj.has_macro:
-tab.macro = {
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
-    --- @`f'@field {macro_name.upper()}'` @`macro_desc and '@ ' + macro_desc or ''`
-    @`macro_name.upper()` = @format_value(macro_value),
+@`f'--- @field {macro_name.upper()}'` @`macro_desc and '@ ' + macro_desc or ''`
+tab.@`macro_name.upper()` = @format_value(macro_value)
+@end
+@end
+@def gen_config(table_obj):
+@(
+    def format_config(keys, row):
+        if keys:
+            return f'[{format_value(row[keys[0]])}] = {{{format_config(keys[1:], row)}}}'
+        else:
+            return f'{", ".join(f"{field_name} = {format_value(value)}" for field_name, value in zip(table_obj.field_names, row))}'
+)
+local config = {
+@for row in table_obj.row_iter:
+    @format_config(table_obj.key_columns, row),
 @end
 }
 @end
+@def gen_get(table_obj, prefix):
+@`f'--- @type fun({", ".join(table_obj.key_field_name_iter)}):{prefix}{table_obj.table_name}'`
+tab.get = function(@`', '.join(table_obj.key_field_name_iter)`)
+    return config@`''.join(f'[{field_names}]' for field_names in table_obj.key_field_name_iter)`
+end
+@end
+@def gen_index(table_obj, func_name, index_field_names, value_field_names):
+@(
+    def format_config(keys, row):
+        if keys:
+            return f'[{format_value(keys[0])}] = {{{format_config(keys[1:], row)}}}'
+        else:
+            return f'{", ".join(format_value(value) for value in row)}'
+)
+local @`'_'.join(index_field_names)`_config = {
+@for index_values, key_values in table_obj.index_list(index_field_names, value_field_names):
+    @format_config(index_values, key_values),
+@end
+}
+
+@`f'--- @type fun({", ".join(index_field_names)}):number[]'`
+tab.@func_name = function(@`', '.join([field_name for field_name in index_field_names])`)
+    return @`'_'.join(index_field_names)`_config@`''.join(f'[{field_names}]' for field_names in index_field_names)`
+end
 @end
 @require(table_obj, prefix)
 @gen_head(table_obj, prefix)
 @gen_macro(table_obj, prefix)
---- @`f'@type table<number | string, {prefix}{table_obj.table_name}>'`
-tab.data_list = {
-@for row in table_obj.row_iter:
-    [@`' .. '.join([str(row[index]) for index in table_obj.key_columns])`] = {
-        @`',\n        '.join([f'{field_name} = {format_value(value)}' for field_name, value in zip(table_obj.field_names, row)])`
-    },
-@end
-}
-
+@gen_config(table_obj)
+@gen_get(table_obj, prefix)
 return tab

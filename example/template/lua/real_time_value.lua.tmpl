@@ -2,12 +2,17 @@
 @require(table_obj, prefix)
 @lua_base.gen_head(table_obj, prefix)
 @lua_base.gen_macro(table_obj, prefix)
-tab.data_list = {
+local config = {
 @for index, (value, export) in enumerate(table_obj.data_iter_by_field_names('value', 'export'), start=1):
     @if export is None or export == 1:
     [@index!s] = @format_value(value),
     @end
 @end
 }
+
+@`f'--- @type fun(key:number):{prefix}{table_obj.table_name}'`
+tab.get = function(key)
+    return config[key]
+end
 
 return tab
