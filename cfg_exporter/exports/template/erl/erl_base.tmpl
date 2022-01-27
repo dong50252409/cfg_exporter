@@ -1,4 +1,4 @@
-@def key_index_func(tab_obj, func_name, index_field_names, value_field_names):
+@def gen_index(tab_obj, func_name, index_field_names, value_field_names):
 @#ignore
 @for index_values, key_values in tab_obj.index_list(index_field_names, value_field_names):
 @`func_name`(@`', '.join([format_value(data) for data in index_values])`) ->
