@@ -258,6 +258,12 @@ class Table(ABC):
         """
         return self.descriptions[column_num]
 
+    def value(self, row, column, value):
+        """
+        修改单元格的原有值
+        """
+        self._table[DATA_INDEX][row][column] = value
+
     @property
     def row_iter(self) -> Iterator[List[AnyType]]:
         """

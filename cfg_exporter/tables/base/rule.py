@@ -14,10 +14,6 @@ class BaseRule(object):
         self._value = None
 
     @property
-    def table_obj(self):
-        return self.table_obj
-
-    @property
     def column_num(self):
         return self._column_num
 
@@ -98,6 +94,19 @@ class NotEmptyRule(BaseRule):
         for row_num, data in enumerate(column_data_iter):
             if data is None or data == "":
                 self._raise_verify_error(_('the data is empty'), row_num)
+
+
+class DefaultRule(BaseRule):
+
+    @BaseRule.value.setter
+    def value(self, clause):
+        data_type = self._table_obj.data_type_by_column_num(self.column_num)
+        self._value = data_type.value(clause)
+
+    def verify(self, column_data_iter):
+        for row_num, data in enumerate(column_data_iter):
+            if data is None:
+                self._table_obj.value(row_num, self.column_num, self._value)
 
 
 class MinRule(BaseRule):
@@ -358,6 +367,7 @@ MacroType = Enum('MacroType', ('name', 'value', 'desc'))
 RuleType = Enum('RuleType', {
     'key': KeyRule, 'macro': MacroRule,
     'unique': UniqueRule, 'not_empty': NotEmptyRule,
+    'default': DefaultRule,
     'min': MinRule, 'max': MaxRule,
     'source': SourceRule, 'ref': RefRule,
     'struct': StructRule, '_': IgnoreRule
