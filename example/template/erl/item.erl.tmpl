@@ -1,5 +1,5 @@
 @include(r'..\..\..\cfg_exporter\exports\template\erl\erl_base.tmpl')
 @import r'..\..\..\cfg_exporter\exports\template\erl\erl_base.tmpl' as erl_base
 @require(table_obj, prefix)
-@erl_base.gen_index(table_obj,'get_by_type',['item_type'], ['id'])
-@erl_base.gen_index(table_obj,'get_by_sub_type',['item_type','item_sub_type'], ['id'])
+@erl_base.gen_index(table_obj, ['item_type'], ['id'])
+@erl_base.gen_index(table_obj, ['item_type','item_sub_type'], ['id'])

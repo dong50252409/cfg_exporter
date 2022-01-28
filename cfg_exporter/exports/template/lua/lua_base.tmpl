@@ -33,7 +33,7 @@ tab.get = function(@`', '.join(table_obj.key_field_name_iter)`)
     return config@`''.join(f'[{field_names}]' for field_names in table_obj.key_field_name_iter)`
 end
 @end
-@def gen_index(table_obj, func_name, index_field_names, value_field_names):
+@def gen_index(table_obj, index_field_names, value_field_names):
 @(
     def format_config(keys, row):
         if keys:
@@ -48,7 +48,7 @@ local @`'_'.join(index_field_names)`_config = {
 }
 
 @`f'--- @type fun({", ".join(index_field_names)}):number[]'`
-tab.@func_name = function(@`', '.join([field_name for field_name in index_field_names])`)
+tab.get_by_@`'_'.join(index_field_names)` = function(@`', '.join([field_name for field_name in index_field_names])`)
     return @`'_'.join(index_field_names)`_config@`''.join(f'[{field_names}]' for field_names in index_field_names)`
 end
 @end

@@ -1,18 +1,5 @@
-@def gen_index(tab_obj, func_name, index_field_names, value_field_names):
+@def gen_get(table_obj, prefix):
 @#ignore
-@for index_values, key_values in tab_obj.index_list(index_field_names, value_field_names):
-@`func_name`(@`', '.join([format_value(data) for data in index_values])`) ->
-    @format_value(key_values);
-@else:
-@`func_name`(@`', '.join(['_' for data in index_values])`) ->
-    [].
-@end
-@end
-@require(table_obj, prefix)
--module(@`prefix`@`table_obj.table_name`).
--compile([export_all, nowarn_export_all]).
--include("@`prefix`@`table_obj.table_name`.hrl").
-
 @for row in table_obj.row_iter:
 get(@`', '.join([format_value(row[col_num]) for col_num in table_obj.key_columns])`) ->
     #@`prefix`@`table_obj.table_name`{
@@ -21,9 +8,27 @@ get(@`', '.join([format_value(row[col_num]) for col_num in table_obj.key_columns
 @end
 get(@`', '.join(['_' for _ in table_obj.key_columns])`) ->
     undefined.
-
+@end
+@def gen_list(table_obj):
 list() ->
     [
         @`',\n        '.join([format_value(key_data) for key_data in table_obj.key_data_iter])`
     ].
+@end
+@def gen_index(tab_obj, index_field_names, value_field_names):
+@#ignore
+@for index_values, key_values in tab_obj.index_list(index_field_names, value_field_names):
+get_by_@`'_'.join(index_field_names)`(@`', '.join([format_value(data) for data in index_values])`) ->
+    @format_value(key_values);
+@else:
+get_by_@`'_'.join(index_field_names)`(@`', '.join(['_' for data in index_values])`) ->
+    [].
+@end
+@end
+@require(table_obj, prefix)
+-module(@`prefix`@`table_obj.table_name`).
+-compile([export_all, nowarn_export_all]).
+-include("@`prefix`@`table_obj.table_name`.hrl").
 
+@gen_get(table_obj,prefix)
+@gen_list(table_obj)

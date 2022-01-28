@@ -4,6 +4,6 @@
 @lua_base.gen_macro(table_obj, prefix)
 @lua_base.gen_config(table_obj)
 @lua_base.gen_get(table_obj, prefix)
-@lua_base.gen_index(table_obj,'get_by_type',['item_type'], ['id'])
-@lua_base.gen_index(table_obj,'get_by_sub_type',['item_type','item_sub_type'], ['id'])
+@lua_base.gen_index(table_obj,['item_type'], ['id'])
+@lua_base.gen_index(table_obj,['item_type','item_sub_type'], ['id'])
 return tab
