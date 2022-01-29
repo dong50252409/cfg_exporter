@@ -58,6 +58,7 @@ def content_1():
         'id1', 'id2',
         'macro_name', 'macro_desc',
         'test_unique', 'test_not_empty',
+        'test_default1', 'test_default2',
         'test_min1', 'test_min2',
         'test_max1', 'test_max2',
         'test_source', 'test_ref',
@@ -68,6 +69,7 @@ def content_1():
         'int', 'int',
         'str', 'str',
         'int', 'int',
+        'int', 'str',
         'int', 'iter',
         'int', 'iter',
         'str', 'int',
@@ -78,17 +80,19 @@ def content_1():
         'key:1|macro:value', 'key:2',
         'macro:name', 'macro:desc',
         'unique', 'not_empty',
-        'mix:0', 'mix:0',
-        'max:99', 'max:10',
+        'default:0', 'default:""',
+        'size:0~', 'size:0~',
+        'size:~99', 'size:~10',
         'source:.', f'ref:{content_2.__name__}.id',
-        r'not_empty|struct:[min:50|max:500]',
-        fr'struct:[(ref:{content_2.__name__}.id|unique,min:50|max:500,_)]'
+        r'not_empty|struct:[size:50~500]',
+        fr'struct:[(ref:{content_2.__name__}.id|unique,size:50~500,_)]'
     ]
     body = [
         [
             '1', '9',
             'key_1', 'desc_1',
             '1', '1',
+            '1', 'a',
             '0', '[]',
             '99', '[0,1,2,3,4,5,6,7,8,9]',
             'test_rule.py', '100',
@@ -99,6 +103,7 @@ def content_1():
             '2', '8',
             'key_2', 'desc_2',
             '2', '2',
+            '2', '',
             '99', '[0,1,2,3,4,5,6,7,8,9]',
             '0', '[]',
             '__init__.py', '200',
@@ -109,6 +114,7 @@ def content_1():
             '3', '7',
             'key_3', 'desc_3',
             '3', '3',
+            '', 'a',
             '50', '[0,1,2,3,4]',
             '50', '[0,1,2,3,4]',
             '.pytest_cache/README.md', '300',
@@ -119,6 +125,7 @@ def content_1():
             '4', '6',
             'key_4', 'desc_4',
             '4', '4',
+            '1', 'a',
             '0', '(0,1,2,3,4,5)',
             '0', '(0,1,2,3,4,5,6,7,8,9)',
             '.pytest_cache/v/cache/stepwise', '400',
@@ -132,6 +139,7 @@ def content_1():
             '', '',
             '', '',
             '', '',
+            '', '',
             '[]', ''
         ],
 
@@ -139,6 +147,7 @@ def content_1():
             '6', '4',
             '', '',
             '', '7',
+            '0', '',
             '', '',
             '', '',
             '', '',
@@ -242,48 +251,30 @@ def test_not_empty_rule():
     pass
 
 
-def test_min():
+def test_size():
     print('part 1')
-    heads = [['test_min'], ['str'], ['min:a']]
+    heads = [['test_size'], ['str'], ['size:a']]
     body = [['asd']]
     exception_verity(heads + body)
 
     print('part 2')
-    heads = [['test_min'], ['int'], ['min:10']]
+    heads = [['test_size'], ['int'], ['size:10~']]
     body = [['10'], ['9']]
     exception_verity(heads + body)
 
     print('part 3')
-    heads = [['test_min'], ['str'], ['min:5']]
+    heads = [['test_size'], ['str'], ['size:~5']]
     body = [['asd'], ['123456']]
     exception_verity(heads + body)
 
     print('part 4')
-    heads = [['test_min'], ['iter'], ['min:5']]
+    heads = [['test_size'], ['iter'], ['size:5~']]
     body = [['[(1,1),(1,1),(1,1),(1,1),(1,1),(1,1)]'], ['(1,2,3,4,5,6)'], ['[]']]
     exception_verity(heads + body)
-    pass
 
-
-def test_max():
-    print('part 1')
-    heads = [['test_max'], ['str'], ['max:a']]
-    body = [['a']]
-    exception_verity(heads + body)
-
-    print('part 2')
-    heads = [['test_max'], ['int'], ['max:10']]
-    body = [['1'], ['11']]
-    exception_verity(heads + body)
-
-    print('part 3')
-    heads = [['test_max'], ['str'], ['max:10']]
-    body = [['123456789'], ['abcdefghijk']]
-    exception_verity(heads + body)
-
-    print('part 4')
-    heads = [['test_max'], ['iter'], ['max:10']]
-    body = [['[(1,1),(1,1),(1,1),(1,1),(1,1),(1,1)]'], ['(1,2,3,4,5,6)'], ['[0,1,2,3,4,5,6,7,8,9,10]']]
+    print('part 5')
+    heads = [['test_size'], ['iter'], ['size:5']]
+    body = [['[(1,1),(1,1),(1,1),(1,1),(1,1)]'], ['(1,2,3,4,5)'], ['[]']]
     exception_verity(heads + body)
     pass
 

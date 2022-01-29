@@ -1,4 +1,5 @@
 import os
+import sys
 from enum import Enum
 from typing import Sized
 
@@ -109,26 +110,31 @@ class DefaultRule(BaseRule):
                 self._table_obj.value(row_num, self.column_num, self._value)
 
 
-class MinRule(BaseRule):
+class SizeRule(BaseRule):
 
     @BaseRule.value.setter
     def value(self, clause):
-        self._value = int(clause)
+        split_list = clause.split('~')
+        min_size, max_size = split_list[0], split_list[-1]
+        self._value = (
+            int(min_size) if min_size != '' else -sys.maxsize - 1,
+            int(max_size) if max_size != '' else sys.maxsize
+        )
 
     def verify(self, column_data_iter):
+        min_size, max_size = self._value
         for row_num, data in enumerate(column_data_iter):
             if data is None:
                 continue
 
             if isinstance(data, (int, float)):
-                if data < self._value:
-                    self._raise_verify_error(_('data:`{data}` the minimum limit was not reached')
-                                             .format(data=data), row_num)
+                if not min_size <= data <= max_size:
+                    self._raise_verify_error(_('data:`{data}` over the limit').format(data=data), row_num)
 
             elif isinstance(data, Sized):
-                if len(data) < self._value:
-                    self._raise_verify_error(_('data:`{data}` length:`{len}` the minimum limit was not reached')
-                                             .format(data=data, len=len(data)), row_num)
+                if not min_size <= len(data) <= max_size:
+                    self._raise_verify_error(
+                        _('data:`{data}` length:`{len}` over the limit').format(data=data, len=len(data)), row_num)
 
 
 class MaxRule(BaseRule):
@@ -367,8 +373,7 @@ MacroType = Enum('MacroType', ('name', 'value', 'desc'))
 RuleType = Enum('RuleType', {
     'key': KeyRule, 'macro': MacroRule,
     'unique': UniqueRule, 'not_empty': NotEmptyRule,
-    'default': DefaultRule,
-    'min': MinRule, 'max': MaxRule,
+    'default': DefaultRule, 'size': SizeRule,
     'source': SourceRule, 'ref': RefRule,
     'struct': StructRule, '_': IgnoreRule
 })

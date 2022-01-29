@@ -79,8 +79,7 @@
   | `unique` | 检查当前列**非空值**是否全列唯一<br/>如果指定在`struct`规则中则检查当前单元格的值是否全结构唯一 | | `unique` |
   | `not_empty` | 检查当前列的**值**是否无空值 | | `not_empty` |
   | `default:any` | 如果当前列的**值**为空，则赋予缺省值 | | `default:0` `default:文案整理中` `default:[]` |
-  | `min:number` | 检查当前列**非空值**是否大于等于规定值<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `min:1｜max:99`<br/>数值1-99 |
-  | `max:number` | 检查当前列**非空值**是否小于等于规定值<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `min:99｜max:99`<br/>数值恒等99 |
+  | `size:min[~max]` | 检查当前列**非空值**的取值或长度范围<br/>`int` `float`类型的值，检查其大小 <br/>`str` `iter` 类型的值，检查其长度 | `int` | `size:1~99` 数值或长度1 - 99<br/>`size:1~` 数值或长度1 - +∞<br/>`size:~99` 数值或长度 -∞ - 99<br/>`size:99` 数值或长度恒等于99 |
   | `source:path` | 检查当前列**非空值**引用资源是否存在 | `str` | 要检查资源目录的相对或绝对路径<br/>`source:source/ui`<br/>`source:D:/project/source/ui` |
   | `ref:table_name.field_name` | 检查当前列**非空值**是否在`table_name`表`field_name`列中存在 | `str` | `ref:item.id` 当前的列值引用于`item`表的`id`列的值 |
   | `struct:rules` | 对`iter`类型结构中的各项值进行规则检查<br/>仅支持指定普通规则 | `iter` | 示例1<br/>`[(1,100,"描述1"),(2,200,"描述2")]`<br/>`struct:[(unique｜ref:item.id,min:0｜max:10000,_)]`<br/>对 `1` `2`进行`unique` `ref`规则检查<br/>对`100` `200`进行`min` `max`规则检查<br/>`_`表示占位符<br/><br/>示例2<br/>`["abc",[1,2,3],(4,5,6)]`<br/>`struct:[max:10]`<br/>对`"abc"` `[1,2,3]` `(4,5,6)` 进行长度检查 |
