@@ -3,18 +3,20 @@ import logging
 import os
 import re
 import traceback
+import typing
 from abc import ABC, abstractmethod
+
 from wheezy.template import Engine, FileLoader, CoreExtension, CodeExtension
 from wheezy.template.ext.core import rvalue_token
-from wheezy.template.typing import LexerRule
-from cfg_exporter import *
+
+import cfg_exporter.util as util
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.lang_template import load
 
 
 class ExpressionExtension:
     def __init__(self):
-        self.lexer_rules: Dict[int, LexerRule] = {
+        self.lexer_rules = {
             201: (re.compile(r"@`(.*?)`"), rvalue_token)
         }
 
@@ -48,10 +50,13 @@ class BaseExport(ABC):
             loader=FileLoader(template_path),
             extensions=[CoreExtension(), CodeExtension(), ExpressionExtension()]
         )
-        if global_vars is not None:
-            self.engine.global_vars.update(global_vars)
 
-    def render(self, filename: str, template_name: str, ctx: dict) -> NoReturn:
+        if global_vars is None:
+            global_vars = {}
+        global_vars.update({'util': util})
+        self.engine.global_vars.update(global_vars)
+
+    def render(self, filename: str, template_name: str, ctx: dict) -> typing.NoReturn:
         """
         渲染模板
         """
@@ -74,7 +79,7 @@ class BaseExport(ABC):
         return ""
 
     @abstractmethod
-    def export(self, table_obj) -> NoReturn:
+    def export(self, table_obj) -> typing.NoReturn:
         """
         导出方法
         """

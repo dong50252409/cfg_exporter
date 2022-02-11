@@ -1,3 +1,6 @@
+@################################
+@# generate descriptions and the necessary content
+@################################
 @def gen_head(table_obj, prefix):
 @`f'--- @class {prefix}{table_obj.table_name}'`
 @for field_name, desc in zip(table_obj.field_names,table_obj.descriptions):
@@ -6,6 +9,9 @@
 
 local tab = {}
 @end
+@################################
+@# generate macro
+@################################
 @def gen_macro(table_obj, prefix):
 @#ignore
 @for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
@@ -13,26 +19,67 @@ local tab = {}
 tab.@`macro_name.upper()` = @format_value(macro_value)
 @end
 @end
-@def gen_config(table_obj):
+@################################
+@# generate config
+@################################
+@def gen_config(table_obj, replace_table=None):
 @(
+    import cfg_exporter.util as util
     def format_config(keys, row):
         if keys:
             return f'[{format_value(row[keys[0]])}] = {{{format_config(keys[1:], row)}}}'
         else:
-            return f'{", ".join(f"{field_name} = {format_value(value)}" for field_name, value in zip(table_obj.field_names, row))}'
+            return f'{", ".join(f"{field_name} = {format_value(value)}" for field_name, value in util.iter_valid_value(zip(table_obj.field_names, row)))}'
 )
+@if replace_table is not None:
+local rt = {
+    @`', '.join(format_value(value) for value in replace_table)`
+}
+
+@end
 local config = {
 @for row in table_obj.row_iter:
     @format_config(table_obj.key_columns, row),
 @end
 }
 @end
-@def gen_get(table_obj, prefix):
+@################################
+@# generate `get` function
+@################################
+@def gen_get(table_obj, prefix, default_values=None):
+@#ignore
+@if default_values is not None:
+local default_values = {
+    @for k, v in util.iter_valid_value(default_values):
+    @k = @format_value(v),
+    @end
+}
+
+do
+    local base = { __index = default_values, __newindex = function() error("Attempt to add a new value") end }
+    local set_default_values
+    set_default_values = function(row, layer)
+        if layer > 0 then
+            for _, t in pairs(row) do
+                set_default_values(t, layer - 1)
+            end
+        else
+            setmetatable(row, base)
+        end
+    end
+    set_default_values(config, @`str(len(table_obj.key_columns))`)
+    base.__metatable = false
+end
+
+@end
 @`f'--- @type fun({", ".join(table_obj.key_field_name_iter)}):{prefix}{table_obj.table_name}'`
 tab.get = function(@`', '.join(table_obj.key_field_name_iter)`)
     return config@`''.join(f'[{field_names}]' for field_names in table_obj.key_field_name_iter)`
 end
 @end
+@################################
+@# generate `gen_index` function
+@################################
 @def gen_index(table_obj, index_field_names, value_field_names):
 @(
     def format_config(keys, row):
@@ -52,9 +99,9 @@ tab.get_by_@`'_'.join(index_field_names)` = function(@`', '.join([field_name for
     return @`'_'.join(index_field_names)`_config@`''.join(f'[{field_names}]' for field_names in index_field_names)`
 end
 @end
-@require(table_obj, prefix)
+@require(table_obj, prefix, default_values, replace_table)
 @gen_head(table_obj, prefix)
 @gen_macro(table_obj, prefix)
-@gen_config(table_obj)
-@gen_get(table_obj, prefix)
+@gen_config(table_obj, replace_table)
+@gen_get(table_obj, prefix, default_values)
 return tab

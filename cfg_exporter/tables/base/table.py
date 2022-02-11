@@ -1,12 +1,14 @@
 import itertools
 import os
+import typing
 from abc import ABC, abstractmethod
-from cfg_exporter import *
-import cfg_exporter.util as util
+
 import cfg_exporter.tables.base.rule as rule
+import cfg_exporter.util as util
+from cfg_exporter import AnyType, Iter
 from cfg_exporter.const import DataType
-from cfg_exporter.tables.base.type import RawType
 from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
+from cfg_exporter.tables.base.type import RawType, IgnoreValue
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
@@ -18,7 +20,6 @@ class Table(ABC):
         self._full_filename = filename
         self.args = args
         self.__parse_args()
-        self._table = [[], [], [], [], []]
         self._key_columns = []
         self._global_rules = {}
         self._is_load = False
@@ -45,13 +46,14 @@ class Table(ABC):
         ...
 
     def _load_table(self, rows):
+        self._table = [[], [], [], [], []]
+
         loadable_column_list = self.__load_field_name(rows)
 
         self.__load_other(rows, loadable_column_list)
 
         if KeyRule.__name__ in self._global_rules:
             self._key_columns = [col_num for col_num in sorted(self._global_rules[KeyRule.__name__].values.values())]
-
         self._is_load = True
 
     def __load_field_name(self, rows):
@@ -199,8 +201,14 @@ class Table(ABC):
         """
         return self._column_count
 
+    def column_num_by_field_name(self, field_name):
+        """
+        根据字段名，返回列号，列号从0开始
+        """
+        return self.field_names.index(field_name)
+
     @property
-    def field_names(self) -> List[str]:
+    def field_names(self) -> typing.List[str]:
         """
         返回配置表的字段名列表
         """
@@ -208,45 +216,45 @@ class Table(ABC):
 
     def field_name_by_column_num(self, column_num: int) -> str:
         """
-        根据列号，从0开始，返回配置表的字段名
+        根据列号，返回配置表的字段名，列号从0开始
         """
         return self.field_names[column_num]
 
     @property
-    def data_types(self) -> List[Any]:
+    def data_types(self) -> typing.List[typing.Any]:
         """
         返回配置表的数据类型列表
         """
         return self._table[DATA_TYPE_INDEX]
 
-    def data_type_by_column_num(self, column_num: int) -> Any:
+    def data_type_by_column_num(self, column_num: int) -> typing.Any:
         """
-        根据列号，从0开始，返回配置表的数据类型
+        根据列号，返回配置表的数据类型，列号从0开始
         """
         return self.data_types[column_num]
 
     @property
-    def rules(self) -> List[List[rule.BaseRule]]:
+    def rules(self) -> typing.List[typing.List[rule.BaseRule]]:
         """
         返回配置表的规则列表
         """
         return self._table[RULE_INDEX]
 
-    def rule_by_column_num(self, column_num: int) -> List[rule.BaseRule]:
+    def rule_by_column_num(self, column_num: int) -> typing.List[rule.BaseRule]:
         """
-        根据列号，从0开始，返回配置表的规则
+        根据列号，返回配置表的规则，列号从0开始
         """
         return self.rules[column_num]
 
     @property
-    def global_rules(self) -> Dict[str, rule.GlobalRule]:
+    def global_rules(self) -> typing.Dict[str, rule.GlobalRule]:
         """
         返回配置表的全局规则列表
         """
         return self._global_rules
 
     @property
-    def descriptions(self) -> List[str]:
+    def descriptions(self) -> typing.List[str]:
         """
         返回配置表的描述列表
         """
@@ -254,7 +262,7 @@ class Table(ABC):
 
     def description_by_column_num(self, column_num: int) -> str:
         """
-        返回配置表的描述，根据列号，从0开始
+        根据列号，返回配置表的描述，列号从0开始
         """
         return self.descriptions[column_num]
 
@@ -265,39 +273,39 @@ class Table(ABC):
         self._table[DATA_INDEX][row][column] = value
 
     @property
-    def row_iter(self) -> Iterator[List[AnyType]]:
+    def row_iter(self) -> typing.Iterator[typing.List[AnyType]]:
         """
         迭代返回配置表的每行数据
         """
         for row in self._table[DATA_INDEX]:
             yield row
 
-    def data_iter_by_column_nums(self, *column_nums) -> Iterator[AnyType]:
+    def data_iter_by_column_nums(self, *column_nums) -> typing.Iterator[AnyType]:
         """
-        根据列号，从0开始，迭代返回配置表的每列数据
+        根据列号，迭代返回配置表的每列数据，列号从0开始
         """
         func = multi_value_func(column_nums) if len(column_nums) > 1 else sgl_value_func(column_nums[0])
         for row in self.row_iter:
             yield func(row)
 
-    def data_iter_by_field_names(self, *field_names) -> Iterator[str]:
+    def data_iter_by_field_names(self, *field_names) -> typing.Iterator[str]:
         """
         根据字段名，迭代返回配置表的每列数据
         """
-        column_nums = [self.field_names.index(field_name) for field_name in field_names]
+        column_nums = [self.column_num_by_field_name(field_name) for field_name in field_names]
         func = multi_value_func(column_nums) if len(column_nums) > 1 else sgl_value_func(column_nums[0])
         for row in self.row_iter:
             yield func(row)
 
     @property
-    def key_columns(self) -> List[int]:
+    def key_columns(self) -> typing.List[int]:
         """
         返回主键列列号，列号从0开始
         """
         return self._key_columns
 
     @property
-    def key_field_name_iter(self) -> List[str]:
+    def key_field_name_iter(self) -> typing.List[str]:
         """
         返回主键列字段名
         """
@@ -324,14 +332,15 @@ class Table(ABC):
         return MacroRule.__name__ in self.global_rules
 
     @property
-    def macro_data_iter(self) -> Iterator[Tuple[str, AnyType, str]]:
+    def macro_data_iter(self) -> typing.Iterator[typing.Tuple[str, AnyType, str]]:
         """
         迭代返回宏定义名、宏定义值、宏定义描述的元祖
         """
         if MacroRule.__name__ in self.global_rules:
             for macro_name, macro_value, macro_desc in zip(self.macro_name_iter(), self.macro_value_iter(),
                                                            self.macro_desc_iter()):
-                if macro_name and macro_value is not None:
+                if not (macro_name is None or macro_value is None
+                        or isinstance(macro_name, IgnoreValue) or isinstance(macro_value, IgnoreValue)):
                     yield macro_name, macro_value, macro_desc
 
     def macro_name_iter(self):
@@ -360,7 +369,7 @@ class Table(ABC):
                 for _ in self.row_iter:
                     yield None
 
-    def index_list(self, index_field_names: List[str], value_field_names: List[str]) -> Iter:
+    def index_list(self, index_field_names: typing.List[str], value_field_names: typing.List[str]) -> Iter:
         """
         根据下标字段列表和值字段列表迭代返回对应数据，多值以元祖形式返回
         例如：有多个同一种类型的道具，可返回当前类型的所有道具id
@@ -433,7 +442,7 @@ def sgl_value_func(col_num):
     return lambda row: row[col_num]
 
 
-def convert_field_name(field_name: str) -> StrOrNone:
+def convert_field_name(field_name):
     field_name = util.trim(field_name)
     if field_name:
         if not util.check_naming(field_name):
@@ -514,7 +523,7 @@ def convert_desc(desc):
 def convert_data(data_type, row):
     try:
         if row != '' and row is not None:
-            return data_type.value(row)
+            return data_type.value.convert(row)
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):

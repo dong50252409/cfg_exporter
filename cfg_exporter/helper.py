@@ -126,6 +126,12 @@ erl_group.add_argument('--erl_prefix', default='',
 erl_group.add_argument('--hrl_dir', default='',
                        help=_('specify output directory for where to generate the .hrl.'))
 
+lua_group = parser.add_argument_group(title=_('LUA options'))
+
+lua_group.add_argument('--lua_optimize', default=False, action='store_true',
+                       help=_('remove default value fields ( store them into metatable ) '
+                              'and reuse all table values to save memory'))
+
 args = parser.parse_args()
 
 __all__ = ('args',)

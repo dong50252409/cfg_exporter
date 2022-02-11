@@ -1,5 +1,6 @@
 import re
 from cfg_exporter import StrOrNone
+from cfg_exporter.tables.base.type import IgnoreValue
 
 _re_trim = re.compile(r"(\s|\n|\r)+")
 _re_trim_desc = re.compile(r"(\n|\r)+")
@@ -34,3 +35,13 @@ def escape(s: str) -> str:
     将字符串转为原始字符串
     """
     return s.translate(_tab)
+
+
+def iter_valid_value(kv_iter):
+    """
+    迭代有效值，过滤None、IgnoreValue
+    """
+    for key, value in kv_iter:
+        if value is None or isinstance(value, IgnoreValue):
+            continue
+        yield key, value

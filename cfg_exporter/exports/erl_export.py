@@ -23,7 +23,7 @@ def format_value(value):
     elif isinstance(value, Iterable):
         return f'{value}'.translate(tab)
     elif isinstance(value, LangType):
-        return f'"{lang(value.text)}"'
+        return f'<<"{lang(value.text)}"/utf8>>'
     else:
         return f'{value}'
 
