@@ -8,23 +8,45 @@ TEMPLATE_EXTENSION = 'tmpl'
 ###############################
 # 支持的数据类型定义
 ###############################
-from cfg_exporter.tables.base.type import LangType, RawType
 import cfg_exporter.util as util
+from cfg_exporter.tables.base.type import LangType, RawType
 
 
-class _Str:
-    def __init__(self, function):
-        self.function = function
+class DataType(Enum):
+    class int(int):
+        @staticmethod
+        def convert(value):
+            return int(value)
 
-    def __call__(self, *args, **kwargs):
-        return self.function(*args, **kwargs)
+    class int64(int):
+        pass
 
+    class float(float):
+        @staticmethod
+        def convert(value):
+            return float(value)
 
-DataType = Enum('DataType', {
-    'int': int, 'int64': int, 'float': float,
-    'str': _Str(util.escape), 'lang': LangType,
-    'iter': eval, 'raw': RawType
-})
+    class str(str):
+        @staticmethod
+        def convert(value):
+            return util.escape(value)
+
+    class lang(LangType):
+        @staticmethod
+        def convert(value):
+            return LangType(util.escape(value))
+
+    # TODO 自定义IterType类型
+    class iter(object):
+        @staticmethod
+        def convert(value):
+            return eval(value)
+
+    class raw(RawType):
+        @staticmethod
+        def convert(value):
+            return RawType(value)
+
 
 ###############################
 # 支持的导出文件类型
