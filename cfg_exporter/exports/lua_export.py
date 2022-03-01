@@ -1,5 +1,4 @@
 import os
-import re
 from collections import Counter
 from typing import Iterable
 
@@ -7,20 +6,37 @@ from cfg_exporter.const import DataType
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.lang_template import lang
-from cfg_exporter.tables.base.type import LangType, IgnoreValue, ReferenceValue
+from cfg_exporter.tables.base.type import LangType, IgnoreValue
 
 EXTENSION = 'lua'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
 BASE_TEMPLATE = f'{EXTENSION}_base.{TEMPLATE_EXTENSION}'
 
 tab = str.maketrans('()[]', '{}{}')
-sub_str = '__lua_rt__'
-pattern = re.compile(fr'{sub_str}\d+')
-re_sub_dict = {}
 
 
-def rt_replace(match):
-    return re_sub_dict[match.group(0)]
+def _by_default(value):
+    """
+    默认Iter类型格式化
+    """
+    return f'{value}'.translate(tab)
+
+
+def _by_reference(replace_table):
+    """
+    引用Iter类型格式化
+    """
+    return lambda value: _get_reference(replace_table, value)
+
+
+def _get_reference(replace_table, value):
+    key = _by_default(value)
+    _, layer_num, index_num = replace_table[key]
+    return f'rt_{layer_num}[{index_num}]'
+
+
+# Iter类型格式化函数
+format_iter_value = _by_default
 
 
 def format_value(value):
@@ -29,13 +45,11 @@ def format_value(value):
     elif isinstance(value, str):
         return f'"{value}"'
     elif isinstance(value, Iterable):
-        return pattern.sub(rt_replace, f'{value}'.translate(tab))
+        return format_iter_value(value)
     elif isinstance(value, LangType):
         return f'"{lang(value.text)}"'
     elif isinstance(value, IgnoreValue):
         return format_value(value.text)
-    elif isinstance(value, ReferenceValue):
-        return format_value(value.raw_value)
     else:
         return f'{value}'
 
@@ -47,17 +61,18 @@ class LuaExport(BaseExport):
         super().__init__(args, BASE_TEMPLATE_PATH, [EXTENSION], global_vars)
 
     def export(self, table_obj):
-
+        global format_iter_value
         if self.args.lua_optimize:
+            replace_table, reference_table = _analyze_reference_table(table_obj)
             default_values = _analyze_default_value(table_obj)
-            replace_table = _analyze_replace_table(table_obj)
+            format_iter_value = _by_reference(replace_table)
         else:
-            default_values = None
-            replace_table = None
+            default_values = reference_table = []
+            format_iter_value = _by_default
 
         ctx = {
             'table_obj': table_obj, 'prefix': self.args.file_prefix,
-            'default_values': default_values, 'replace_table': replace_table
+            'default_values': default_values, 'reference_table': reference_table
         }
         table_name = table_obj.table_name
         filename = f'{table_name}.{EXTENSION}'
@@ -102,34 +117,69 @@ def _analyze_default_value(table_obj):
     return default_values
 
 
-def _analyze_replace_table(table_obj):
+def _analyze_reference_table(table_obj):
+    """
+    统计替换引用表
+    """
     replace_table = {}
     for field_name, data_type in zip(table_obj.field_names, table_obj.data_types):
         if field_name in table_obj.key_field_name_iter:
             continue
 
         if data_type is DataType.iter:
-            col_num = table_obj.column_num_by_field_name(field_name)
-            for row_num, value in enumerate(table_obj.data_iter_by_column_nums(col_num)):
-                table_obj.value(row_num, col_num, _replace_table(value, replace_table))
+            for value in table_obj.data_iter_by_field_names(field_name):
+                _stat_replace_table_layer(replace_table, value, 0)
 
-    return [ref_value.raw_value for ref_value in replace_table.values()]
-
-
-def _replace_table(value, replace_table):
-    if isinstance(value, list):
-        if len(value) == 0:
-            return _get_ref_value((), replace_table)
-        return [_replace_table(child_value, replace_table) for child_value in value]
-    elif isinstance(value, tuple):
-        return _get_ref_value(value, replace_table)
+    _stat_replace_table_index(replace_table)
+    reference_table = _stat_reference_table(replace_table)
+    return replace_table, reference_table
 
 
-def _get_ref_value(value, replace_table):
-    if value not in replace_table:
-        index = len(replace_table) + 1
-        rt_key = f'{sub_str}{index}'
-        rt_value = f'rt[{index}]'
-        re_sub_dict[rt_key] = rt_value
-        replace_table[value] = ReferenceValue(rt_key, value)
-    return replace_table[value]
+def _stat_replace_table_layer(reference_table, value, layer_num):
+    """
+    统计替换表的最高层级
+    """
+    if isinstance(value, (list, tuple)):
+        for child_value in value:
+            if isinstance(child_value, (list, tuple)):
+                _stat_replace_table_layer(reference_table, child_value, layer_num + 1)
+
+        key = _by_default(value)
+        if key in reference_table:
+            if reference_table[key][1] < layer_num:
+                reference_table[key] = (value, layer_num)
+        else:
+            reference_table[key] = (value, layer_num)
+
+
+def _stat_replace_table_index(reference_table):
+    """
+    统计替换表的元素下标
+    """
+    index_dict = {}
+    for key, (value, layer_num) in reference_table.items():
+        replace_rt = _replace_rt_table(reference_table, value)
+        index = index_dict.get(layer_num, 0) + 1
+        index_dict[layer_num] = index
+        reference_table[key] = (replace_rt, layer_num, index)
+
+
+def _replace_rt_table(reference_table, value):
+    """
+    替换引用表的上级引用
+    """
+    if isinstance(value, Iterable):
+        return f'{{{", ".join(f"{_get_reference(reference_table, v)}" if isinstance(v, Iterable) else f"{v}" for v in value)}}}'
+    return _by_default(value)
+
+
+def _stat_reference_table(replace_table):
+    """
+    统计生成引用表
+    """
+    rt_dict = {}
+    for rt_value, layer_num, _index_num in replace_table.values():
+        layer_list = rt_dict.get(layer_num, [])
+        layer_list.append(rt_value)
+        rt_dict[layer_num] = layer_list
+    return sorted(rt_dict.items(), key=lambda item: item[0], reverse=True)

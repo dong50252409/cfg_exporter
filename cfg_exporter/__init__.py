@@ -1,12 +1,12 @@
 import gettext
 import locale
 import typing
-from cfg_exporter.tables.base.type import LangType, RawType, IgnoreValue, ReferenceValue
+from cfg_exporter.tables.base.type import LangType, RawType, IgnoreValue
 
 _lang, _localename = locale.getdefaultlocale()
 gettext.translation('resource', './locale', languages=[_lang], fallback=True).install()
 StrOrNone = typing.Union[str, type(None)]
-AnyType = typing.Union[int, float, str, typing.List, typing.Tuple, LangType, RawType, IgnoreValue, ReferenceValue]
+AnyType = typing.Union[int, float, str, typing.List, typing.Tuple, LangType, RawType, IgnoreValue]
 Iter = typing.Union[typing.Iterator[AnyType], typing.Iterator[typing.Tuple]]
 
 __version__ = "0.1.0"

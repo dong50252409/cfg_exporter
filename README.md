@@ -27,7 +27,7 @@
     * `xlsx`
     * `json`
     * `erl`
-    * `lua`
+    * `lua` 支持配表内存优化，灵感来自[LuaTableOptimizer](https://github.com/lujian101/LuaTableOptimizer)
     * 通过模板支持自定义格式
     * ....
 

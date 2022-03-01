@@ -22,7 +22,7 @@ tab.@`macro_name.upper()` = @format_value(macro_value)
 @################################
 @# generate config
 @################################
-@def gen_config(table_obj, replace_table=None):
+@def gen_config(table_obj, reference_table=None):
 @(
     import cfg_exporter.util as util
     def format_config(keys, row):
@@ -31,9 +31,9 @@ tab.@`macro_name.upper()` = @format_value(macro_value)
         else:
             return f'{", ".join(f"{field_name} = {format_value(value)}" for field_name, value in util.iter_valid_value(zip(table_obj.field_names, row)))}'
 )
-@if replace_table is not None:
-local rt = {
-    @`', '.join(format_value(value) for value in replace_table)`
+@for rt_num, values in reference_table:
+local rt_@rt_num!s = {
+    @`', '.join(values)`
 }
 
 @end
@@ -99,9 +99,9 @@ tab.get_by_@`'_'.join(index_field_names)` = function(@`', '.join([field_name for
     return @`'_'.join(index_field_names)`_config@`''.join(f'[{field_names}]' for field_names in index_field_names)`
 end
 @end
-@require(table_obj, prefix, default_values, replace_table)
+@require(table_obj, prefix, default_values, reference_table)
 @gen_head(table_obj, prefix)
 @gen_macro(table_obj, prefix)
-@gen_config(table_obj, replace_table)
+@gen_config(table_obj, reference_table)
 @gen_get(table_obj, prefix, default_values)
 return tab
