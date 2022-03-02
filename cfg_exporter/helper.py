@@ -1,5 +1,6 @@
 import os
 from argparse import RawTextHelpFormatter, ArgumentTypeError, ArgumentParser
+
 from cfg_exporter.const import ExportType, ExtensionType, TEMPLATE_EXTENSION
 
 

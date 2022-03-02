@@ -1,13 +1,14 @@
-import os
-import shutil
 import glob
 import logging
+import os
+import shutil
 import timeit
+
 from cfg_exporter.const import ExtensionType
 from cfg_exporter.lang_template import LangTemplate
 
 
-class Container(object):
+class Container:
     def __init__(self, source, args):
         self._cfg_dict = {}
         self._skipped_cfg_dict = {}

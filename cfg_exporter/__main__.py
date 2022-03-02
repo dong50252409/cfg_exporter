@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 # import multiprocessing
-import logging
 import hashlib
 import json
+import logging
 import os
 import timeit
+
 import cfg_exporter.helper as helper
 from cfg_exporter.container import Container
 from cfg_exporter.tables.base.table import TableException
