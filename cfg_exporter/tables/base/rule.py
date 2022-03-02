@@ -102,7 +102,7 @@ class DefaultRule(BaseRule):
     @BaseRule.value.setter
     def value(self, clause):
         data_type = self._table_obj.data_type_by_column_num(self.column_num)
-        self._value = data_type.value.convert(clause)
+        self._value = data_type(clause)
 
     def verify(self, column_data_iter):
         for row_num, data in enumerate(column_data_iter):

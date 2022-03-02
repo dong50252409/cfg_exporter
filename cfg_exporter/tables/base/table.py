@@ -523,7 +523,7 @@ def convert_desc(desc):
 def convert_data(data_type, row):
     try:
         if row != '' and row is not None:
-            return data_type.value.convert(row)
+            return data_type(row)
         else:
             return None
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):

@@ -1,22 +1,21 @@
 import logging
 import os
-from typing import Iterable
 
 from openpyxl import Workbook
 
+from cfg_exporter.const import DataType
 from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.lang_template import lang
-from cfg_exporter.tables.base.type import LangType, RawType
 
 
 def format_value(value):
     if value is None:
         return ''
-    elif isinstance(value, Iterable):
+    elif isinstance(value, DataType.iter):
         return str(value)
-    elif isinstance(value, RawType):
+    elif isinstance(value, DataType.raw):
         return str(value)
-    elif isinstance(value, LangType):
+    elif isinstance(value, DataType.lang):
         return lang(value.text)
     else:
         return value

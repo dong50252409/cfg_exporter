@@ -1,10 +1,8 @@
 import os
-from typing import Iterable
 
-from cfg_exporter.const import TEMPLATE_EXTENSION
+from cfg_exporter.const import TEMPLATE_EXTENSION, DataType
 from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.lang_template import lang
-from cfg_exporter.tables.base.type import LangType
 
 ERL_EXTENSION = 'erl'
 HRL_EXTENSION = 'hrl'
@@ -18,11 +16,11 @@ tab = str.maketrans('()', '{}')
 def format_value(value):
     if value is None:
         return 'undefined'
-    elif isinstance(value, str):
+    elif isinstance(value, DataType.str):
         return f'<<"{value}"/utf8>>'
-    elif isinstance(value, Iterable):
+    elif isinstance(value, DataType.iter):
         return f'{value}'.translate(tab)
-    elif isinstance(value, LangType):
+    elif isinstance(value, DataType.lang):
         return f'<<"{lang(value.text)}"/utf8>>'
     else:
         return f'{value}'

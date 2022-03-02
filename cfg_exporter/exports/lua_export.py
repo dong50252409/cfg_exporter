@@ -1,12 +1,11 @@
 import os
 from collections import Counter
-from typing import Iterable
 
 from cfg_exporter.const import DataType
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.lang_template import lang
-from cfg_exporter.tables.base.type import LangType, IgnoreValue
+from cfg_exporter.tables.base.type import IgnoreValue
 
 EXTENSION = 'lua'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
@@ -36,17 +35,17 @@ def _get_reference(replace_table, value):
 
 
 # Iter类型格式化函数
-format_iter_value = _by_default
+_format_iter_value = _by_default
 
 
 def format_value(value):
     if value is None:
         return 'nil'
-    elif isinstance(value, str):
+    elif isinstance(value, DataType.str):
         return f'"{value}"'
-    elif isinstance(value, Iterable):
-        return format_iter_value(value)
-    elif isinstance(value, LangType):
+    elif isinstance(value, DataType.iter):
+        return _format_iter_value(value)
+    elif isinstance(value, DataType.lang):
         return f'"{lang(value.text)}"'
     elif isinstance(value, IgnoreValue):
         return format_value(value.text)
@@ -61,14 +60,14 @@ class LuaExport(BaseExport):
         super().__init__(args, BASE_TEMPLATE_PATH, [EXTENSION], global_vars)
 
     def export(self, table_obj):
-        global format_iter_value
+        global _format_iter_value
         if self.args.lua_optimize:
             replace_table, reference_table = _analyze_reference_table(table_obj)
             default_values = _analyze_default_value(table_obj)
-            format_iter_value = _by_reference(replace_table)
+            _format_iter_value = _by_reference(replace_table)
         else:
             default_values = reference_table = []
-            format_iter_value = _by_default
+            _format_iter_value = _by_default
 
         ctx = {
             'table_obj': table_obj, 'prefix': self.args.file_prefix,
@@ -89,6 +88,9 @@ class LuaExport(BaseExport):
 
 
 def _analyze_default_value(table_obj):
+    """
+    分析表默认值
+    """
     default_values = []
     for field_name, data_type in zip(table_obj.field_names, table_obj.data_types):
         if field_name in table_obj.key_field_name_iter:
@@ -105,7 +107,7 @@ def _analyze_default_value(table_obj):
             if default_value is None:
                 continue
 
-            default_value = data_type.value.convert(default_value)
+            default_value = data_type.value(default_value)
 
             ignore_value_obj = IgnoreValue(default_value)
             default_values.append((field_name, default_value))
@@ -168,8 +170,8 @@ def _replace_rt_table(reference_table, value):
     """
     替换引用表的上级引用
     """
-    if isinstance(value, Iterable):
-        return f'{{{", ".join(f"{_get_reference(reference_table, v)}" if isinstance(v, Iterable) else f"{v}" for v in value)}}}'
+    if isinstance(value, (list, tuple)):
+        return f'{{{", ".join(f"{_get_reference(reference_table, v)}" if isinstance(v, (list, tuple)) else f"{v}" for v in value)}}}'
     return _by_default(value)
 
 

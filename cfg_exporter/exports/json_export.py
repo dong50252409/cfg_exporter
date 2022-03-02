@@ -1,10 +1,8 @@
 import os
-from typing import Iterable
 
-from cfg_exporter.const import TEMPLATE_EXTENSION
+from cfg_exporter.const import TEMPLATE_EXTENSION, DataType
 from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.lang_template import lang
-from cfg_exporter.tables.base.type import LangType
 
 EXTENSION = 'json'
 BASE_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'template', EXTENSION)
@@ -16,11 +14,11 @@ tab = str.maketrans('()', '[]')
 def format_value(value):
     if value is None:
         return '""'
-    elif isinstance(value, str):
+    elif isinstance(value, DataType.str):
         return f'"{value}"'
-    elif isinstance(value, Iterable):
+    elif isinstance(value, DataType.iter):
         return f'{value}'.translate(tab)
-    elif isinstance(value, LangType):
+    elif isinstance(value, DataType.lang):
         return f'"{lang(value.text)}"'
     else:
         return f'{value}'

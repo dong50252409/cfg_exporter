@@ -3,15 +3,15 @@ import os
 
 import csv
 
+from cfg_exporter.const import DataType
 from cfg_exporter.exports.base.export import BaseExport
 from cfg_exporter.lang_template import lang
-from cfg_exporter.tables.base.type import LangType
 
 
 def format_value(value):
     if value is None:
         return ''
-    elif isinstance(value, LangType):
+    elif isinstance(value, DataType.lang):
         return lang(value.text)
     else:
         return value

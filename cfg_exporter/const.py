@@ -12,40 +12,98 @@ import cfg_exporter.util as util
 from cfg_exporter.tables.base.type import LangType, RawType
 
 
+class _Int:
+    """
+    32位整数
+    """
+    def __instancecheck__(self, instance):
+        return isinstance(instance, int)
+
+    def __call__(self, value):
+        return int(value)
+
+
+class _Int64(_Int):
+    """
+    64位整数类型
+    """
+    pass
+
+
+class _Float:
+    """
+    浮点数类型
+    """
+    def __instancecheck__(self, instance):
+        return isinstance(instance, float)
+
+    def __call__(self, value):
+        return float(value)
+
+
+class _Str:
+    """
+    字符串类型
+    """
+    def __instancecheck__(self, instance):
+        return isinstance(instance, str)
+
+    def __call__(self, value):
+        return util.escape(value)
+
+
+class _Lang:
+    """
+    多语言类型
+    """
+    def __instancecheck__(self, instance):
+        return isinstance(instance, LangType)
+
+    def __call__(self, value):
+        return LangType(util.escape(value))
+
+
+class _Iter:
+    """
+    可迭代类型，目前仅包含 list、tuple
+    """
+    def __instancecheck__(self, instance):
+        return isinstance(instance, (list, tuple))
+
+    def __call__(self, value):
+        iter_value = eval(value)
+        isinstance(iter_value, (list, tuple))
+        return iter_value
+
+
+class _Raw:
+    """
+    原始类型
+    """
+    def __instancecheck__(self, instance):
+        return isinstance(instance, RawType)
+
+    def __call__(self, value):
+        return RawType(value)
+
+
 class DataType(Enum):
-    class int(int):
-        @staticmethod
-        def convert(value):
-            return int(value)
+    """
+    数据类型枚举
+    """
+    int = _Int()
+    int64 = _Int64()
+    float = _Float()
+    str = _Str()
+    lang = _Lang()
+    iter = _Iter()
+    raw = _Raw()
 
-    class int64(int):
-        pass
+    def __instancecheck__(self, instance):
+        return isinstance(instance, self.value)
 
-    class float(float):
-        @staticmethod
-        def convert(value):
-            return float(value)
-
-    class str(str):
-        @staticmethod
-        def convert(value):
-            return util.escape(value)
-
-    class lang(LangType):
-        @staticmethod
-        def convert(value):
-            return LangType(util.escape(value))
-
-    # TODO 自定义IterType类型
-    class iter(object):
-        @staticmethod
-        def convert(value):
-            return eval(value)
-
-    class raw(RawType):
-        @staticmethod
-        def convert(value):
-            return RawType(value)
+    def __call__(self, value):
+        return self.value(value)
 
 
 ###############################
