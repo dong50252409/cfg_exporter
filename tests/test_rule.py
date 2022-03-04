@@ -56,7 +56,7 @@ def get_args(*groups):
 def content_1():
     fields = [
         'id1', 'id2',
-        'macro_name', 'macro_desc',
+        'const_name', 'const_desc',
         'test_unique', 'test_not_empty',
         'test_default1', 'test_default2',
         'test_min1', 'test_min2',
@@ -77,8 +77,8 @@ def content_1():
     ]
 
     rules = [
-        'key:1|macro:value', 'key:2',
-        'macro:name', 'macro:desc',
+        'key:1|const:value', 'key:2',
+        'const:name', 'const:desc',
         'unique', 'not_empty',
         'default:0', 'default:""',
         'size:0~', 'size:0~',
@@ -205,33 +205,33 @@ def test_key_rule():
     pass
 
 
-def test_macro_rule():
+def test_const_rule():
     print("part 1")
-    heads = [['id'], ['int'], ['macro:value1']]
+    heads = [['id'], ['int'], ['const:value1']]
     exception_verity(heads)
 
     print("part 2")
-    heads = [['id1', 'id2', 'name'], ['int', 'int', 'str'], ['macro:value', 'macro:value', 'macro:name']]
+    heads = [['id1', 'id2', 'name'], ['int', 'int', 'str'], ['const:value', 'const:value', 'const:name']]
     body = [['1', '3', 'a'], ['2', '4', 'b']]
     exception_verity(heads + body)
 
     print("part 3")
-    heads = [['id'], ['int'], ['macro:value']]
+    heads = [['id'], ['int'], ['const:value']]
     body = [['1'], ['2']]
     exception_verity(heads + body)
 
     print("part 5")
-    heads = [['id', 'value'], ['int', 'int'], ['macro:value', 'macro:name']]
+    heads = [['id', 'value'], ['int', 'int'], ['const:value', 'const:name']]
     body = [['1', '10'], ['2', '20']]
     exception_verity(heads + body)
 
     print("part 6")
-    heads = [['id', 'name'], ['int', 'str'], ['macro:value', 'macro:name']]
+    heads = [['id', 'name'], ['int', 'str'], ['const:value', 'const:name']]
     body = [['1', 'a'], ['1', '1a']]
     exception_verity(heads + body)
 
     print("part 7")
-    heads = [['id', 'name'], ['int', 'str'], ['macro:value', 'macro:name']]
+    heads = [['id', 'name'], ['int', 'str'], ['const:value', 'const:name']]
     body = [['1', 'a'], ['1', 'a']]
     exception_verity(heads + body)
     pass

@@ -47,30 +47,30 @@ class Container:
         if table_name in self._cfg_dict:
             return self.__load_table(table_name)
         elif table_name in self._skipped_cfg_dict:
-            macro, file = self._skipped_cfg_dict.pop(table_name)
+            const, file = self._skipped_cfg_dict.pop(table_name)
             logging.debug(_('reference table `{table}`').format(table=file))
-            self.create_table_obj(macro.value, file)
+            self.create_table_obj(const.value, file)
             return self.get_table_obj(table_name)
 
     def import_table(self):
-        for macro in ExtensionType.__members__.values():
+        for const in ExtensionType.__members__.values():
             source = self._args.source
             if os.path.isdir(source):
                 if self._args.recursive:
-                    source = os.path.join(source, '**', f'*.{macro.name}')
+                    source = os.path.join(source, '**', f'*.{const.name}')
                 else:
-                    source = os.path.join(source, f'*.{macro.name}')
+                    source = os.path.join(source, f'*.{const.name}')
                 for file in glob.iglob(source, recursive=self._args.recursive):
                     file = os.path.abspath(file)
                     basename = os.path.basename(file)
                     if basename not in self._args.exclude_files:
                         if basename in self._source and self._source[basename] == os.stat(file).st_mtime:
-                            self._skipped_cfg_dict[os.path.splitext(basename)[0]] = (macro, file)
+                            self._skipped_cfg_dict[os.path.splitext(basename)[0]] = (const, file)
                         else:
-                            self.create_table_obj(macro.value, file)
+                            self.create_table_obj(const.value, file)
 
-            elif os.path.isfile(source) and source.endswith(f'.{macro.name}'):
-                self.create_table_obj(macro.value, source)
+            elif os.path.isfile(source) and source.endswith(f'.{const.name}'):
+                self.create_table_obj(const.value, source)
         self._effect_cfg_list = list(self._cfg_dict.keys())
 
     def import_custom_table(self, cls, filename, data_rows):

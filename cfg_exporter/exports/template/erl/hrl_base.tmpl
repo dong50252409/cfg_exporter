@@ -6,8 +6,8 @@
 @`('\n'.join('{:<80}{}'.format(f'    {field_name}{seq}', '% ' + desc if desc else '') for field_name, seq, desc in zip(table_obj.field_names, [','] * (len(table_obj.field_names) - 1) + [''],table_obj.descriptions)))`
 }).
 
-@for macro_name, macro_value, macro_desc in table_obj.macro_data_iter:
-@`'{:<80}{}'.format(f'-define({macro_name.upper()}, {format_value(macro_value)}).', '% ' + macro_desc if macro_desc else '')`
+@for const_name, const_value, const_desc in table_obj.const_data_iter:
+@`'{:<80}{}'.format(f'-define({const_name.upper()}, {format_value(const_value)}).', '% ' + const_desc if const_desc else '')`
 @end
 
 -endif.

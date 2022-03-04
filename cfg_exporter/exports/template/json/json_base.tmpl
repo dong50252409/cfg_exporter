@@ -6,7 +6,7 @@
     "data_list" : [
 @`',\n'.join(['        {%s}' % ', '.join([f'"{field_name}":{format_value(value)}' for field_name, value in zip(table_obj.field_names, row)]) for row in table_obj.row_iter])`
     ],
-    "macro_list" : {
-@`',\n'.join([f'        "{macro_name.upper()}" : {format_value(macro_value)}' for macro_name, macro_value, macro_desc in table_obj.macro_data_iter])`
+    "const_list" : {
+@`',\n'.join([f'        "{const_name.upper()}" : {format_value(const_value)}' for const_name, const_value, const_desc in table_obj.const_data_iter])`
     }
 }

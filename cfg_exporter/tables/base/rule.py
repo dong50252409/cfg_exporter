@@ -57,23 +57,23 @@ class KeyRule(BaseRule):
         self._value = key_num
 
 
-class MacroRule(BaseRule):
+class ConstRule(BaseRule):
 
     @BaseRule.value.setter
     def value(self, clause):
-        if clause not in MacroType.__members__:
+        if clause not in ConstType.__members__:
             self._raise_parse_error(_('does not exist'))
 
-        global_macro_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalMacroRule())
+        global_const_rule = self._table_obj.global_rules.get(self.__class__.__name__, GlobalConstRule())
 
-        if MacroType[clause] in global_macro_rule.values:
+        if ConstType[clause] in global_const_rule.values:
             err = _('defined at r{row_num}:c{col_num}') \
-                .format(row_num=self._table_obj.rule_row_num, col_num=global_macro_rule.values[MacroType[clause]] + 1)
+                .format(row_num=self._table_obj.rule_row_num, col_num=global_const_rule.values[ConstType[clause]] + 1)
             self._raise_parse_error(err)
 
-        global_macro_rule.values[MacroType[clause]] = self._column_num
-        self._table_obj.global_rules[self.__class__.__name__] = global_macro_rule
-        self._value = MacroType[clause]
+        global_const_rule.values[ConstType[clause]] = self._column_num
+        self._table_obj.global_rules[self.__class__.__name__] = global_const_rule
+        self._value = ConstType[clause]
 
 
 class UniqueRule(BaseRule):
@@ -271,15 +271,15 @@ class GlobalKeyRule(GlobalRule):
             d[data_t] = (row_num, ",".join([f'{col_num + 1}' for col_num in column_num_list]))
 
 
-class GlobalMacroRule(GlobalRule):
+class GlobalConstRule(GlobalRule):
     def verify(self, table_obj):
-        if MacroType.name not in self._values:
-            raise RuleException(_('does not exist'), 'macro:name')
+        if ConstType.name not in self._values:
+            raise RuleException(_('does not exist'), 'const:name')
 
-        column_num = self._values[MacroType.name]
+        column_num = self._values[ConstType.name]
         data_type = table_obj.data_type_by_column_num(column_num)
         if data_type not in (DataType.str, DataType.lang):
-            raise RuleException(_('data type is not `str` or `lang`'), 'macro:name', table_obj.rule_row_num,
+            raise RuleException(_('data type is not `str` or `lang`'), 'const:name', table_obj.rule_row_num,
                                 column_num + 1)
 
         d = {}
@@ -289,11 +289,11 @@ class GlobalMacroRule(GlobalRule):
                 continue
 
             if not util.check_naming(data):
-                raise RuleException(_('invalid macro name'), row_num=row_num, col_num=column_num + 1)
+                raise RuleException(_('invalid const name'), row_num=row_num, col_num=column_num + 1)
 
             if data in d:
                 r_num = d[data]
-                raise RuleException(_('macro name repeat at r{row_num}:c{col_num}')
+                raise RuleException(_('const name repeat at r{row_num}:c{col_num}')
                                     .format(row_num=table_obj.data_row_num + r_num, col_num=column_num + 1),
                                     row_num=row_num, col_num=column_num + 1)
 
@@ -363,15 +363,15 @@ def parse_struct_clause_1(table_obj, column_num, clause):
 
 
 ###############################
-# 宏定义标记类型定义
+# 常量定义标记类型定义
 ###############################
-MacroType = Enum('MacroType', ('name', 'value', 'desc'))
+ConstType = Enum('ConstType', ('name', 'value', 'desc'))
 
 ###############################
 # 规则标记类型定义
 ###############################
 RuleType = Enum('RuleType', {
-    'key': KeyRule, 'macro': MacroRule,
+    'key': KeyRule, 'const': ConstRule,
     'unique': UniqueRule, 'not_empty': NotEmptyRule,
     'default': DefaultRule, 'size': SizeRule,
     'source': SourceRule, 'ref': RefRule,

@@ -7,7 +7,7 @@ import cfg_exporter.tables.base.rule as rule
 import cfg_exporter.util as util
 from cfg_exporter import AnyType, Iter
 from cfg_exporter.const import DataType
-from cfg_exporter.tables.base.rule import KeyRule, MacroRule, RuleException, RuleType, MacroType
+from cfg_exporter.tables.base.rule import KeyRule, ConstRule, RuleException, RuleType, ConstType
 from cfg_exporter.tables.base.type import RawType, IgnoreValue
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
@@ -325,46 +325,49 @@ class Table(ABC):
                 yield func(row)
 
     @property
-    def has_macro(self):
+    def has_const(self):
         """
-        查看配表是否存在宏定义
+        查看配表是否存在常量
         """
-        return MacroRule.__name__ in self.global_rules
+        return ConstRule.__name__ in self.global_rules
 
     @property
-    def macro_data_iter(self) -> typing.Iterator[typing.Tuple[str, AnyType, str]]:
+    def const_data_iter(self) -> typing.Iterator[typing.Tuple[str, AnyType, str]]:
         """
-        迭代返回宏定义名、宏定义值、宏定义描述的元祖
+        迭代返回常量名、常量值、常量描述的元祖
         """
-        if MacroRule.__name__ in self.global_rules:
-            for macro_name, macro_value, macro_desc in zip(self.macro_name_iter(), self.macro_value_iter(),
-                                                           self.macro_desc_iter()):
-                if not (macro_name is None or macro_value is None
-                        or isinstance(macro_name, IgnoreValue) or isinstance(macro_value, IgnoreValue)):
-                    yield macro_name, macro_value, macro_desc
+        if ConstRule.__name__ in self.global_rules:
+            for const_name, const_value, const_desc in zip(self.const_name_iter(), self.const_value_iter(),
+                                                           self.const_desc_iter()):
+                if not (const_name is None or const_value is None
+                        or isinstance(const_name, IgnoreValue) or isinstance(const_value, IgnoreValue)):
+                    yield const_name, const_value, const_desc
 
-    def macro_name_iter(self):
-        if MacroRule.__name__ in self.global_rules:
-            col_num = self.global_rules[MacroRule.__name__].values[MacroType.name]
+    def const_name_iter(self):
+        if ConstRule.__name__ in self.global_rules:
+            col_num = self.global_rules[ConstRule.__name__].values[ConstType.name]
             for row in self.row_iter:
                 yield row[col_num]
 
-    def macro_value_iter(self):
-        if MacroRule.__name__ in self.global_rules:
-            if MacroType.value in self.global_rules[MacroRule.__name__].values:
-                col_num = self.global_rules[MacroRule.__name__].values[MacroType.value]
+    def const_value_iter(self):
+        if ConstRule.__name__ in self.global_rules:
+            if ConstType.value in self.global_rules[ConstRule.__name__].values:
+                col_num = self.global_rules[ConstRule.__name__].values[ConstType.value]
                 for row in self.row_iter:
                     yield row[col_num]
             else:
                 for index, _ in enumerate(self.row_iter, start=1):
                     yield index
 
-    def macro_desc_iter(self):
-        if MacroRule.__name__ in self.global_rules:
-            if MacroType.desc in self.global_rules[MacroRule.__name__].values:
-                col_num = self.global_rules[MacroRule.__name__].values[MacroType.desc]
+    def const_desc_iter(self):
+        if ConstRule.__name__ in self.global_rules:
+            if ConstType.desc in self.global_rules[ConstRule.__name__].values:
+                col_num = self.global_rules[ConstRule.__name__].values[ConstType.desc]
                 for row in self.row_iter:
-                    yield row[col_num]
+                    const_desc = row[col_num]
+                    if isinstance(const_desc, IgnoreValue):
+                        const_desc = const_desc.text
+                    yield const_desc
             else:
                 for _ in self.row_iter:
                     yield None

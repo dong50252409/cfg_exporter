@@ -1,7 +1,7 @@
 @import r'..\..\..\cfg_exporter\exports\template\lua\lua_base.tmpl' as lua_base
 @require(table_obj, prefix)
 @lua_base.gen_head(table_obj, prefix)
-@lua_base.gen_macro(table_obj, prefix)
+@lua_base.gen_const(table_obj, prefix)
 local config = {
 @for index, (value, export) in enumerate(table_obj.data_iter_by_field_names('value', 'export'), start=1):
     @if export is None or export == 1:

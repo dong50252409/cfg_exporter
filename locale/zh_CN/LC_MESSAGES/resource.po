@@ -242,11 +242,11 @@ msgid "data type is not `str`"
 msgstr "不存在"
 
 #: cfg_exporter/tables/base/rule.py:276
-msgid "invalid macro name"
+msgid "invalid const name"
 msgstr "数据不能是 `str` 类型"
 
 #: cfg_exporter/tables/base/rule.py:280
-msgid "macro name repeat at r{row_num}:c{col_num}"
+msgid "const name repeat at r{row_num}:c{col_num}"
 msgstr "非法的宏定义名称"
 
 #: cfg_exporter/tables/base/table.py:71 cfg_exporter/tables/base/table.py:102
