@@ -109,11 +109,12 @@ class DataType(Enum):
 ###############################
 # 支持的导出文件类型
 ###############################
-from cfg_exporter.exports import erl_export, lua_export, json_export, csv_export, xlsx_export
+from cfg_exporter.exports import erl_export, lua_export, py_export, json_export, csv_export, xlsx_export
 
 ExportType = Enum('ExportType', {
     'erl': erl_export.ErlExport,
     'lua': lua_export.LuaExport,
+    'py': py_export.PyExport,
     'json': json_export.JSONExport,
     'csv': csv_export.CSVExport,
     'xlsx': xlsx_export.XLSXExport,
