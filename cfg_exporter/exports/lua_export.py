@@ -141,9 +141,9 @@ def _stat_replace_table_layer(reference_table, value, layer_num):
     """
     统计替换表的最高层级
     """
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, DataType.iter.value.real_type):
         for child_value in value:
-            if isinstance(child_value, (list, tuple)):
+            if isinstance(child_value, DataType.iter.value.real_type):
                 _stat_replace_table_layer(reference_table, child_value, layer_num + 1)
 
         key = _by_default(value)

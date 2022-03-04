@@ -16,11 +16,16 @@ class _Int:
     """
     32位整数
     """
+
     def __instancecheck__(self, instance):
         return isinstance(instance, int)
 
     def __call__(self, value):
         return int(value)
+
+    @property
+    def real_type(self):
+        return int
 
 
 class _Int64(_Int):
@@ -34,57 +39,82 @@ class _Float:
     """
     浮点数类型
     """
+
     def __instancecheck__(self, instance):
         return isinstance(instance, float)
 
     def __call__(self, value):
         return float(value)
 
+    @property
+    def real_type(self):
+        return float
+
 
 class _Str:
     """
     字符串类型
     """
+
     def __instancecheck__(self, instance):
         return isinstance(instance, str)
 
     def __call__(self, value):
         return util.escape(value)
 
+    @property
+    def real_type(self):
+        return str
+
 
 class _Lang:
     """
     多语言类型
     """
+
     def __instancecheck__(self, instance):
         return isinstance(instance, LangType)
 
     def __call__(self, value):
         return LangType(util.escape(value))
 
+    @property
+    def real_type(self):
+        return LangType
+
 
 class _Iter:
     """
     可迭代类型，目前仅包含 list、tuple
     """
+
     def __instancecheck__(self, instance):
-        return isinstance(instance, (list, tuple))
+        return isinstance(instance, self.real_type)
 
     def __call__(self, value):
         iter_value = eval(value)
-        isinstance(iter_value, (list, tuple))
+        isinstance(iter_value, self.real_type)
         return iter_value
+
+    @property
+    def real_type(self):
+        return list, tuple
 
 
 class _Raw:
     """
     原始类型
     """
+
     def __instancecheck__(self, instance):
         return isinstance(instance, RawType)
 
     def __call__(self, value):
         return RawType(value)
+
+    @property
+    def real_type(self):
+        return RawType
 
 
 class DataType(Enum):
