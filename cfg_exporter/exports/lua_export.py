@@ -18,7 +18,7 @@ def _by_default(value):
     """
     默认Iter类型格式化
     """
-    return f'{value}'.translate(tab)
+    return rf'{value}'.translate(tab)
 
 
 def _by_reference(replace_table):
@@ -171,7 +171,8 @@ def _replace_rt_table(reference_table, value):
     替换引用表的上级引用
     """
     if isinstance(value, (list, tuple)):
-        return f'{{{", ".join(f"{_get_reference(reference_table, v)}" if isinstance(v, (list, tuple)) else f"{v}" for v in value)}}}'
+        t = (f'{_get_reference(reference_table, v)}' if isinstance(v, (list, tuple)) else f'{format_value(v)}' for v in value)
+        return f'{{{", ".join(t)}}}'
     return _by_default(value)
 
 
