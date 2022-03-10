@@ -71,7 +71,7 @@ class LuaExport(BaseExport):
 
         ctx = {
             'table_obj': table_obj, 'prefix': self.args.file_prefix,
-            'default_values': default_values, 'reference_table': reference_table
+            'reference_table': reference_table, 'default_values': default_values
         }
         table_name = table_obj.table_name
         filename = f'{table_name}.{EXTENSION}'

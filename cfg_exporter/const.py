@@ -21,7 +21,7 @@ class _Int:
         return isinstance(instance, int)
 
     def __call__(self, value):
-        return int(value)
+        return int(value) if value else 0
 
     @property
     def real_type(self):
@@ -44,7 +44,7 @@ class _Float:
         return isinstance(instance, float)
 
     def __call__(self, value):
-        return float(value)
+        return float(value) if value else 0.0
 
     @property
     def real_type(self):
@@ -60,7 +60,7 @@ class _Str:
         return isinstance(instance, str)
 
     def __call__(self, value):
-        return util.escape(value)
+        return util.escape(value) if value else ''
 
     @property
     def real_type(self):
@@ -76,7 +76,7 @@ class _Lang:
         return isinstance(instance, LangType)
 
     def __call__(self, value):
-        return LangType(util.escape(value))
+        return LangType(util.escape(value)) if value else LangType('')
 
     @property
     def real_type(self):
@@ -92,9 +92,11 @@ class _Iter:
         return isinstance(instance, self.real_type)
 
     def __call__(self, value):
-        iter_value = eval(value)
-        isinstance(iter_value, self.real_type)
-        return iter_value
+        if value:
+            iter_value = eval(value)
+            assert isinstance(iter_value, self.real_type)
+            return iter_value
+        return None
 
     @property
     def real_type(self):
@@ -110,7 +112,7 @@ class _Raw:
         return isinstance(instance, RawType)
 
     def __call__(self, value):
-        return RawType(value)
+        return RawType(value) if value else RawType('')
 
     @property
     def real_type(self):

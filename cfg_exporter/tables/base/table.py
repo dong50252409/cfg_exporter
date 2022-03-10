@@ -339,8 +339,8 @@ class Table(ABC):
         if ConstRule.__name__ in self.global_rules:
             for const_name, const_value, const_desc in zip(self.const_name_iter(), self.const_value_iter(),
                                                            self.const_desc_iter()):
-                if not (const_name is None or const_value is None
-                        or isinstance(const_name, IgnoreValue) or isinstance(const_value, IgnoreValue)):
+                if const_name and not isinstance(const_name, IgnoreValue) \
+                        and const_value is not None and not isinstance(const_value, IgnoreValue):
                     yield const_name, const_value, const_desc
 
     def const_name_iter(self):
@@ -525,10 +525,7 @@ def convert_desc(desc):
 
 def convert_data(data_type, row):
     try:
-        if row != '' and row is not None:
-            return data_type(row)
-        else:
-            return None
+        return data_type(row)
     except (SyntaxError, NameError, AssertionError, ValueError, AttributeError):
         raise DataException(_('type:`{type}` `{data}` is invalid data').format(type=data_type.name, data=row))
 
