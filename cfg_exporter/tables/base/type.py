@@ -1,4 +1,14 @@
-class LangType:
+class Singleton(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        key = (cls, args.__str__(), kwargs.__str__())
+        if key not in cls._instances:
+            cls._instances[key] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[key]
+
+
+class LangType(metaclass=Singleton):
     def __init__(self, value):
         self._value = value
 
@@ -13,7 +23,7 @@ class LangType:
         return self._value
 
 
-class RawType:
+class RawType(metaclass=Singleton):
     def __init__(self, value):
         self._value = value
 
@@ -28,7 +38,7 @@ class RawType:
         return self._value
 
 
-class IgnoreValue:
+class DefaultValue(metaclass=Singleton):
     def __init__(self, value):
         self._value = value
 
@@ -43,4 +53,4 @@ class IgnoreValue:
         return self._value
 
 
-__all__ = ('RawType', 'LangType', 'IgnoreValue')
+__all__ = ('RawType', 'LangType', 'DefaultValue')

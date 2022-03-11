@@ -133,6 +133,11 @@ lua_group.add_argument('--lua_optimize', default=False, action='store_true',
                        help=_('remove default value fields ( store them into metatable ) '
                               'and reuse all table values to save memory'))
 
+py_group = parser.add_argument_group(title=_('PYTHON options'))
+
+py_group.add_argument('--py_optimize', default=False, action='store_true',
+                      help=_('remove default value fields and reuse all table values to save memory'))
+
 args = parser.parse_args()
 
 __all__ = ('args',)

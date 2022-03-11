@@ -8,7 +8,7 @@ import cfg_exporter.util as util
 from cfg_exporter import AnyType, Iter
 from cfg_exporter.const import DataType
 from cfg_exporter.tables.base.rule import KeyRule, ConstRule, RuleException, RuleType, ConstType
-from cfg_exporter.tables.base.type import RawType, IgnoreValue
+from cfg_exporter.tables.base.type import RawType, DefaultValue
 
 FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
 
@@ -339,8 +339,8 @@ class Table(ABC):
         if ConstRule.__name__ in self.global_rules:
             for const_name, const_value, const_desc in zip(self.const_name_iter(), self.const_value_iter(),
                                                            self.const_desc_iter()):
-                if const_name and not isinstance(const_name, IgnoreValue) \
-                        and const_value is not None and not isinstance(const_value, IgnoreValue):
+                if const_name and not isinstance(const_name, DefaultValue) \
+                        and const_value is not None and not isinstance(const_value, DefaultValue):
                     yield const_name, const_value, const_desc
 
     def const_name_iter(self):
@@ -365,7 +365,7 @@ class Table(ABC):
                 col_num = self.global_rules[ConstRule.__name__].values[ConstType.desc]
                 for row in self.row_iter:
                     const_desc = row[col_num]
-                    if isinstance(const_desc, IgnoreValue):
+                    if isinstance(const_desc, DefaultValue):
                         const_desc = const_desc.text
                     yield const_desc
             else:

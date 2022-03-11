@@ -1,0 +1,8 @@
+@import r'..\..\..\cfg_exporter\exports\template\py\py_base.tmpl' as py_base
+@require(table_obj, prefix, reference_table, default_values)
+@py_base.gen_head(reference_table)
+@py_base.gen_const(table_obj)
+@py_base.gen_class(table_obj, prefix, default_values)
+@py_base.gen_config(table_obj, prefix)
+@py_base.gen_index(table_obj,['item_type'], ['id'])
+@py_base.gen_index(table_obj,['item_type','item_sub_type'], ['id'])

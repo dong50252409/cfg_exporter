@@ -1,11 +1,22 @@
 @################################
+@# generate head
+@################################
+@def gen_head(reference_table=[]):
+@#ignore
+@for rt_num, values in reference_table:
+_rt_@rt_num!s = [
+    @`', '.join(values)`
+]
+@end
+@end
+@################################
 @# generate class
 @################################
-@def gen_class(table_obj, prefix):
-import typing
-
+@def gen_class(table_obj, prefix, default_values={}):
 
 class @`prefix`@`table_obj.table_name`:
+    import typing
+
     __slots__ = ('_kwargs', )
 
     def __init__(self, **kwargs) -> None:
@@ -17,7 +28,7 @@ class @`prefix`@`table_obj.table_name`:
         """
         @`desc`
         """
-        return self._kwargs.get('@`field_name`')
+        return self._kwargs.get('@`field_name`'@`field_name in default_values and f', {format_value(default_values[field_name])}' or ''`)
 
 @end
     def __setattr__(self, name: str, value: typing.Any) -> typing.NoReturn:
@@ -26,7 +37,7 @@ class @`prefix`@`table_obj.table_name`:
 @################################
 @# generate config
 @################################
-@def gen_config(table_obj, prefix):
+@def gen_config(table_obj, prefix, reference_table=[]):
 
 _config = {
 @for keys, row in zip(table_obj.key_data_iter, table_obj.row_iter):
@@ -35,19 +46,41 @@ _config = {
 }
 
 
-def get(@`f', '.join(table_obj.key_field_name_iter)`) -> @`prefix`@`table_obj.table_name`:
+def get(@`f', '.join(f'{table_obj.field_name_by_column_num(col_num)}: {real_type(table_obj.data_type_by_column_num(col_num))}' for col_num in table_obj.key_columns)`) -> @`prefix`@`table_obj.table_name`:
     return _config[@`f', '.join(table_obj.key_field_name_iter)`]
 @end
 @################################
 @# generate const
 @################################
 @def gen_const(table_obj):
-
+@#ignore
 @for const_name, const_value, const_desc in table_obj.const_data_iter:
 @const_name.upper() = @format_value(const_value)    @`const_desc and f'# {const_desc}' or ''`
 @end
 @end
-@require(table_obj, prefix)
-@gen_class(table_obj, prefix)
-@gen_config(table_obj, prefix)
+@################################
+@# generate `gen_index` function
+@################################
+@def gen_index(table_obj, index_field_names, value_field_names):
+
+_@`'_'.join(index_field_names)`_config = {
+@if len(index_field_names) > 1:
+@for index_values, key_values in table_obj.index_list(index_field_names, value_field_names):
+    (@`', '.join(f'{format_value(v)}' for v in index_values)`): [@`', '.join(f'{format_value(v)}' for v in key_values)`],
+@end
+@else:
+@for index_values, key_values in table_obj.index_list(index_field_names, value_field_names):
+    @`', '.join(f'{format_value(v)}' for v in index_values)`: [@`', '.join(f'{format_value(v)}' for v in key_values)`],
+@end
+@end
+}
+
+
+def get_@`'_'.join(index_field_names)`_config(\@`', '.join(f'{field_name}: {real_type(table_obj.data_type_by_column_num(table_obj.column_num_by_field_name(field_name)))}' for field_name in index_field_names)`) -> list:
+    return _@`'_'.join(index_field_names)`_config[@`', '.join(index_field_names)`]
+@end
+@require(table_obj, prefix, reference_table, default_values)
+@gen_head(reference_table)
 @gen_const(table_obj)
+@gen_class(table_obj, prefix, default_values)
+@gen_config(table_obj, prefix)

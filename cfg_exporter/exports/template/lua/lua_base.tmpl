@@ -66,17 +66,12 @@ do
 
     config = setmetatable({}, {__call = function(self, t) merge(self, t, base, @len(table_obj.key_columns)!s) end})
 
-    @for row in table_obj.row_iter:
-    config({@format_config(table_obj.key_columns, row)})
+    @for keys, values in table_obj.data_table_iter:
+    config({@format_config(keys, values)})
     @end
 
 end
-@end
-@################################
-@# generate `get` function
-@################################
-@def gen_get(table_obj, prefix):
-@#ignore
+
 @`f'--- @type fun({", ".join(table_obj.key_field_name_iter)}):{prefix}{table_obj.table_name}'`
 tab.get = function(@`', '.join(table_obj.key_field_name_iter)`)
     return config@`''.join(f'[{field_names}]' for field_names in table_obj.key_field_name_iter)`
@@ -115,5 +110,4 @@ end
 @gen_head(table_obj, prefix)
 @gen_const(table_obj, prefix)
 @gen_config(table_obj, reference_table, default_values)
-@gen_get(table_obj, prefix)
 return tab
