@@ -14,7 +14,7 @@ _rt_@rt_num!s = [
 @################################
 @def gen_class(table_obj, prefix, default_values={}):
 
-class @util.pascal_case(prefix, table_obj.table_name):
+class @util.pascal_case(f'{prefix}{table_obj.table_name}'):
     import typing
 
     __slots__ = ('_kwargs', )
@@ -41,12 +41,12 @@ class @util.pascal_case(prefix, table_obj.table_name):
 
 _config = {
 @for keys, row in zip(table_obj.key_data_iter, table_obj.row_iter):
-    @`format_value(keys)`: @`util.pascal_case(prefix, table_obj.table_name)`(@`f'{", ".join(f"{field_name}={format_value(value)}" for field_name, value in util.iter_valid_value(zip(table_obj.field_names, row)))}'`),
+    @`format_value(keys)`: @`util.pascal_case(f'{prefix}{table_obj.table_name}')`(@`f'{", ".join(f"{field_name}={format_value(value)}" for field_name, value in util.iter_valid_value(zip(table_obj.field_names, row)))}'`),
 @end
 }
 
 
-def get(@`f', '.join(f'{table_obj.field_name_by_column_num(col_num)}: {real_type(table_obj.data_type_by_column_num(col_num))}' for col_num in table_obj.key_columns)`) -> @util.pascal_case(prefix, table_obj.table_name):
+def get(@`f', '.join(f'{table_obj.field_name_by_column_num(col_num)}: {real_type(table_obj.data_type_by_column_num(col_num))}' for col_num in table_obj.key_columns)`) -> @util.pascal_case(f'{prefix}{table_obj.table_name}'):
     return _config[@`f', '.join(table_obj.key_field_name_iter)`]
 @end
 @################################

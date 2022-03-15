@@ -49,41 +49,41 @@ def iter_valid_value(kv_iter):
         yield key, value
 
 
-def camel_case(*args, **kwargs):
+def camel_case(string, **kwargs):
     """
     驼峰式命名法
     eg:userName
     """
-    return case_convert.camel_case(''.join(args), **kwargs)
+    return case_convert.camel_case(string, **kwargs)
 
 
-def kebab_case(*args, **kwargs):
+def kebab_case(string, **kwargs):
     """
     串式命名法
     eg:user-name
     """
-    return case_convert.kebab_case(''.join(args), **kwargs)
+    return case_convert.kebab_case(string, **kwargs)
 
 
-def pascal_case(*args, **kwargs):
+def pascal_case(string, **kwargs):
     """
     帕斯卡命名法
     eg:UserName
     """
-    return case_convert.pascal_case(''.join(args), **kwargs)
+    return case_convert.pascal_case(string, **kwargs)
 
 
-def upper_case(*args, **kwargs):
+def upper_case(string, **kwargs):
     """
     大写命名法
     eg:USER_NAME
     """
-    return case_convert.upper_case(''.join(args), **kwargs)
+    return case_convert.upper_case(string, **kwargs)
 
 
-def snake_case(*args, **kwargs):
+def snake_case(string, **kwargs):
     """
     蛇形命名法
     eg:user_name
     """
-    return case_convert.snake_case(''.join(args), **kwargs)
+    return case_convert.snake_case(string, **kwargs)

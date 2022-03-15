@@ -63,7 +63,8 @@ class Table(ABC):
         field_list = rows[self._field_row]
         for index, field_name in enumerate(field_list):
             try:
-                field_name = convert_field_name(field_name)
+                naming_convention = self.args.export_type.value.naming_convention()
+                field_name = convert_field_name(field_name, naming_convention)
                 if field_name:
                     self._table[FIELD_NAME_INDEX].append(field_name)
                 column_list.append(field_name)
@@ -448,12 +449,12 @@ def sgl_value_func(col_num):
     return lambda row: row[col_num]
 
 
-def convert_field_name(field_name):
+def convert_field_name(field_name, naming_convention):
     field_name = util.trim(field_name)
     if field_name:
         if not util.check_naming(field_name):
             raise FieldNameException(_('invalid field name'))
-        return field_name
+        return naming_convention(field_name)
 
 
 def convert_data_type(data_type):

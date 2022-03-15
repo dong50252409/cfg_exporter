@@ -85,6 +85,13 @@ class BaseExport(ABC):
         """
         ...
 
+    @staticmethod
+    def naming_convention():
+        """
+        名目约定
+        """
+        return lambda s: s
+
 
 def search_extend_template(source, ext):
     source = os.path.join(source, f'*.{ext}.{TEMPLATE_EXTENSION}')

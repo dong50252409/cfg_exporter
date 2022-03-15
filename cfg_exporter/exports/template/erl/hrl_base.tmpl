@@ -1,6 +1,6 @@
 @require(table_obj, prefix)
--ifndef(@`util.upper_case(prefix, table_obj.table_name)`_HRL).
--define(@`util.upper_case(prefix, table_obj.table_name)`_HRL, true).
+-ifndef(@`util.upper_case(f'{prefix}{table_obj.table_name}')`_HRL).
+-define(@`util.upper_case(f'{prefix}{table_obj.table_name}')`_HRL, true).
 
 -record(@`prefix`@`table_obj.table_name`, {
 @`('\n'.join('{:<80}{}'.format(f'    {field_name}{seq}', '% ' + desc if desc else '') for field_name, seq, desc in zip(table_obj.field_names, [','] * (len(table_obj.field_names) - 1) + [''],table_obj.descriptions)))`

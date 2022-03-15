@@ -99,6 +99,11 @@ class PyExport(BaseExport):
                "#   AUTO GENERATE BY CFG_EXPORTER    #\n" \
                "######################################\n"
 
+    @staticmethod
+    def naming_convention():
+        import cfg_exporter.util as util
+        return util.snake_case
+
 
 def _analyze_reference_table(table_obj):
     """
