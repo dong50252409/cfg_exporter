@@ -6,11 +6,13 @@ from abc import ABC, abstractmethod
 import cfg_exporter.tables.base.rule as rule
 import cfg_exporter.util as util
 from cfg_exporter import AnyType, Iter
-from cfg_exporter.const import DataType
+from cfg_exporter.const import DataType, DATA_TYPE_DETAIL_SPLIT
 from cfg_exporter.tables.base.rule import KeyRule, ConstRule, RuleException, RuleType, ConstType
 from cfg_exporter.tables.base.type import RawType, DefaultValue
 
-FIELD_NAME_INDEX, DATA_TYPE_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(5)
+INDEX_RANGE = 6
+
+FIELD_NAME_INDEX, DATA_TYPE_INDEX, DATA_TYPE_DETAIL_INDEX, RULE_INDEX, DESC_INDEX, DATA_INDEX = range(INDEX_RANGE)
 
 
 class Table(ABC):
@@ -46,7 +48,7 @@ class Table(ABC):
         ...
 
     def _load_table(self, rows):
-        self._table = [[], [], [], [], []]
+        self._table = [[] for _ in range(INDEX_RANGE)]
 
         loadable_column_list = self.__load_field_name(rows)
 
@@ -88,8 +90,9 @@ class Table(ABC):
         for index, (field_name, data_type, rules, desc) in enumerate(zip_iter):
             try:
                 if field_name:
-                    real_data_type = convert_data_type(data_type)
+                    real_data_type, data_type_detail = convert_data_type(data_type)
                     self._table[DATA_TYPE_INDEX].append(real_data_type)
+                    self._table[DATA_TYPE_DETAIL_INDEX].append(data_type_detail)
                     self._table[RULE_INDEX].append(
                         [] if real_data_type is RawType else convert_rules(self, real_col_num, rules))
                     self._table[DESC_INDEX].append(convert_desc(desc))
@@ -457,11 +460,13 @@ def convert_data_type(data_type):
     data_type = util.trim(data_type)
     if data_type == '' or data_type is None:
         raise DataTypeException(_('the data type is undefined'))
-
-    if data_type not in DataType.__members__:
+    split = data_type.split(DATA_TYPE_DETAIL_SPLIT)
+    new_data_type = split[0]
+    data_type_detail = split[-1]
+    if new_data_type not in DataType.__members__:
         raise DataTypeException(_('data type `{type}` is unsupported\nsupported data types [{supported}]')
                                 .format(type=data_type, supported=", ".join(DataType.__members__.keys())))
-    return DataType[data_type]
+    return DataType[new_data_type], data_type_detail
 
 
 def convert_rules(table_obj, column_num, rules):

@@ -1,13 +1,13 @@
 @require(table_obj, prefix)
--ifndef(@`prefix.upper()`@`table_obj.table_name.upper()`_HRL).
--define(@`prefix.upper()`@`table_obj.table_name.upper()`_HRL, true).
+-ifndef(@`util.upper_case(prefix, table_obj.table_name)`_HRL).
+-define(@`util.upper_case(prefix, table_obj.table_name)`_HRL, true).
 
 -record(@`prefix`@`table_obj.table_name`, {
 @`('\n'.join('{:<80}{}'.format(f'    {field_name}{seq}', '% ' + desc if desc else '') for field_name, seq, desc in zip(table_obj.field_names, [','] * (len(table_obj.field_names) - 1) + [''],table_obj.descriptions)))`
 }).
 
 @for const_name, const_value, const_desc in table_obj.const_data_iter:
-@`'{:<80}{}'.format(f'-define({const_name.upper()}, {format_value(const_value)}).', '% ' + const_desc if const_desc else '')`
+@`'{:<80}{}'.format(f'-define({util.upper_case(const_name)}, {format_value(const_value)}).', '% ' + const_desc if const_desc else '')`
 @end
 
 -endif.

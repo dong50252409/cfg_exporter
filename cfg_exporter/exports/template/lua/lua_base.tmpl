@@ -24,17 +24,17 @@ end
 @################################
 @# generate const
 @################################
-@def gen_const(table_obj, prefix):
+@def gen_const(table_obj):
 @#ignore
 @for const_name, const_value, const_desc in table_obj.const_data_iter:
-@`f'--- @field {const_name.upper()}'` @`const_desc and '@ ' + const_desc or ''`
-tab.@`const_name.upper()` = @format_value(const_value)
+@`f'--- @field {util.upper_case(const_name)}'` @`const_desc and '@ ' + const_desc or ''`
+tab.@util.upper_case(const_name) = @format_value(const_value)
 @end
 @end
 @################################
 @# generate config
 @################################
-@def gen_config(table_obj, reference_table=None,default_values=None):
+@def gen_config(table_obj, prefix, reference_table=None,default_values=None):
 @(
     import cfg_exporter.util as util
     def format_config(keys, row):
@@ -66,8 +66,8 @@ do
 
     config = setmetatable({}, {__call = function(self, t) merge(self, t, base, @len(table_obj.key_columns)!s) end})
 
-    @for keys, values in table_obj.data_table_iter:
-    config({@format_config(keys, values)})
+    @for row in table_obj.row_iter:
+    config({@format_config(table_obj.key_columns, row)})
     @end
 
 end
@@ -108,6 +108,6 @@ end
 @end
 @require(table_obj, prefix, reference_table, default_values)
 @gen_head(table_obj, prefix)
-@gen_const(table_obj, prefix)
-@gen_config(table_obj, reference_table, default_values)
+@gen_const(table_obj)
+@gen_config(table_obj, prefix, reference_table, default_values)
 return tab

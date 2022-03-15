@@ -1,5 +1,5 @@
 import re
-from collections import Counter
+import case_convert
 
 from cfg_exporter import StrOrNone
 from cfg_exporter.tables.base.type import DefaultValue
@@ -49,34 +49,41 @@ def iter_valid_value(kv_iter):
         yield key, value
 
 
-def analyze_default_value(table_obj):
+def camel_case(*args, **kwargs):
     """
-    分析表默认值
+    驼峰式命名法
+    eg:userName
     """
-    from cfg_exporter.const import DataType
-    default_values = {}
-    for field_name, data_type in zip(table_obj.field_names, table_obj.data_types):
-        if field_name in table_obj.key_field_name_iter:
-            continue
+    return case_convert.camel_case(''.join(args), **kwargs)
 
-        if data_type in (DataType.iter, DataType.lang, DataType.raw):
-            counter = Counter(f'{value}' for value in table_obj.data_iter_by_field_names(field_name))
-        else:
-            counter = Counter(table_obj.data_iter_by_field_names(field_name))
 
-        default_value, count = counter.most_common(1)[0]
+def kebab_case(*args, **kwargs):
+    """
+    串式命名法
+    eg:user-name
+    """
+    return case_convert.kebab_case(''.join(args), **kwargs)
 
-        if count >= 3:
-            if default_value is None:
-                continue
 
-            default_value = data_type.value(default_value)
+def pascal_case(*args, **kwargs):
+    """
+    帕斯卡命名法
+    eg:UserName
+    """
+    return case_convert.pascal_case(''.join(args), **kwargs)
 
-            default_value_obj = DefaultValue(default_value)
-            default_values[field_name] = default_value
-            col_num = table_obj.column_num_by_field_name(field_name)
 
-            for row_num, value in enumerate(table_obj.data_iter_by_column_nums(col_num)):
-                if value == default_value:
-                    table_obj.value(row_num, col_num, default_value_obj)
-    return default_values
+def upper_case(*args, **kwargs):
+    """
+    大写命名法
+    eg:USER_NAME
+    """
+    return case_convert.upper_case(''.join(args), **kwargs)
+
+
+def snake_case(*args, **kwargs):
+    """
+    蛇形命名法
+    eg:user_name
+    """
+    return case_convert.snake_case(''.join(args), **kwargs)

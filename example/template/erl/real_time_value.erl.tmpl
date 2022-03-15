@@ -1,7 +1,6 @@
+@import r'..\..\..\cfg_exporter\exports\template\erl\erl_base.tmpl' as erl_base
 @require(table_obj, prefix)
--module(@`prefix`@`table_obj.table_name`).
--export([get/1]).
-
+@erl_base.gen_head(table_obj, prefix)
 @for index, (value, export) in enumerate(table_obj.data_iter_by_field_names('value', 'export'), start=1):
 @if export is None or export == 2:
 get(@index!s)-> @format_value(value);

@@ -1,6 +1,6 @@
 import os
 
-import cfg_exporter.util as util
+import cfg_exporter.custom as custom
 from cfg_exporter.const import DataType
 from cfg_exporter.const import TEMPLATE_EXTENSION
 from cfg_exporter.exports.base.export import BaseExport
@@ -53,7 +53,6 @@ def format_value(value):
 
 _real_data_type = {
     DataType.int: 'int',
-    DataType.int64: 'int',
     DataType.float: 'float',
     DataType.str: 'str',
     DataType.lang: 'str',
@@ -76,7 +75,7 @@ class PyExport(BaseExport):
         global _format_iter_value
         if self.args.py_optimize:
             replace_table, reference_table = _analyze_reference_table(table_obj)
-            default_values = util.analyze_default_value(table_obj)
+            default_values = custom.analyze_default_value(table_obj)
             _format_iter_value = _by_reference(replace_table)
         else:
             reference_table = []
