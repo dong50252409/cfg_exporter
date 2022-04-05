@@ -99,20 +99,12 @@ class _Iter:
         return list, tuple
 
 
-class _Raw:
+class _Raw(_Str):
     """
     原始类型
     """
-
-    def __instancecheck__(self, instance):
-        return isinstance(instance, RawType)
-
     def __call__(self, value):
-        return RawType(value) if value else RawType('')
-
-    @property
-    def real_type(self):
-        return RawType
+        return value
 
 
 class DataType(Enum):
