@@ -103,8 +103,16 @@ class _Raw(_Str):
     """
     原始类型
     """
+
+    def __instancecheck__(self, instance):
+        return isinstance(instance, RawType)
+
     def __call__(self, value):
-        return value
+        return RawType(value) if value else None
+
+    @property
+    def real_type(self):
+        return RawType
 
 
 class DataType(Enum):

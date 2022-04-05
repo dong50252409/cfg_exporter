@@ -28,7 +28,7 @@ class RawType(metaclass=Singleton):
         self._value = value
 
     def __str__(self):
-        return self._value
+        return f'{self._value}'
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self._value == other.text
@@ -43,7 +43,7 @@ class DefaultValue(metaclass=Singleton):
         self._value = value
 
     def __str__(self):
-        return self._value
+        return f'{self._value}'
 
     def __eq__(self, other):
         return isinstance(other, self.__class__) and self._value == other.text
