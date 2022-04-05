@@ -1,0 +1,77 @@
+@def gen_class_name(table_obj, prefix):
+@prefix@util.pascal_case(table_obj.table_name)\
+@end
+@################################
+@# generate head
+@################################
+@def gen_head():
+using System;
+using System.Collections.Generic;
+
+@end
+@################################
+@# generate class
+@################################
+@def gen_class(table_obj, prefix):
+public class @gen_class_name(table_obj, prefix)
+{
+    @for data_type, field_name, desc in zip(table_obj.data_type_details, table_obj.field_names, table_obj.descriptions):
+    @if desc:
+    /// <summary>
+    /// @desc
+    /// </summary>
+    @end
+    public @data_type @util.pascal_case(field_name) { get; }
+    @end
+
+    public @prefix@`util.pascal_case(table_obj.table_name)`(@`', '.join(f'{data_type_detail} {field_name}' for data_type_detail, field_name in zip(table_obj.data_type_details, table_obj.field_names))`)
+    {
+    @for field_name in table_obj.field_names:
+        this.@util.pascal_case(field_name) = @field_name;
+    @end
+    }
+}
+@end
+@################################
+@# generate config
+@################################
+@def gen_config(table_obj, prefix):
+public class @gen_class_name(table_obj, prefix)Config
+{
+    @for const_name, const_value, const_data_detail, const_desc in table_obj.const_data_iter:
+    @if const_desc:
+    /// <summary>
+    /// @const_desc
+    /// </summary>
+    @end
+    public const @const_data_detail @util.upper_case(const_name) = @format_value(const_value);
+    @end
+
+    private Dictionary< ,@gen_class_name(table_obj, prefix)> config = \
+new Dictionary< ,@gen_class_name(table_obj, prefix)>(@table_obj.row_count!s);
+
+    public @gen_class_name(table_obj, prefix)Config()
+    {
+        config[1] = new @`gen_class_name(table_obj, prefix)`();
+    }
+
+    public @gen_class_name(table_obj, prefix) Get()
+    {
+        if(config.ContainsKey())
+        {
+            return config[];
+        }
+        return null;
+    }
+}
+@end
+@################################
+@# generate `gen_index` function
+@################################
+@def gen_index(table_obj, index_field_names, value_field_names):
+
+@end
+@require(table_obj, prefix)
+@gen_head()
+@gen_class(table_obj, prefix)
+@gen_config(table_obj, prefix)

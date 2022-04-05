@@ -91,7 +91,7 @@ class Table(ABC):
         for index, (field_name, data_type, rules, desc) in enumerate(zip_iter):
             try:
                 if field_name:
-                    real_data_type, data_type_detail = convert_data_type(data_type)
+                    real_data_type, data_type_detail = convert_data_type(data_type, self.args.export_type.value)
                     self._table[DATA_TYPE_INDEX].append(real_data_type)
                     self._table[DATA_TYPE_DETAIL_INDEX].append(data_type_detail)
                     self._table[RULE_INDEX].append(
@@ -231,11 +231,21 @@ class Table(ABC):
         """
         return self._table[DATA_TYPE_INDEX]
 
-    def data_type_by_column_num(self, column_num: int) -> typing.Any:
+    def data_type_by_column_num(self, column_num: int) -> DataType:
         """
         根据列号，返回配置表的数据类型，列号从0开始
         """
         return self.data_types[column_num]
+
+    @property
+    def data_type_details(self) -> typing.List[str]:
+        """
+        返回自定义的类型描述
+        """
+        return self._table[DATA_TYPE_DETAIL_INDEX]
+
+    def data_type_detail_by_column_num(self, column_num: int) -> str:
+        return self.data_type_details[column_num]
 
     @property
     def rules(self) -> typing.List[typing.List[rule.BaseRule]]:
@@ -336,16 +346,16 @@ class Table(ABC):
         return ConstRule.__name__ in self.global_rules
 
     @property
-    def const_data_iter(self) -> typing.Iterator[typing.Tuple[str, AnyType, str]]:
+    def const_data_iter(self) -> typing.Iterator[typing.Tuple[str, AnyType, str, str]]:
         """
         迭代返回常量名、常量值、常量描述的元祖
         """
         if ConstRule.__name__ in self.global_rules:
-            for const_name, const_value, const_desc in zip(self.const_name_iter(), self.const_value_iter(),
-                                                           self.const_desc_iter()):
+            for const_name, (const_value, const_data_type_detail), const_desc in \
+                    zip(self.const_name_iter(), self.const_value_iter(), self.const_desc_iter()):
                 if const_name and not isinstance(const_name, DefaultValue) \
                         and const_value is not None and not isinstance(const_value, DefaultValue):
-                    yield const_name, const_value, const_desc
+                    yield const_name, const_value, const_data_type_detail, const_desc
 
     def const_name_iter(self):
         if ConstRule.__name__ in self.global_rules:
@@ -357,11 +367,12 @@ class Table(ABC):
         if ConstRule.__name__ in self.global_rules:
             if ConstType.value in self.global_rules[ConstRule.__name__].values:
                 col_num = self.global_rules[ConstRule.__name__].values[ConstType.value]
+                data_type_detail = self.data_type_detail_by_column_num(col_num)
                 for row in self.row_iter:
-                    yield row[col_num]
+                    yield row[col_num], data_type_detail
             else:
                 for index, _ in enumerate(self.row_iter, start=1):
-                    yield index
+                    yield index, "int"
 
     def const_desc_iter(self):
         if ConstRule.__name__ in self.global_rules:
@@ -457,13 +468,13 @@ def convert_field_name(field_name, naming_convention):
         return naming_convention(field_name)
 
 
-def convert_data_type(data_type):
+def convert_data_type(data_type, export_type):
     data_type = util.trim(data_type)
     if data_type == '' or data_type is None:
         raise DataTypeException(_('the data type is undefined'))
     split = data_type.split(DATA_TYPE_DETAIL_SPLIT)
     new_data_type = split[0]
-    data_type_detail = split[-1]
+    data_type_detail = export_type.data_type_detail(split[-1])
     if new_data_type not in DataType.__members__:
         raise DataTypeException(_('data type `{type}` is unsupported\nsupported data types [{supported}]')
                                 .format(type=data_type, supported=", ".join(DataType.__members__.keys())))

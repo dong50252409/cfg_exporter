@@ -22,9 +22,9 @@ class @util.pascal_case(f'{prefix}{table_obj.table_name}'):
     def __init__(self, **kwargs) -> None:
         object.__setattr__(self, '_kwargs', kwargs)
 
-@for field_name, data_type, desc in zip(table_obj.field_names, table_obj.data_types, table_obj.descriptions):
+@for field_name, data_type_detail, desc in zip(table_obj.field_names, table_obj.data_type_details, table_obj.descriptions):
     @`f'@property'`
-    def @`field_name`(self) -> @`real_type(data_type)`:
+    def @`field_name`(self) -> @data_type_detail:
         """
         @`desc`
         """
@@ -46,7 +46,7 @@ _config = {
 }
 
 
-def get(@`f', '.join(f'{table_obj.field_name_by_column_num(col_num)}: {real_type(table_obj.data_type_by_column_num(col_num))}' for col_num in table_obj.key_columns)`) -> @util.pascal_case(f'{prefix}{table_obj.table_name}'):
+def get(@`f', '.join(f'{table_obj.field_name_by_column_num(col_num)}: {table_obj.data_type_detail_by_column_num(col_num)}' for col_num in table_obj.key_columns)`) -> @util.pascal_case(f'{prefix}{table_obj.table_name}'):
     return _config[@`f', '.join(table_obj.key_field_name_iter)`]
 @end
 @################################
@@ -54,7 +54,7 @@ def get(@`f', '.join(f'{table_obj.field_name_by_column_num(col_num)}: {real_type
 @################################
 @def gen_const(table_obj):
 @#ignore
-@for const_name, const_value, const_desc in table_obj.const_data_iter:
+@for const_name, const_value, _, const_desc in table_obj.const_data_iter:
 @util.upper_case(const_name) = @format_value(const_value)    @`const_desc and f'# {const_desc}' or ''`
 @end
 @end
@@ -76,7 +76,7 @@ _@`'_'.join(index_field_names)`_config = {
 }
 
 
-def get_@`'_'.join(index_field_names)`_config(@`', '.join(f'{field_name}: {real_type(table_obj.data_type_by_column_num(table_obj.column_num_by_field_name(field_name)))}' for field_name in index_field_names)`) -> list:
+def get_@`'_'.join(index_field_names)`_config(@`', '.join(f'{field_name}: {table_obj.data_type_detail_by_column_num(table_obj.column_num_by_field_name(field_name))}' for field_name in index_field_names)`) -> list:
     return _@`'_'.join(index_field_names)`_config[@`', '.join(index_field_names)`]
 @end
 @require(table_obj, prefix, reference_table, default_values)

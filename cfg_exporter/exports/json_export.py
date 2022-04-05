@@ -1,4 +1,5 @@
 import os
+import typing
 
 from cfg_exporter.const import TEMPLATE_EXTENSION, DataType
 from cfg_exporter.exports.base.export import BaseExport
@@ -30,7 +31,7 @@ class JSONExport(BaseExport):
         global_vars = {'format_value': format_value}
         super().__init__(args, BASE_TEMPLATE_PATH, [EXTENSION], global_vars)
 
-    def export(self, table_obj):
+    def export(self, table_obj) -> typing.NoReturn:
         ctx = {'table_obj': table_obj}
         table_name = table_obj.table_name
 

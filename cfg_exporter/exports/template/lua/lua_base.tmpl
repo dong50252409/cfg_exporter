@@ -26,7 +26,7 @@ end
 @################################
 @def gen_const(table_obj):
 @#ignore
-@for const_name, const_value, const_desc in table_obj.const_data_iter:
+@for const_name, const_value, _, const_desc in table_obj.const_data_iter:
 @`f'--- @field {util.upper_case(const_name)}'` @`const_desc and '@ ' + const_desc or ''`
 tab.@util.upper_case(const_name) = @format_value(const_value)
 @end

@@ -1,4 +1,5 @@
 import os
+import typing
 
 import cfg_exporter.custom as custom
 from cfg_exporter.const import DataType
@@ -51,27 +52,20 @@ def format_value(value):
         return f'{value}'
 
 
-_real_data_type = {
-    DataType.int: 'int',
-    DataType.float: 'float',
-    DataType.str: 'str',
-    DataType.lang: 'str',
-    DataType.iter: 'typing.Union[list, tuple]',
-    DataType.raw: 'typing.Any'
+_data_type_details = {
+    'lang': 'str',
+    'iter': 'typing.Union[list, tuple]',
+    'raw': 'typing.Any'
 }
-
-
-def real_type(data_type):
-    return _real_data_type[data_type]
 
 
 class PyExport(BaseExport):
 
     def __init__(self, args):
-        global_vars = {'format_value': format_value, 'real_type': real_type}
+        global_vars = {'format_value': format_value}
         super().__init__(args, BASE_TEMPLATE_PATH, [EXTENSION], global_vars)
 
-    def export(self, table_obj):
+    def export(self, table_obj) -> typing.NoReturn:
         global _format_iter_value
         if self.args.py_optimize:
             replace_table, reference_table = _analyze_reference_table(table_obj)
@@ -100,9 +94,13 @@ class PyExport(BaseExport):
                "######################################\n"
 
     @staticmethod
-    def naming_convention():
+    def naming_convention() -> typing.Any:
         import cfg_exporter.util as util
         return util.snake_case
+
+    @staticmethod
+    def data_type_detail(data_type_str) -> str:
+        return _data_type_details.get(data_type_str, data_type_str)
 
 
 def _analyze_reference_table(table_obj):

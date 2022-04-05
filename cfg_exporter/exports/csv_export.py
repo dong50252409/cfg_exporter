@@ -1,6 +1,6 @@
 import logging
 import os
-
+import typing
 import csv
 
 from cfg_exporter.const import DataType
@@ -36,7 +36,7 @@ class CSVExport(BaseExport):
 
         self._space_line = lambda table_obj: [''] * len(table_obj.field_names)
 
-    def export(self, table_obj):
+    def export(self, table_obj) -> typing.NoReturn:
         if not os.path.exists(self.output):
             os.makedirs(self.output)
 

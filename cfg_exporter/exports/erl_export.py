@@ -1,4 +1,5 @@
 import os
+import typing
 
 from cfg_exporter.const import TEMPLATE_EXTENSION, DataType
 from cfg_exporter.exports.base.export import BaseExport
@@ -57,6 +58,6 @@ class ErlExport(BaseExport):
                "%%===================================\n"
 
     @staticmethod
-    def naming_convention():
+    def naming_convention() -> typing.Any:
         import cfg_exporter.util as util
         return util.snake_case

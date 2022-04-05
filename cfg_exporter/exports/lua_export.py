@@ -1,4 +1,5 @@
 import os
+import typing
 
 import cfg_exporter.custom as custom
 from cfg_exporter.const import DataType
@@ -59,7 +60,7 @@ class LuaExport(BaseExport):
         global_vars = {'format_value': format_value}
         super().__init__(args, BASE_TEMPLATE_PATH, [EXTENSION], global_vars)
 
-    def export(self, table_obj):
+    def export(self, table_obj) -> typing.NoReturn:
         global _format_iter_value
         if self.args.lua_optimize:
             replace_table, reference_table = _analyze_reference_table(table_obj)
@@ -87,7 +88,7 @@ class LuaExport(BaseExport):
                "-------------------------------------\n"
 
     @staticmethod
-    def naming_convention():
+    def naming_convention() -> typing.Any:
         import cfg_exporter.util as util
         return util.snake_case
 

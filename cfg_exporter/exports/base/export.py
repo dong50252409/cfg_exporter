@@ -72,25 +72,31 @@ class BaseExport(ABC):
                 logging.error(traceback.print_exc())
 
     @abstractmethod
-    def file_desc(self) -> str:
-        """
-        文件顶部描述
-        """
-        return ""
-
-    @abstractmethod
     def export(self, table_obj) -> typing.NoReturn:
         """
         导出方法
         """
         ...
 
+    def file_desc(self) -> str:
+        """
+        文件顶部描述
+        """
+        return "AUTO GENERATE BY CFG_EXPORTER"
+
     @staticmethod
-    def naming_convention():
+    def naming_convention() -> typing.Any:
         """
         名目约定
         """
         return lambda s: s
+
+    @staticmethod
+    def data_type_detail(data_type_str: str) -> str:
+        """
+        获取类型详细描述
+        """
+        return data_type_str
 
 
 def search_extend_template(source, ext):

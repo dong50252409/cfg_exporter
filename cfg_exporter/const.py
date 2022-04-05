@@ -11,10 +11,13 @@ TEMPLATE_EXTENSION = 'tmpl'
 import cfg_exporter.util as util
 from cfg_exporter.tables.base.type import LangType, RawType
 
+# 数据类型细分分隔符
+DATA_TYPE_DETAIL_SPLIT = ':'
+
 
 class _Int:
     """
-    32位整数
+    整数
     """
 
     def __instancecheck__(self, instance):
@@ -26,13 +29,6 @@ class _Int:
     @property
     def real_type(self):
         return int
-
-
-class _Int64(_Int):
-    """
-    64位整数类型
-    """
-    pass
 
 
 class _Float:
@@ -124,7 +120,6 @@ class DataType(Enum):
     数据类型枚举
     """
     int = _Int()
-    int64 = _Int64()
     float = _Float()
     str = _Str()
     lang = _Lang()
@@ -141,12 +136,13 @@ class DataType(Enum):
 ###############################
 # 支持的导出文件类型
 ###############################
-from cfg_exporter.exports import erl_export, lua_export, py_export, json_export, csv_export, xlsx_export
+from cfg_exporter.exports import erl_export, lua_export, py_export, cs_export, json_export, csv_export, xlsx_export
 
 ExportType = Enum('ExportType', {
     'erl': erl_export.ErlExport,
     'lua': lua_export.LuaExport,
     'py': py_export.PyExport,
+    'cs': cs_export.CSExport,
     'json': json_export.JSONExport,
     'csv': csv_export.CSVExport,
     'xlsx': xlsx_export.XLSXExport,

@@ -1,5 +1,6 @@
 import logging
 import os
+import typing
 
 from openpyxl import Workbook
 
@@ -40,7 +41,7 @@ class XLSXExport(BaseExport):
 
         self._space_line = lambda _: []
 
-    def export(self, table_obj):
+    def export(self, table_obj) -> typing.NoReturn:
         if not os.path.exists(self.output):
             os.makedirs(self.output)
 
