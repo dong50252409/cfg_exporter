@@ -30,7 +30,6 @@ def table_group():
 
 def erl_group():
     return {
-        "erl_prefix": "",
         "erl_dir": "",
         "hrl_dir": ""
     }

@@ -4,7 +4,7 @@
 Erlang
 -----
 
-    python -m cfg_exporter -s example/tables -o example/out/erl --file_prefix cfg_ -e erl -r  --verbose --template_path example/template/erl --field_row 1 --type_row 2 --desc_row 3 --rule_row 4 --data_row 6 --erl_prefix cfg_ --erl_dir cfg --hrl_dir include
+    python -m cfg_exporter -s example/tables -o example/out/erl --file_prefix cfg_ -e erl -r  --verbose --template_path example/template/erl --field_row 1 --type_row 2 --desc_row 3 --rule_row 4 --data_row 6 --erl_dir cfg --hrl_dir include
 
 Lua
 ----

@@ -63,6 +63,10 @@ class Container:
                 for file in glob.iglob(source, recursive=self._args.recursive):
                     file = os.path.abspath(file)
                     basename = os.path.basename(file)
+
+                    if basename.startswith('~$'):
+                        continue
+
                     if basename not in self._args.exclude_files:
                         if basename in self._source and self._source[basename] == os.stat(file).st_mtime:
                             self._skipped_cfg_dict[os.path.splitext(basename)[0]] = (const, file)

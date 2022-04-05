@@ -32,10 +32,9 @@ class ErlExport(BaseExport):
     def __init__(self, args):
         global_vars = {'format_value': format_value}
         super().__init__(args, BASE_TEMPLATE_PATH, [ERL_EXTENSION, HRL_EXTENSION], global_vars)
-        self.prefix = self.args.erl_prefix
 
     def export(self, table_obj):
-        ctx = {'table_obj': table_obj, 'prefix': self.prefix}
+        ctx = {'table_obj': table_obj, 'prefix': self.args.file_prefix}
         table_name = table_obj.table_name
 
         self.output = os.path.join(self.args.output, self.args.erl_dir)

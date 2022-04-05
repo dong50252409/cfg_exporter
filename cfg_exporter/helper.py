@@ -121,9 +121,6 @@ erl_group = parser.add_argument_group(title=_('Erlang options'))
 erl_group.add_argument('--erl_dir', default='',
                        help=_('specify output directory for where to generate the .erl.'))
 
-erl_group.add_argument('--erl_prefix', default='',
-                       help=_('specify the prefix of the record name.'))
-
 erl_group.add_argument('--hrl_dir', default='',
                        help=_('specify output directory for where to generate the .hrl.'))
 
