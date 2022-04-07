@@ -42,7 +42,7 @@ base_group = parser.add_argument_group(title=_('Base options'))
 base_group.add_argument('--clear_dir', default=False, action='store_true',
                         help=_('clear the output directory.'))
 
-base_group.add_argument('--exclude_files', default=[], action="extend", nargs="+",
+base_group.add_argument('--exclude_files', default=[], nargs="*",
                         help=_('specify a list of file names not to load.'))
 
 base_group.add_argument('-e', '--export_type', type=valid_export,
